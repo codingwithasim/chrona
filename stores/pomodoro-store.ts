@@ -3,6 +3,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
+import { notify } from "@/lib/notify";
 import { playSound } from "@/lib/sounds";
 
 import { say } from "./dialogue-store";
@@ -151,6 +152,10 @@ export const usePomodoroStore = create<PomodoroStore>()(
         if (kind === "complete") {
           const { sounds, toneVolume } = useSettingsStore.getState();
           playSound(sounds.pomodoro, { volume: toneVolume });
+          notify(
+            next === "focus" ? "Back to focus 🍅" : "Break time ☕",
+            FINISH_LINES[next]
+          );
 
           say({
             tone: "alert",

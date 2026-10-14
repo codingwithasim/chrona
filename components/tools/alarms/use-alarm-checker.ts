@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 
+import { notify } from "@/lib/notify";
 import { isSoundId, playSound } from "@/lib/sounds";
 import { say } from "@/stores/dialogue-store";
 import { useAlarmStore } from "@/stores/alarms-store";
@@ -67,6 +68,8 @@ export function useAlarmChecker() {
         volume: toneVolume,
         maxDuration: MAX_RING_MS,
       });
+
+      notify("⏰ " + labels, `It's ${minutesToTime(triggered[0].time, useSceneStore.getState().hour24)}.`);
 
       say({
         text: `Riiing! ${labels} — it's ${minutesToTime(

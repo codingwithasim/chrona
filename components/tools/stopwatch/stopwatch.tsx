@@ -3,6 +3,7 @@
 import { Digits } from "@/components/shell/digits";
 import { ProgressRing } from "@/components/shell/progress-ring";
 import { ToolFrame } from "@/components/shell/tool-frame";
+import { useShortcuts } from "@/hooks/use-shortcuts";
 import {
   useStopwatchElapsed,
   useStopwatchStore,
@@ -15,6 +16,11 @@ export function StopwatchTool() {
   const elapsed = useStopwatchElapsed();
   const status = useStopwatchStore((state) => state.status);
   const laps = useStopwatchStore((state) => state.laps);
+  const toggle = useStopwatchStore((state) => state.toggle);
+  const lap = useStopwatchStore((state) => state.lap);
+  const reset = useStopwatchStore((state) => state.reset);
+
+  useShortcuts({ space: toggle, l: lap, r: reset });
 
   // The ring sweeps once per minute, like a second hand.
   const secondSweep = (elapsed % 60_000) / 60_000;
@@ -48,6 +54,10 @@ export function StopwatchTool() {
         </ProgressRing>
 
         <StopwatchControls />
+
+        <p className="hidden text-[11px] text-muted-foreground/70 sm:block">
+          Space start / pause · L lap · R reset
+        </p>
 
         {laps.length > 0 && (
           <LapList

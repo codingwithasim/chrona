@@ -14,6 +14,8 @@ import { useStopwatchStore } from "@/stores/stopwatch-store";
 import { useTimerStore } from "@/stores/timer-store";
 import { useWorldClockStore } from "@/stores/world-clock-store";
 
+import { useShortcuts } from "@/hooks/use-shortcuts";
+
 import { startAmbience, stopAmbience } from "./ambience-sound";
 
 const IDLE_MS = 8000;
@@ -32,6 +34,8 @@ export function SceneController() {
   const natureOn = useSceneStore((state) => state.natureOn);
   const gaze = useSceneStore((state) => state.gaze);
   const setGaze = useSceneStore((state) => state.setGaze);
+
+  useShortcuts({ g: () => setGaze(!gaze) });
 
   // Persisted stores skip automatic hydration so the first
   // client render matches the server. Restore them here.

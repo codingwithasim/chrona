@@ -3,6 +3,7 @@
 import { Digits, formatClock } from "@/components/shell/digits";
 import { ProgressRing } from "@/components/shell/progress-ring";
 import { ToolFrame } from "@/components/shell/tool-frame";
+import { useShortcuts } from "@/hooks/use-shortcuts";
 import { cn } from "@/lib/utils";
 import {
   durationOf,
@@ -51,6 +52,11 @@ export function PomodoroTool() {
   const settings = usePomodoroStore((state) => state.settings);
   const stats = usePomodoroStore((state) => state.stats);
   const setMode = usePomodoroStore((state) => state.setMode);
+  const toggle = usePomodoroStore((state) => state.toggle);
+  const skip = usePomodoroStore((state) => state.skip);
+  const reset = usePomodoroStore((state) => state.reset);
+
+  useShortcuts({ space: toggle, s: skip, r: reset });
 
   const duration = durationOf(settings, mode);
   const progress = Math.min(1, Math.max(0, (duration - remaining) / duration));
@@ -137,6 +143,10 @@ export function PomodoroTool() {
         </div>
 
         <PomodoroControls />
+
+        <p className="hidden text-[11px] text-muted-foreground/70 sm:block">
+          Space start / pause · S skip · R reset
+        </p>
       </div>
     </ToolFrame>
   );

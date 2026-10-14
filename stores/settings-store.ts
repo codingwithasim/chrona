@@ -14,6 +14,10 @@ type SettingsStore = {
   /** Volume for alarm and notification tones, 0–1. */
   toneVolume: number;
   setToneVolume: (volume: number) => void;
+
+  /** Desktop notifications when something finishes in the background. */
+  notify: boolean;
+  setNotify: (notify: boolean) => void;
 };
 
 export const soundSlots: Record<
@@ -55,6 +59,9 @@ export const useSettingsStore = create<SettingsStore>()(
         set({
           toneVolume: Math.min(1, Math.max(0, toneVolume)),
         }),
+
+      notify: false,
+      setNotify: (notify) => set({ notify }),
     }),
     {
       name: "chrona-settings",

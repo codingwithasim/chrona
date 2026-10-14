@@ -6,6 +6,7 @@ import { Pencil } from "lucide-react";
 import { Digits, formatClock } from "@/components/shell/digits";
 import { ProgressRing } from "@/components/shell/progress-ring";
 import { ToolFrame } from "@/components/shell/tool-frame";
+import { useShortcuts } from "@/hooks/use-shortcuts";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { type TimerStatus, useTimerStore } from "@/stores/timer-store";
@@ -132,6 +133,11 @@ export function TimerTool() {
 
   const [editing, setEditing] = useState(false);
 
+  const toggle = useTimerStore((state) => state.toggle);
+  const reset = useTimerStore((state) => state.reset);
+
+  useShortcuts({ space: toggle, r: reset });
+
   const progress = duration > 0 ? (duration - remaining) / duration : 0;
   const canEdit = status !== "running";
 
@@ -190,6 +196,10 @@ export function TimerTool() {
         <TimerControls />
 
         <InlinePresets />
+
+        <p className="hidden text-[11px] text-muted-foreground/70 sm:block">
+          Space start / pause · R reset
+        </p>
       </div>
     </ToolFrame>
   );

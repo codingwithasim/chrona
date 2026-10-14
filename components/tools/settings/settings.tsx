@@ -1,13 +1,14 @@
 "use client";
 
-import type { ReactNode } from "react";
-import { Clock3, Music2, Play, Sofa } from "lucide-react";
+import { type ReactNode, useState } from "react";
+import { Bell, Clock3, Keyboard, Music2, Play, Sofa } from "lucide-react";
 
 import { RoomControls } from "@/components/shell/room-controls";
 import { SoundPicker } from "@/components/shell/sound-picker";
 import { ToolFrame } from "@/components/shell/tool-frame";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import { requestNotifications } from "@/lib/notify";
 import { previewSound } from "@/lib/sounds";
 import { useSceneStore } from "@/stores/scene-store";
 import {
@@ -49,6 +50,22 @@ export function SettingsPanel() {
 
   const hour24 = useSceneStore((state) => state.hour24);
   const toggleHour24 = useSceneStore((state) => state.toggleHour24);
+
+  const notifyOn = useSettingsStore((state) => state.notify);
+  const setNotify = useSettingsStore((state) => state.setNotify);
+  const [notifyBlocked, setNotifyBlocked] = useState(false);
+
+  async function handleNotify(enabled: boolean) {
+    if (!enabled) {
+      setNotify(false);
+      return;
+    }
+
+    const allowed = await requestNotifications();
+
+    setNotify(allowed);
+    setNotifyBlocked(!allowed);
+  }
 
   return (
     <ToolFrame href="/settings">
@@ -102,11 +119,52 @@ export function SettingsPanel() {
           <RoomControls />
         </Section>
 
+        <Section icon={Bell} title="Notifications" jp="おしらせ">
+          <label className="flex items-center justify-between gap-3 text-sm font-bold">
+            <span>
+              Notify me in the background
+              <span className="block text-xs font-normal text-muted-foreground">
+                When a timer, pomodoro or alarm finishes while Chrona is in another tab.
+              </span>
+            </span>
+            <Switch checked={notifyOn} onCheckedChange={(value) => void handleNotify(value)} />
+          </label>
+
+          {notifyBlocked && (
+            <p className="text-xs text-destructive">
+              Notifications are blocked for this site. You can allow them in your
+              browser&apos;s site settings.
+            </p>
+          )}
+        </Section>
+
         <Section icon={Clock3} title="Clock" jp="とけい">
           <label className="flex items-center justify-between gap-3 text-sm font-bold">
             24-hour time
             <Switch checked={hour24} onCheckedChange={toggleHour24} />
           </label>
+        </Section>
+
+        <Section icon={Keyboard} title="Shortcuts" jp="ショートカット">
+          <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
+            {[
+              ["Space", "Start or pause the timer, stopwatch or pomodoro"],
+              ["R", "Reset"],
+              ["L", "Lap (stopwatch)"],
+              ["S", "Skip to the next phase (pomodoro)"],
+              ["G", "Watch the rain"],
+              ["Esc", "Back to the room"],
+            ].map(([key, description]) => (
+              <div key={key} className="contents">
+                <dt>
+                  <kbd className="rounded-md border border-border bg-card/60 px-2 py-0.5 font-sans text-xs font-bold">
+                    {key}
+                  </kbd>
+                </dt>
+                <dd className="text-muted-foreground">{description}</dd>
+              </div>
+            ))}
+          </dl>
         </Section>
       </div>
     </ToolFrame>
