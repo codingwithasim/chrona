@@ -521,6 +521,44 @@
   backdrop-filter: blur(18px) saturate(1.15);
 }
 
+/* A cream paper note, taped up, with its own ink colours. */
+@utility memo {
+  position: relative;
+  --foreground: #2f2b33;
+  --muted-foreground: #7a7266;
+  --primary: #4a505e;
+  --primary-foreground: #f8f2e6;
+  --ring: #8a8476;
+  color: var(--foreground);
+  background-color: #f6efe0;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 27px,
+    rgb(120 140 170 / 0.13) 27px,
+    rgb(120 140 170 / 0.13) 28px
+  );
+  border-radius: 4px;
+  box-shadow:
+    0 24px 44px -28px rgb(50 35 20 / 0.55),
+    0 2px 5px rgb(50 35 20 / 0.08);
+  transform: rotate(-0.8deg);
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: -11px;
+    left: 50%;
+    width: 96px;
+    height: 24px;
+    transform: translateX(-50%) rotate(-2.5deg);
+    background: rgb(255 255 255 / 0.5);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.06);
+    -webkit-backdrop-filter: blur(2px);
+    backdrop-filter: blur(2px);
+  }
+}
+
 /* Big outlined display text with a flat drop shadow */
 @utility cel-text {
   text-shadow: 0 2px 18px rgb(20 10 40 / 0.14);
@@ -898,6 +936,69 @@
 
 [data-idle="true"] [data-chrome] {
   opacity: 0.18;
+}
+
+/* At night the paper is a little dimmer, so it doesn't glare. */
+.dark .memo {
+  background-color: #ddd4c1;
+}
+
+/*
+ * Panel styles for the focus tools. The bar and the corner widget
+ * squeeze each tool into a compact layout.
+ */
+[data-panel="bar"] [data-tool-body] {
+  flex-direction: row;
+  gap: 1.25rem;
+}
+
+[data-panel="corner"] [data-tool-body] {
+  gap: 0.9rem;
+}
+
+[data-panel="bar"] [data-compact-hide],
+[data-panel="corner"] [data-compact-hide] {
+  display: none;
+}
+
+[data-panel="bar"] [data-digits] {
+  font-size: 1.75rem;
+}
+
+[data-panel="corner"] [data-digits] {
+  font-size: 2.3rem;
+}
+
+[data-panel="bar"] [data-play],
+[data-panel="corner"] [data-play] {
+  width: 2.6rem;
+  height: 2.6rem;
+}
+
+[data-panel="bar"] [data-play] svg,
+[data-panel="corner"] [data-play] svg {
+  width: 1.05rem;
+  height: 1.05rem;
+}
+
+[data-panel="bar"] [data-quiet],
+[data-panel="corner"] [data-quiet] {
+  width: 2.2rem;
+  height: 2.2rem;
+}
+
+[data-panel="bar"] [data-controls],
+[data-panel="corner"] [data-controls] {
+  gap: 0.35rem;
+}
+
+/* Floating: a soft glow around the words keeps them readable. */
+[data-panel="float"] [data-focus-panel] {
+  text-shadow: 0 0 14px var(--background), 0 0 3px var(--background);
+}
+
+[data-idle="true"][data-running] [data-halo] {
+  opacity: 0.7;
 }
 
 /*

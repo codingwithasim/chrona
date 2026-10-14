@@ -7,6 +7,17 @@ import type { SoundId } from "@/lib/sounds";
 
 export type SoundSlot = "alarm" | "timer" | "pomodoro";
 
+/** How the timer, pomodoro and stopwatch sit over the room. */
+export type PanelStyle = "float" | "card" | "memo" | "bar" | "corner";
+
+export const panelStyles: Array<{ id: PanelStyle; label: string; description: string }> = [
+  { id: "float", label: "Floating", description: "Just the time over the room, no card." },
+  { id: "card", label: "Card", description: "A soft frosted glass card." },
+  { id: "memo", label: "Paper memo", description: "A cream note taped to the room." },
+  { id: "bar", label: "Bottom bar", description: "A slim player bar along the bottom." },
+  { id: "corner", label: "Corner", description: "A small widget in the corner." },
+];
+
 type SettingsStore = {
   sounds: Record<SoundSlot, SoundId>;
   setSound: (slot: SoundSlot, sound: SoundId) => void;
@@ -18,6 +29,9 @@ type SettingsStore = {
   /** Desktop notifications when something finishes in the background. */
   notify: boolean;
   setNotify: (notify: boolean) => void;
+
+  panelStyle: PanelStyle;
+  setPanelStyle: (style: PanelStyle) => void;
 };
 
 export const soundSlots: Record<
@@ -62,6 +76,9 @@ export const useSettingsStore = create<SettingsStore>()(
 
       notify: false,
       setNotify: (notify) => set({ notify }),
+
+      panelStyle: "float",
+      setPanelStyle: (panelStyle) => set({ panelStyle }),
     }),
     {
       name: "chrona-settings",

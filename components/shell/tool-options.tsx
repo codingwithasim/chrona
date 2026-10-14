@@ -8,6 +8,8 @@ import { PomodoroControls } from "@/components/right-panel/pomodoro-controls";
 import { StopwatchActions } from "@/components/right-panel/stopwatch-actions";
 import { TimerPresets } from "@/components/right-panel/timer-presets";
 import { Button } from "@/components/ui/button";
+
+import { PanelStylePicker } from "./panel-style";
 import {
   Sheet,
   SheetContent,
@@ -74,6 +76,10 @@ export function ToolOptions() {
         </SheetHeader>
 
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-5">
+          <section className="mb-6 space-y-2 border-b border-foreground/[0.06] pb-6">
+            <p className="text-[11px] tracking-[0.25em] text-muted-foreground/80 lowercase">panel style</p>
+            <PanelStylePicker className="sm:grid-cols-3" />
+          </section>
           {config.content}
         </div>
       </SheetContent>

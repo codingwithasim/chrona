@@ -28,7 +28,7 @@ export function StopwatchTool() {
 
   return (
     <ToolFrame href="/stopwatch" placement="side">
-      <div className="flex flex-col items-center gap-7">
+      <div data-tool-body className="flex flex-col items-center gap-7">
         <ProgressRing
           value={secondSweep}
           color="var(--sky)"
@@ -42,7 +42,7 @@ export function StopwatchTool() {
               className="text-[clamp(2.1rem,9vw,2.9rem)]"
             />
 
-            <span className="text-[11px] text-muted-foreground/70">
+            <span data-compact-hide className="text-[11px] text-muted-foreground/70">
               {laps.length} {laps.length === 1 ? "lap" : "laps"}
             </span>
           </div>
@@ -51,7 +51,7 @@ export function StopwatchTool() {
         <StopwatchControls />
 
         {laps.length > 0 && (
-          <div data-recede className="w-full">
+          <div data-recede data-compact-hide className="w-full">
           <LapList
             laps={laps}
             className="mx-auto max-h-64 w-full max-w-md overflow-y-auto pr-1"

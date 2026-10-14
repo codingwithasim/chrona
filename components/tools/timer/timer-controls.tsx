@@ -25,11 +25,11 @@ export function TimerControls() {
           onClick={toggle}
         />
         {/* Keeps the play button centred */}
-        <span className="size-11" aria-hidden="true" />
+        <span data-compact-hide className="size-11" aria-hidden="true" />
       </ControlRow>
 
       {counting && (
-        <div data-recede className="flex gap-1 animate-in fade-in-0 duration-500">
+        <div data-recede data-compact-hide className="flex gap-1 animate-in fade-in-0 duration-500">
           {quickAdds.map((minutes) => (
             <button
               key={minutes}

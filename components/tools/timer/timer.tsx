@@ -108,7 +108,7 @@ function InlinePresets() {
   const setDuration = useTimerStore((state) => state.setDuration);
 
   return (
-    <div data-recede className="flex max-w-xs flex-wrap justify-center gap-x-1 gap-y-0.5">
+    <div data-recede data-compact-hide className="flex max-w-xs flex-wrap justify-center gap-x-1 gap-y-0.5">
       {presets.map((preset) => (
         <button
           key={preset.id}
@@ -158,7 +158,7 @@ export function TimerTool() {
         ) : null
       }
     >
-      <div className="flex flex-col items-center gap-7">
+      <div data-tool-body className="flex flex-col items-center gap-7">
         {editing && canEdit ? (
           <DurationEditor
             initial={duration}
@@ -184,7 +184,7 @@ export function TimerTool() {
                 className="text-[clamp(2.6rem,11vw,3.6rem)]"
               />
 
-              <span className="text-[11px] text-muted-foreground/70">
+              <span data-compact-hide className="text-[11px] text-muted-foreground/70">
                 {label ? `${label} · ` : ""}
                 {formatClock(duration)}
               </span>

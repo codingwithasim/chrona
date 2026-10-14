@@ -1,6 +1,10 @@
+"use client";
+
 import type { ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
+
+import { usePanelStyle } from "./panel-style";
 
 type ProgressRingProps = {
   /** 0 to 1 */
@@ -19,8 +23,24 @@ export function ProgressRing({
   className,
   children,
 }: ProgressRingProps) {
+  const style = usePanelStyle();
   const progress = Math.min(1, Math.max(0, value));
   const angle = progress * Math.PI * 2;
+
+  // In the bar and the corner widget, the ring becomes a slim line.
+  if (style === "bar" || style === "corner") {
+    return (
+      <div className="flex flex-col items-center gap-1.5">
+        {children}
+        <div className={cn("h-[2px] overflow-hidden rounded-full bg-foreground/10", style === "bar" ? "w-28" : "w-40")}>
+          <div
+            className="h-full rounded-full"
+            style={{ width: `${progress * 100}%`, backgroundColor: color, transition: "width 400ms linear" }}
+          />
+        </div>
+      </div>
+    );
+  }
 
   const dotX = 50 + RADIUS * Math.cos(angle);
   const dotY = 50 + RADIUS * Math.sin(angle);

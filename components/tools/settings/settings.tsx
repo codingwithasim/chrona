@@ -1,8 +1,9 @@
 "use client";
 
 import { type ReactNode, useState } from "react";
-import { Bell, Clock3, Keyboard, Music2, Play, Sofa } from "lucide-react";
+import { Bell, Clock3, Keyboard, LayoutPanelLeft, Music2, Play, Sofa } from "lucide-react";
 
+import { PanelStylePicker } from "@/components/shell/panel-style";
 import { RoomControls } from "@/components/shell/room-controls";
 import { SoundPicker } from "@/components/shell/sound-picker";
 import { ToolFrame } from "@/components/shell/tool-frame";
@@ -70,6 +71,13 @@ export function SettingsPanel() {
   return (
     <ToolFrame href="/settings">
       <div className="space-y-8">
+        <Section icon={LayoutPanelLeft} title="Panel style" jp="かたち">
+          <p className="text-[12px] text-muted-foreground">
+            How the timer, pomodoro and stopwatch sit over the room.
+          </p>
+          <PanelStylePicker />
+        </Section>
+
         <Section icon={Music2} title="Sounds" jp="おと">
           <div className="flex flex-wrap items-center gap-3 py-1">
             <span className="text-[13px] text-foreground/80">Volume</span>
