@@ -127,7 +127,10 @@ const CHAIR_OUT = { z: 6.85, dx: 0.18 };
 
 export function Chair() {
   const [out, setOut] = useState(false);
-  const [poke, bump] = usePoke();
+  // How far the seat has turned on its post, in radians (it keeps turning
+  // the same way: a half turn out to face the room, a half turn back).
+  const [angle, turnTo] = useTween(1200, 0);
+  const turns = useRef(0);
 
   const z = 7.5;
   const s = scaleAt(z);
@@ -144,13 +147,106 @@ export function Chair() {
   const k = z / CHAIR_OUT.z;
   const tx = (FOCAL * CHAIR_OUT.dx) / CHAIR_OUT.z;
 
+  /*
+   * The seat, back and arms turn about the gas lift. Seen from the room,
+   * the back slides sideways and narrows as it turns edge-on, then shows
+   * its cushioned front; the arms swap sides, passing behind it.
+   * Local frame: x to the right, d towards you.
+   */
+  const cos = Math.cos(angle);
+  const sin = Math.sin(angle);
+  const backReach = half * 0.42;
+  const backX = cx + sin * backReach;
+  const backD = cos * backReach;
+  const backHalf = Math.max(half * Math.abs(cos), 5);
+  const showingFront = cos < 0;
+  const edgeOn = 1 - Math.abs(cos);
+  const armReach = half + 6;
+  const arms = [-1, 1].map((side) => ({
+    side,
+    x: cx + side * armReach * cos,
+    d: -side * armReach * sin,
+    pad: 8 + 20 * Math.abs(sin),
+  }));
+
+  const back = (
+    <g key="back">
+      <rect x={backX - backHalf} y={topY} width={backHalf * 2} height={bottomY - topY} rx={Math.min(backHalf, half * 0.45)} fill="#454c59" />
+      {showingFront ? (
+        // The cushioned front, with its stitched panels.
+        <g>
+          <rect
+            x={backX - backHalf + 5 * Math.abs(cos)}
+            y={topY + 6}
+            width={Math.max(0, backHalf * 2 - 10 * Math.abs(cos))}
+            height={bottomY - topY - 12}
+            rx={Math.min(backHalf, half * 0.4)}
+            fill="#6b778a"
+          />
+          <g stroke="#55606f" strokeWidth="1.4" opacity="0.7" fill="none">
+            <path d={`M${backX - backHalf * 0.75} ${topY + (bottomY - topY) * 0.38} Q ${backX} ${topY + (bottomY - topY) * 0.45} ${backX + backHalf * 0.75} ${topY + (bottomY - topY) * 0.38}`} />
+            <path d={`M${backX - backHalf * 0.75} ${topY + (bottomY - topY) * 0.66} Q ${backX} ${topY + (bottomY - topY) * 0.73} ${backX + backHalf * 0.75} ${topY + (bottomY - topY) * 0.66}`} />
+          </g>
+        </g>
+      ) : (
+        // The back, with its mesh.
+        <g>
+          <rect
+            x={backX - backHalf + 7 * Math.abs(cos)}
+            y={topY + 7}
+            width={Math.max(0, backHalf * 2 - 14 * Math.abs(cos))}
+            height={bottomY - topY - 14}
+            rx={Math.min(backHalf, half * 0.38)}
+            fill="#566070"
+          />
+          <g stroke="#3d4450" strokeWidth="1" opacity="0.5">
+            {Array.from({ length: 9 }, (_, index) => (
+              <line
+                key={index}
+                x1={backX - backHalf + 12 * Math.abs(cos)}
+                y1={topY + 18 + index * ((bottomY - topY - 30) / 8)}
+                x2={backX + backHalf - 12 * Math.abs(cos)}
+                y2={topY + 18 + index * ((bottomY - topY - 30) / 8)}
+              />
+            ))}
+          </g>
+        </g>
+      )}
+      {/* Turning away from the light, it darkens a little edge-on */}
+      <rect x={backX - backHalf} y={topY} width={backHalf * 2} height={bottomY - topY} rx={Math.min(backHalf, half * 0.45)} fill="#000000" opacity={edgeOn * 0.28} />
+      <path
+        d={`M${backX - backHalf + 10 * Math.abs(cos)} ${topY + 20} Q ${backX - backHalf + 4 * Math.abs(cos)} ${(topY + bottomY) / 2} ${backX - backHalf + 12 * Math.abs(cos)} ${bottomY - 20}`}
+        stroke="#ffffff"
+        strokeWidth="3"
+        fill="none"
+        opacity={0.15 * Math.abs(cos)}
+      />
+    </g>
+  );
+
+  const arm = (item: (typeof arms)[number]) => (
+    <g key={`arm${item.side}`}>
+      <rect x={item.x - 4} y={seatY - 48} width="8" height="46" rx="3" fill="#30353f" />
+      <rect x={item.x - item.pad / 2 - 2} y={seatY - 52} width={item.pad + 4} height="8" rx="4" fill="#3a404c" />
+    </g>
+  );
+
+  // Paint from the far side to the near side.
+  const seat = <ellipse key="seat" cx={cx} cy={seatY} rx={half * 1.05} ry="13" fill="#3a404c" />;
+  const parts = [
+    { d: backD, node: back },
+    { d: 0, node: seat },
+    ...arms.map((item) => ({ d: item.d, node: arm(item) })),
+  ].sort((a, b) => a.d - b.d);
+
   return (
     <g
       className="sc-hit"
       onClick={() => {
         playSfx("rustle");
         setOut(!out);
-        bump();
+        turns.current += 1;
+        turnTo(turns.current * Math.PI);
       }}
       style={{
         transform: out ? `translate(${tx.toFixed(1)}px, 0px) scale(${k.toFixed(4)})` : "none",
@@ -176,41 +272,8 @@ export function Chair() {
         <rect x={cx - 5} y={seatY} width="10" height={baseY - seatY} fill="#7e8794" />
         <rect x={cx - 5} y={seatY} width="3" height={baseY - seatY} fill="#ffffff" opacity="0.3" />
 
-        {/* The seat and back swivel as it rolls */}
-        <g key={poke} className={poke ? "sc-swivel" : undefined} style={pivot("50% 50%")}>
-        {/* Seat peeking out behind the backrest */}
-        <ellipse cx={cx} cy={seatY} rx={half * 1.05} ry="13" fill="#3a404c" />
-
-        {/* Armrests */}
-        {[-1, 1].map((side) => (
-          <g key={side}>
-            <rect x={cx + side * (half + 6) - 4} y={seatY - 48} width="8" height="46" rx="3" fill="#30353f" />
-            <rect x={cx + side * (half + 6) - 14} y={seatY - 52} width="28" height="8" rx="4" fill="#3a404c" />
-          </g>
-        ))}
-
-        {/* Backrest */}
-        <rect x={cx - half} y={topY} width={half * 2} height={bottomY - topY} rx={half * 0.45} fill="#454c59" />
-        <rect x={cx - half + 7} y={topY + 7} width={half * 2 - 14} height={bottomY - topY - 14} rx={half * 0.38} fill="#566070" />
-        <g stroke="#3d4450" strokeWidth="1" opacity="0.5">
-          {Array.from({ length: 9 }, (_, index) => (
-            <line
-              key={index}
-              x1={cx - half + 12}
-              y1={topY + 18 + index * ((bottomY - topY - 30) / 8)}
-              x2={cx + half - 12}
-              y2={topY + 18 + index * ((bottomY - topY - 30) / 8)}
-            />
-          ))}
-        </g>
-        <path
-          d={`M${cx - half + 10} ${topY + 20} Q ${cx - half + 4} ${(topY + bottomY) / 2} ${cx - half + 12} ${bottomY - 20}`}
-          stroke="#ffffff"
-          strokeWidth="3"
-          fill="none"
-          opacity="0.15"
-        />
-        </g>
+        {/* Seat, back and arms, turning on the post */}
+        {parts.map((part) => part.node)}
       </g>
     </g>
   );
