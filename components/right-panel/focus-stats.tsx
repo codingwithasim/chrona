@@ -8,6 +8,8 @@ import { recentDays, streakOf, useFocusStore } from "@/stores/focus-store";
 import { usePomodoroStore } from "@/stores/pomodoro-store";
 import { useRoomStore } from "@/stores/room-store";
 
+import { WeekRecap } from "./week-recap";
+
 function formatMinutes(minutes: number) {
   if (minutes < 60) {
     return `${minutes}m`;
@@ -121,9 +123,10 @@ export function FocusStats() {
             </span>
           ))}
         </div>
-        <p className="mt-2 text-[11px] text-muted-foreground/70">
-          {formatMinutes(weekMinutes)} this week
-        </p>
+        <div className="mt-2 flex items-center justify-between gap-2">
+          <p className="text-[11px] text-muted-foreground/70">{formatMinutes(weekMinutes)} this week</p>
+          {weekMinutes > 0 && <WeekRecap />}
+        </div>
       </div>
 
       {next && (
