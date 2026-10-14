@@ -100,9 +100,9 @@ function Segmented<T extends string>({
               title={option.label}
               onClick={() => onChange(option.value)}
               className={cn(
-                "flex min-w-0 flex-col items-center gap-0.5 rounded-xl border-2 px-1 py-1.5 transition-all",
+                "flex min-w-0 flex-col items-center gap-0.5 rounded-xl border px-1 py-1.5 transition-all",
                 active
-                  ? "border-ink text-[#1b1530] shadow-cel-sm"
+                  ? "border-black/10 text-[#1b1530] shadow-cel-sm"
                   : "border-border hover:bg-muted"
               )}
               style={active ? { backgroundColor: color } : undefined}

@@ -100,7 +100,7 @@ export function AlarmCard({
                 className={cn(
                   "grid size-6 place-items-center rounded-full text-[10px] font-bold",
                   active
-                    ? "border-2 border-ink bg-lavender text-[#1b1530]"
+                    ? "border border-black/10 bg-lavender text-[#1b1530]"
                     : "border border-border text-muted-foreground"
                 )}
               >

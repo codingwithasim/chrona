@@ -60,7 +60,7 @@ export function LandingPage() {
         {/* Hero */}
         <section className="mx-auto flex min-h-[calc(100dvh-5.5rem)] max-w-6xl flex-col items-center justify-center px-4 pb-10">
           <div className="panel w-full max-w-2xl px-6 py-10 text-center sm:px-12">
-            <p className="inline-flex -rotate-1 items-center gap-2 rounded-full border-2 border-ink bg-honey px-3 py-1 text-xs font-bold text-[#1b1530] shadow-cel-sm">
+            <p className="inline-flex -rotate-1 items-center gap-2 rounded-full border border-black/10 bg-honey px-3 py-1 text-xs font-bold text-[#1b1530] shadow-cel-sm">
               雨の日の時間 · time tools for rainy days
             </p>
 
@@ -122,7 +122,7 @@ export function LandingPage() {
                 <Link
                   key={tool.href}
                   href={tool.href}
-                  className={`group relative block rounded-2xl border-2 border-ink p-6 pt-8 text-[#1b1530] shadow-cel-lg transition-transform duration-300 hover:-translate-y-1 hover:rotate-0 ${tilts[index % tilts.length]}`}
+                  className={`group relative block rounded-2xl border border-black/10 p-6 pt-8 text-[#1b1530] shadow-cel-lg transition-transform duration-300 hover:-translate-y-1 hover:rotate-0 ${tilts[index % tilts.length]}`}
                   style={{ backgroundColor: tool.color }}
                 >
                   <span
@@ -131,7 +131,7 @@ export function LandingPage() {
                   />
 
                   <span className="flex items-center gap-3">
-                    <span className="grid size-11 place-items-center rounded-xl border-2 border-ink bg-white/60 transition-transform group-hover:-rotate-6">
+                    <span className="grid size-11 place-items-center rounded-xl border border-black/10 bg-white/60 transition-transform group-hover:-rotate-6">
                       <Icon className="size-5" strokeWidth={2.4} />
                     </span>
                     <span>
@@ -154,7 +154,7 @@ export function LandingPage() {
               );
             })}
 
-            <div className="relative rotate-1 rounded-2xl border-2 border-dashed border-ink/50 bg-card/70 p-6 pt-8 backdrop-blur-sm">
+            <div className="relative rotate-1 rounded-2xl border border-dashed border-foreground/20 bg-card/70 p-6 pt-8 backdrop-blur-sm">
               <span className="font-display text-xl">Planner</span>
               <span className="ml-2 text-xs font-bold text-muted-foreground">よてい</span>
               <p className="mt-4 text-sm leading-6 text-muted-foreground">

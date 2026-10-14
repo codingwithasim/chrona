@@ -28,7 +28,7 @@ function Section({
   children: ReactNode;
 }) {
   return (
-    <section className="space-y-4 border-t-2 border-dashed border-border pt-6 first:border-t-0 first:pt-0">
+    <section className="space-y-4 border-t border-dashed border-border pt-6 first:border-t-0 first:pt-0">
       <h2 className="flex items-center gap-2 font-display text-lg">
         <Icon className="size-5 text-primary" />
         {title}
@@ -77,7 +77,7 @@ export function SettingsPanel() {
           </div>
 
           {(Object.keys(soundSlots) as SoundSlot[]).map((slot) => (
-            <div key={slot} className="space-y-3 rounded-2xl border-2 border-border bg-card/40 p-4">
+            <div key={slot} className="space-y-3 rounded-2xl border border-border bg-card/40 p-4">
               <div>
                 <p className="font-bold">
                   {soundSlots[slot].label}

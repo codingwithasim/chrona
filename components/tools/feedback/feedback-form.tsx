@@ -210,9 +210,9 @@ export function FeedbackForm() {
                     aria-pressed={active}
                     onClick={() => setType(value)}
                     className={cn(
-                      "relative flex flex-col items-center gap-1 rounded-xl border-2 border-dashed p-3 text-center transition-all",
+                      "relative flex flex-col items-center gap-1 rounded-xl border border-dashed p-3 text-center transition-all",
                       active
-                        ? "-rotate-1 border-ink text-[#1b1530] shadow-cel"
+                        ? "-rotate-1 border-black/10 text-[#1b1530] shadow-cel"
                         : "border-border hover:-translate-y-0.5 hover:bg-muted"
                     )}
                     style={active ? { backgroundColor: color } : undefined}
@@ -241,7 +241,7 @@ export function FeedbackForm() {
               </span>
             </div>
 
-            <div className="rounded-2xl border-2 border-(--panel-line) bg-[#fffaf0] p-4 text-[#3b2e4a] shadow-cel-sm">
+            <div className="rounded-2xl border border-(--panel-line) bg-[#fffaf0] p-4 text-[#3b2e4a] shadow-cel-sm">
               <p className="font-display text-sm text-[#7f6e93]">Dear Chrona,</p>
               <textarea
                 id="feedback-message"
@@ -306,7 +306,7 @@ export function FeedbackForm() {
           {error && (
             <div
               role="alert"
-              className="rounded-xl border-2 border-destructive/40 bg-destructive/10 px-3 py-2.5 text-sm font-bold text-destructive"
+              className="rounded-xl border border-destructive/40 bg-destructive/10 px-3 py-2.5 text-sm font-bold text-destructive"
             >
               {error}
             </div>
@@ -333,7 +333,7 @@ export function FeedbackForm() {
         </form>
 
         <aside className="space-y-4">
-          <div className="rounded-2xl border-2 border-border bg-card/50 p-4">
+          <div className="rounded-2xl border border-border bg-card/50 p-4">
             <h2 className="font-display text-sm">Say hello</h2>
             <p className="mt-1 text-xs leading-5 text-muted-foreground">
               Follow Chrona updates or reach the developer directly.
@@ -351,7 +351,7 @@ export function FeedbackForm() {
                     rel={isExternal ? "noreferrer" : undefined}
                     className="group flex items-center gap-3 rounded-xl px-2 py-2 transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                   >
-                    <span className="grid size-9 shrink-0 place-items-center rounded-lg border-2 border-ink/70 bg-card dark:border-border">
+                    <span className="grid size-9 shrink-0 place-items-center rounded-lg border border-black/10 bg-card dark:border-border">
                       <Icon className="size-4" />
                     </span>
 
@@ -371,7 +371,7 @@ export function FeedbackForm() {
             </div>
           </div>
 
-          <div className="rounded-2xl border-2 border-dashed border-border p-4">
+          <div className="rounded-2xl border border-dashed border-border p-4">
             <h2 className="flex items-center gap-2 font-display text-sm">
               <Sparkles className="size-4 text-honey" />
               Helpful letters

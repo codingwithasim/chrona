@@ -69,7 +69,7 @@ export function PomodoroTool() {
         <div
           role="tablist"
           aria-label="Pomodoro phase"
-          className="flex w-full max-w-md gap-1 rounded-2xl border-2 border-border bg-card/60 p-1"
+          className="flex w-full max-w-md gap-1 rounded-2xl border border-border bg-card/60 p-1"
         >
           {(Object.keys(pomodoroModes) as PomodoroMode[]).map((item) => {
             const active = item === mode;
@@ -82,9 +82,9 @@ export function PomodoroTool() {
                 aria-selected={active}
                 onClick={() => setMode(item)}
                 className={cn(
-                  "flex flex-1 flex-col items-center rounded-xl border-2 px-2 py-1.5 transition-all",
+                  "flex flex-1 flex-col items-center rounded-xl border px-2 py-1.5 transition-all",
                   active
-                    ? "border-ink text-[#1b1530] shadow-cel-sm"
+                    ? "border-black/10 text-[#1b1530] shadow-cel-sm"
                     : "border-transparent text-muted-foreground hover:bg-muted"
                 )}
                 style={active ? { backgroundColor: pomodoroModes[item].color } : undefined}

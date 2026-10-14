@@ -464,7 +464,7 @@ function Poster() {
       <circle cx="270" cy="232" r="22" fill="#fff4d6" />
       <path d="M158 300 L206 248 L240 284 L270 258 L318 302 V354 H158 Z" fill="#7d6bd6" />
       <path d="M158 326 L210 290 L256 324 L318 296 V354 H158 Z" fill="#5a4bb0" />
-      <text x="238" y="376" textAnchor="middle" fontSize="13" fill={LINE} style={{ fontFamily: "var(--font-mochiy)" }}>
+      <text x="238" y="376" textAnchor="middle" fontSize="13" fill={LINE} style={{ fontFamily: "var(--font-kiwi)" }}>
         あめのひ
       </text>
       <rect x="208" y="156" width="60" height="18" fill="var(--honey)" opacity="0.75" transform="rotate(4 238 165)" />
@@ -1456,7 +1456,7 @@ function Cat() {
 
         {/* Zzz */}
         {!eyesOpen && (
-          <g fill="var(--lavender)" stroke={LINE} strokeWidth="1" fontWeight="700" style={{ fontFamily: "var(--font-mochiy)" }}>
+          <g fill="var(--lavender)" stroke={LINE} strokeWidth="1" fontWeight="700" style={{ fontFamily: "var(--font-kiwi)" }}>
             {[
               { x: 910, y: 790, size: 16, char: "z" },
               { x: 914, y: 786, size: 22, char: "z" },

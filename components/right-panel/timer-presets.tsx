@@ -53,7 +53,7 @@ export function TimerPresets() {
               <button
                 type="button"
                 onClick={() => setDuration(preset.duration, preset.label)}
-                className="flex w-full flex-col items-start rounded-xl border-2 border-border bg-card/70 px-3 py-2 text-left transition-all hover:-translate-y-0.5 hover:border-sakura hover:shadow-cel-sm"
+                className="flex w-full flex-col items-start rounded-xl border border-border bg-card/70 px-3 py-2 text-left transition-all hover:-translate-y-0.5 hover:border-sakura hover:shadow-cel-sm"
               >
                 <span className="truncate text-sm font-bold">
                   {preset.label}
@@ -67,7 +67,7 @@ export function TimerPresets() {
                 type="button"
                 onClick={() => removePreset(preset.id)}
                 aria-label={`Remove ${preset.label} preset`}
-                className="absolute -top-1.5 -right-1.5 hidden size-5 place-items-center rounded-full border-2 border-ink bg-card text-foreground group-focus-within:grid group-hover:grid"
+                className="absolute -top-1.5 -right-1.5 hidden size-5 place-items-center rounded-full border border-black/10 bg-card text-foreground group-focus-within:grid group-hover:grid"
               >
                 <X className="size-3" />
               </button>
@@ -78,7 +78,7 @@ export function TimerPresets() {
         {creating ? (
           <form
             onSubmit={handleSave}
-            className="space-y-3 rounded-2xl border-2 border-dashed border-border p-3"
+            className="space-y-3 rounded-2xl border border-dashed border-border p-3"
           >
             <Input
               autoFocus
@@ -120,7 +120,7 @@ export function TimerPresets() {
         ) : (
           <Button
             variant="ghost"
-            className="w-full border-2 border-dashed border-border text-muted-foreground"
+            className="w-full border border-dashed border-border text-muted-foreground"
             onClick={() => setCreating(true)}
           >
             <Plus />

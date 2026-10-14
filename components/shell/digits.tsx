@@ -13,7 +13,7 @@ export function Digits({ value, className }: DigitsProps) {
   return (
     <span
       className={cn(
-        "inline-flex items-baseline font-display leading-none",
+        "inline-flex items-baseline font-display font-light leading-none tracking-tight",
         className
       )}
     >
@@ -26,9 +26,9 @@ export function Digits({ value, className }: DigitsProps) {
           className={cn(
             "inline-block text-center",
             /\d/.test(character)
-              ? "w-[0.68em]"
+              ? "w-[0.62em]"
               : character === ":" || character === "."
-                ? "w-[0.34em] -translate-y-[0.06em]"
+                ? "w-[0.3em] -translate-y-[0.05em] opacity-60"
                 : "px-[0.08em]"
           )}
         >

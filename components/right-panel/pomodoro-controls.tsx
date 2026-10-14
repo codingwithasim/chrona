@@ -93,11 +93,11 @@ export function PomodoroControls() {
   return (
     <div className="flex flex-col gap-6">
       <section className="grid grid-cols-2 gap-2">
-        <div className="rounded-2xl border-2 border-dashed border-border p-3 text-center">
+        <div className="rounded-2xl border border-dashed border-border p-3 text-center">
           <p className="font-display text-2xl">{today.sessions}</p>
           <p className="text-[11px] text-muted-foreground">sessions today</p>
         </div>
-        <div className="rounded-2xl border-2 border-dashed border-border p-3 text-center">
+        <div className="rounded-2xl border border-dashed border-border p-3 text-center">
           <p className="font-display text-2xl">{today.minutes}</p>
           <p className="text-[11px] text-muted-foreground">focus minutes</p>
         </div>

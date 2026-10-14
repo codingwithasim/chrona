@@ -42,7 +42,7 @@ export function LapList({ laps, limit, className }: LapListProps) {
         <p className="text-sm font-bold">No laps yet</p>
         <p className="text-xs">
           Press{" "}
-          <span className="rounded-md border-2 border-border px-1.5 py-0.5 font-bold">
+          <span className="rounded-md border border-border px-1.5 py-0.5 font-bold">
             Lap
           </span>{" "}
           while the stopwatch is running
@@ -75,7 +75,7 @@ export function LapList({ laps, limit, className }: LapListProps) {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.18 }}
             className={cn(
-              "grid grid-cols-3 items-center rounded-xl border-2 border-transparent bg-card/50 px-3 py-2",
+              "grid grid-cols-3 items-center rounded-xl border border-transparent bg-card/50 px-3 py-2",
               lap.split === fastest && "border-mint/70",
               lap.split === slowest && "border-sakura/70"
             )}

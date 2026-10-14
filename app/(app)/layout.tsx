@@ -1,6 +1,5 @@
 import { Hud } from "@/components/shell/hud";
-import { NavDock, NavRail } from "@/components/shell/nav";
-import { RightPanel } from "@/components/right-panel/right-panel";
+import { NavDock } from "@/components/shell/nav";
 
 export default function AppLayout({
   children,
@@ -13,33 +12,35 @@ export default function AppLayout({
       data-passthrough
       className="fixed inset-0 flex flex-col overflow-hidden"
     >
-      <Hud showPanelTrigger />
+      <Hud />
 
-      <div className="flex min-h-0 flex-1 gap-5 px-3 sm:px-5">
-        {/* Desktop menu */}
-        <NavRail className="hidden lg:flex" />
+      <div className="flex min-h-0 flex-1 gap-4 px-3 sm:px-5">
+        {/* Desktop dock */}
+        <div className="hidden shrink-0 items-center pb-16 lg:flex">
+          <NavDock orientation="vertical" />
+        </div>
 
         <main
           className="
+            flex
             min-w-0
             flex-1
+            flex-col
             overflow-y-auto
             overscroll-contain
-            px-2
-            pt-2
-            pb-32
+            px-1
+            pb-28
             lg:pb-8
           "
         >
           {children}
         </main>
-
-        {/* Desktop controls */}
-        <RightPanel className="hidden xl:flex" />
       </div>
 
-      {/* Mobile menu */}
-      <NavDock className="lg:hidden" />
+      {/* Mobile dock */}
+      <div className="fixed inset-x-0 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-30 flex justify-center lg:hidden">
+        <NavDock orientation="horizontal" />
+      </div>
     </div>
   );
 }

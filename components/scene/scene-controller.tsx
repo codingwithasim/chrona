@@ -16,6 +16,8 @@ import { useWorldClockStore } from "@/stores/world-clock-store";
 
 import { startAmbience, stopAmbience } from "./ambience-sound";
 
+const IDLE_MS = 8000;
+
 /**
  * Side effects for the room: restores saved settings, keeps <html>
  * in sync with the time of day / season / weather, drives the
@@ -66,6 +68,26 @@ export function SceneController() {
       stopAmbience();
     }
   }, [soundOn, weather, season, time, volume, natureOn]);
+
+  // Let the interface fade away when you're not touching anything.
+  useEffect(() => {
+    const root = document.documentElement;
+    let timer = window.setTimeout(() => (root.dataset.idle = "true"), IDLE_MS);
+
+    function wake() {
+      root.dataset.idle = "false";
+      window.clearTimeout(timer);
+      timer = window.setTimeout(() => (root.dataset.idle = "true"), IDLE_MS);
+    }
+
+    const events = ["pointermove", "pointerdown", "keydown", "wheel", "touchstart"] as const;
+    events.forEach((name) => window.addEventListener(name, wake, { passive: true }));
+
+    return () => {
+      window.clearTimeout(timer);
+      events.forEach((name) => window.removeEventListener(name, wake));
+    };
+  }, []);
 
   useEffect(() => {
     document.documentElement.dataset.gaze = String(gaze);

@@ -146,7 +146,7 @@ export function TimezoneCard({
 
       <div className="flex items-center gap-3">
         <span
-          className="grid size-10 shrink-0 place-items-center rounded-xl border-2 border-ink text-[#1b1530] shadow-cel-sm"
+          className="grid size-10 shrink-0 place-items-center rounded-xl border border-black/10 text-[#1b1530] shadow-cel-sm"
           style={{ backgroundColor: phase.color }}
           title={phase.label}
         >
@@ -165,7 +165,7 @@ export function TimezoneCard({
         <span className="text-muted-foreground">{formatZonedDate(preview, city.timezone)}</span>
 
         {offset ? (
-          <span className="rounded-full border-2 border-border px-2 py-0.5 font-bold">
+          <span className="rounded-full border border-border px-2 py-0.5 font-bold">
             {offset}
           </span>
         ) : (
@@ -194,7 +194,7 @@ export function TimezoneCard({
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerUp}
         onKeyDown={handleKeyDown}
-        className="relative mt-2 h-8 cursor-grab touch-none rounded-full border-2 border-ink outline-none select-none focus-visible:ring-3 focus-visible:ring-ring/50 active:cursor-grabbing"
+        className="relative mt-2 h-8 cursor-grab touch-none rounded-full border border-black/10 outline-none select-none focus-visible:ring-3 focus-visible:ring-ring/50 active:cursor-grabbing"
         style={{ background: SKY_GRADIENT }}
       >
         {[6, 12, 18].map((hour) => (
@@ -208,7 +208,7 @@ export function TimezoneCard({
 
         <span
           aria-hidden="true"
-          className="absolute top-1/2 grid size-9 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border-2 border-ink bg-card shadow-cel-sm"
+          className="absolute top-1/2 grid size-9 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border border-black/10 bg-card shadow-cel-sm"
           style={{ left: `${(minutes / 1440) * 100}%` }}
         >
           <PhaseIcon className="size-4" style={{ color: phase.color }} strokeWidth={2.6} />

@@ -16,10 +16,10 @@ export function AmbienceMenu() {
             type="button"
             variant="ghost"
             size="icon"
-            className="rounded-full"
+            className="size-9 rounded-full"
             aria-label="Room settings: time, season, weather and sound"
           >
-            <CloudMoonRain className="size-5" />
+            <CloudMoonRain className="size-[18px]" />
           </Button>
         }
       />

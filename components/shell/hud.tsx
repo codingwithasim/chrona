@@ -6,16 +6,13 @@ import {
   CloudMoonRain,
   Eye,
   Hourglass,
-  Moon,
   Settings,
-  Sun,
   Timer,
   TimerReset,
   Volume2,
   VolumeX,
 } from "lucide-react";
 
-import { MobileRightPanel } from "@/components/right-panel/mobile-right-panel";
 import { formatStopwatch } from "@/components/tools/stopwatch/lap-list";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,22 +23,20 @@ import {
 import { useNow } from "@/hooks/use-now";
 import { cn } from "@/lib/utils";
 import { pomodoroModes, usePomodoroStore } from "@/stores/pomodoro-store";
-import { useResolvedScene, useSceneStore } from "@/stores/scene-store";
+import { useSceneStore } from "@/stores/scene-store";
 import { useStopwatchElapsed, useStopwatchStore } from "@/stores/stopwatch-store";
 import { useTimerStore } from "@/stores/timer-store";
 
-import { formatClock } from "./digits";
 import { AmbienceMenu } from "./ambience-menu";
+import { formatClock } from "./digits";
 
 function HudButton({
   label,
   onClick,
-  className,
   children,
 }: {
   label: string;
   onClick: () => void;
-  className?: string;
   children: React.ReactNode;
 }) {
   return (
@@ -52,7 +47,7 @@ function HudButton({
             type="button"
             variant="ghost"
             size="icon"
-            className={cn("rounded-full", className)}
+            className="size-9 rounded-full"
             onClick={onClick}
             aria-label={label}
           >
@@ -65,7 +60,7 @@ function HudButton({
   );
 }
 
-function ClockChip() {
+function Clock() {
   const now = useNow();
   const hour24 = useSceneStore((state) => state.hour24);
   const toggleHour24 = useSceneStore((state) => state.toggleHour24);
@@ -83,7 +78,7 @@ function ClockChip() {
       type="button"
       onClick={toggleHour24}
       aria-label={hour24 ? "Switch to 12-hour time" : "Switch to 24-hour time"}
-      className="hidden h-9 min-w-24 items-center justify-center rounded-full px-3 font-display text-sm tabular-nums transition-colors hover:bg-muted sm:flex"
+      className="hidden h-9 items-center px-3 font-display text-sm tabular-nums text-foreground/80 transition-colors hover:text-foreground sm:flex"
     >
       {time}
     </button>
@@ -107,14 +102,13 @@ function ActiveChip({
     <Link
       href={href}
       className={cn(
-        "flex h-9 items-center gap-1.5 rounded-full border-2 border-ink px-3 font-display text-sm text-[#1b1530] shadow-cel-sm transition-transform hover:-translate-y-0.5",
-        paused && "opacity-70"
+        "panel flex h-9 items-center gap-2 rounded-full px-3 font-display text-sm transition-opacity hover:opacity-100",
+        paused ? "opacity-60" : "opacity-90"
       )}
-      style={{ backgroundColor: color }}
     >
-      <Icon className="size-4" strokeWidth={2.4} />
+      <span className="size-2 rounded-full" style={{ backgroundColor: color }} />
+      <Icon className="size-3.5 text-muted-foreground" />
       <span className="tabular-nums">{children}</span>
-      {paused && <span className="font-sans text-[10px] font-bold">II</span>}
     </Link>
   );
 }
@@ -196,45 +190,38 @@ export function Logo({ className }: { className?: string }) {
   return (
     <Link
       href="/"
-      className={cn("group flex items-center gap-2.5", className)}
+      className={cn(
+        "group flex items-center gap-2 text-foreground [text-shadow:0_1px_12px_rgb(0_0_0/0.12)]",
+        className
+      )}
     >
-      <span className="grid size-10 -rotate-3 place-items-center rounded-xl border-2 border-ink bg-primary text-primary-foreground shadow-cel transition-transform group-hover:rotate-3">
-        <CloudMoonRain className="size-5" strokeWidth={2.4} />
-      </span>
-      <span className="flex flex-col leading-none">
-        <span className="font-display text-xl cel-text">Chrona</span>
-        <span className="mt-1 text-[11px] font-bold tracking-[0.3em] text-muted-foreground">
-          クロナ
-        </span>
-      </span>
+      <CloudMoonRain
+        className="size-5 text-primary transition-transform group-hover:-rotate-6"
+        strokeWidth={2.2}
+      />
+      <span className="font-display text-lg tracking-wide">Chrona</span>
     </Link>
   );
 }
 
-type HudProps = {
-  showPanelTrigger?: boolean;
-};
-
-export function Hud({ showPanelTrigger = false }: HudProps) {
-  const { dark } = useResolvedScene();
-
+export function Hud() {
   const soundOn = useSceneStore((state) => state.soundOn);
   const setSoundOn = useSceneStore((state) => state.setSoundOn);
-  const setTimeOfDay = useSceneStore((state) => state.setTimeOfDay);
   const setGaze = useSceneStore((state) => state.setGaze);
 
   return (
     <header
       data-ui
-      className="relative z-20 flex h-18 shrink-0 items-center justify-between gap-2 px-3 sm:px-5"
+      data-chrome
+      className="relative z-20 flex h-16 shrink-0 items-center justify-between gap-2 px-4 sm:px-6"
     >
       <Logo />
 
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2">
         <ActiveTools />
 
         <div className="panel flex items-center gap-0.5 rounded-full p-1">
-          <ClockChip />
+          <Clock />
 
           <AmbienceMenu />
 
@@ -242,25 +229,15 @@ export function Hud({ showPanelTrigger = false }: HudProps) {
             label={soundOn ? "Mute the room" : "Play rain & ambient sounds"}
             onClick={() => setSoundOn(!soundOn)}
           >
-            {soundOn ? <Volume2 className="size-5" /> : <VolumeX className="size-5" />}
-          </HudButton>
-
-          <HudButton
-            className="hidden sm:inline-flex"
-            label={dark ? "Switch to daytime" : "Switch to night"}
-            onClick={() => setTimeOfDay(dark ? "day" : "night")}
-          >
-            {dark ? <Moon className="size-5" /> : <Sun className="size-5" />}
+            {soundOn ? <Volume2 className="size-[18px]" /> : <VolumeX className="size-[18px]" />}
           </HudButton>
 
           <HudButton
             label="Watch the rain (Esc to return)"
             onClick={() => setGaze(true)}
           >
-            <Eye className="size-5" />
+            <Eye className="size-[18px]" />
           </HudButton>
-
-          {showPanelTrigger && <MobileRightPanel />}
 
           <Tooltip>
             <TooltipTrigger
@@ -268,9 +245,9 @@ export function Hud({ showPanelTrigger = false }: HudProps) {
                 <Link
                   href="/settings"
                   aria-label="Settings"
-                  className="grid size-10 place-items-center rounded-full transition-colors hover:bg-muted"
+                  className="grid size-9 place-items-center rounded-full transition-colors hover:bg-foreground/6"
                 >
-                  <Settings className="size-5" />
+                  <Settings className="size-[18px]" />
                 </Link>
               }
             />

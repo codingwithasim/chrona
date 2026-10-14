@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Mochiy_Pop_One, Zen_Maru_Gothic } from "next/font/google";
+import { Kiwi_Maru, Zen_Maru_Gothic } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -22,10 +22,10 @@ const zenMaru = Zen_Maru_Gothic({
   display: "swap",
 });
 
-const mochiy = Mochiy_Pop_One({
+const kiwi = Kiwi_Maru({
   subsets: ["latin"],
-  weight: "400",
-  variable: "--font-mochiy",
+  weight: ["300", "400", "500"],
+  variable: "--font-kiwi",
   display: "swap",
 });
 
@@ -61,7 +61,7 @@ export default function RootLayout({
       data-tod="night"
       data-season="spring"
       data-weather="drizzle"
-      className={cn("dark h-full", "antialiased", zenMaru.variable, mochiy.variable)}
+      className={cn("dark h-full", "antialiased", zenMaru.variable, kiwi.variable)}
     >
       <head>
         {/* Paint the right time of day, season and weather before React loads */}

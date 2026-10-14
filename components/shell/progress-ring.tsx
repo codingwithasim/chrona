@@ -10,7 +10,7 @@ type ProgressRingProps = {
   children?: ReactNode;
 };
 
-const RADIUS = 44;
+const RADIUS = 46;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 
 export function ProgressRing({
@@ -32,17 +32,14 @@ export function ProgressRing({
         className="absolute inset-0 size-full -rotate-90 overflow-visible"
         aria-hidden="true"
       >
-        <circle cx="50" cy="50" r="48.6" fill="none" stroke="var(--ink)" strokeWidth="1" opacity="0.5" />
-        <circle cx="50" cy="50" r={RADIUS} fill="none" stroke="var(--muted)" strokeWidth="6" />
         <circle
           cx="50"
           cy="50"
-          r="37"
+          r={RADIUS}
           fill="none"
-          stroke="var(--muted-foreground)"
+          stroke="currentColor"
           strokeWidth="1.2"
-          strokeDasharray="0.6 5.2"
-          opacity="0.6"
+          className="text-foreground/10"
         />
         <circle
           cx="50"
@@ -50,22 +47,17 @@ export function ProgressRing({
           r={RADIUS}
           fill="none"
           stroke={color}
-          strokeWidth="6"
+          strokeWidth="2.2"
           strokeLinecap="round"
           strokeDasharray={CIRCUMFERENCE}
           strokeDashoffset={CIRCUMFERENCE * (1 - progress)}
-          style={{ transition: "stroke-dashoffset 300ms linear" }}
+          style={{ transition: "stroke-dashoffset 400ms linear" }}
         />
         {progress > 0 && progress < 1 && (
-          <g transform={`translate(${dotX} ${dotY}) rotate(90)`}>
-            <path
-              d="M0 -6 L1.6 -1.6 L6 0 L1.6 1.6 L0 6 L-1.6 1.6 L-6 0 L-1.6 -1.6 Z"
-              fill="#fffaf0"
-              stroke="var(--ink)"
-              strokeWidth="0.9"
-              strokeLinejoin="round"
-            />
-          </g>
+          <>
+            <circle cx={dotX} cy={dotY} r="4" fill={color} opacity="0.25" />
+            <circle cx={dotX} cy={dotY} r="1.9" fill={color} />
+          </>
         )}
       </svg>
 

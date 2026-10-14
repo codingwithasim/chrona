@@ -51,16 +51,16 @@ export function SoundPicker({ value, onChange, compact }: SoundPickerProps) {
               aria-selected={selected}
               onClick={() => setCategory(item.id)}
               className={cn(
-                "relative rounded-full border-2 px-3 py-1 text-xs font-bold transition-all",
+                "relative rounded-full border px-3 py-1 text-xs font-bold transition-all",
                 selected
-                  ? "border-ink bg-lavender text-[#1b1530] shadow-cel-sm"
+                  ? "border-black/10 bg-lavender text-[#1b1530] shadow-cel-sm"
                   : "border-border text-muted-foreground hover:bg-muted"
               )}
             >
               {item.label}
               <span className="ml-1 font-normal opacity-70">{item.jp}</span>
               {holdsValue && !selected && (
-                <span className="absolute -top-1 -right-1 size-2.5 rounded-full border border-ink bg-primary" />
+                <span className="absolute -top-1 -right-1 size-2.5 rounded-full border border-black/10 bg-primary" />
               )}
             </button>
           );
@@ -90,17 +90,17 @@ export function SoundPicker({ value, onChange, compact }: SoundPickerProps) {
                 previewSound(id, toneVolume);
               }}
               className={cn(
-                "group flex items-center gap-2 rounded-xl border-2 px-3 py-2 text-left transition-all",
+                "group flex items-center gap-2 rounded-xl border px-3 py-2 text-left transition-all",
                 selected
-                  ? "border-ink bg-primary/15 shadow-cel-sm"
+                  ? "border-black/10 bg-primary/15 shadow-cel-sm"
                   : "border-border bg-card/50 hover:-translate-y-0.5 hover:border-primary/60"
               )}
             >
               <span
                 className={cn(
-                  "grid size-7 shrink-0 place-items-center rounded-full border-2 transition-colors",
+                  "grid size-7 shrink-0 place-items-center rounded-full border transition-colors",
                   selected
-                    ? "border-ink bg-primary text-primary-foreground"
+                    ? "border-black/10 bg-primary text-primary-foreground"
                     : "border-border text-muted-foreground group-hover:text-primary"
                 )}
               >

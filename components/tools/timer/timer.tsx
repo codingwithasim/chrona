@@ -53,7 +53,7 @@ function DurationEditor({
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex w-full max-w-sm flex-col items-center gap-4 rounded-2xl border-2 border-dashed border-border p-4"
+      className="flex w-full max-w-sm flex-col items-center gap-4 rounded-2xl border border-dashed border-border p-4"
     >
       <div className="flex items-end gap-2">
         {fields.map((field, index) => (
@@ -106,13 +106,13 @@ function InlinePresets() {
   const setDuration = useTimerStore((state) => state.setDuration);
 
   return (
-    <div className="flex max-w-md flex-wrap justify-center gap-2 xl:hidden">
+    <div className="flex max-w-md flex-wrap justify-center gap-1.5">
       {presets.map((preset) => (
         <button
           key={preset.id}
           type="button"
           onClick={() => setDuration(preset.duration, preset.label)}
-          className="rounded-full border-2 border-border bg-card/60 px-3 py-1 text-xs font-bold transition-all hover:-translate-y-0.5 hover:border-sakura"
+          className="rounded-full px-3 py-1 text-xs font-bold text-muted-foreground transition-colors hover:bg-foreground/6 hover:text-foreground"
         >
           {preset.label}
           <span className="ml-1.5 font-display font-normal text-muted-foreground">

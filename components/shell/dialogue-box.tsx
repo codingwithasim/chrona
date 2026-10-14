@@ -84,7 +84,7 @@ function DialogueContent({ message }: { message: DialogueMessage }) {
         )}
         onClick={handleClick}
       >
-        <div className="absolute -top-4 left-5 -rotate-2 rounded-lg border-2 border-ink bg-primary px-3 py-1 font-display text-sm text-primary-foreground shadow-cel-sm">
+        <div className="absolute -top-4 left-5 -rotate-2 rounded-lg border border-black/10 bg-primary px-3 py-1 font-display text-sm text-primary-foreground shadow-cel-sm">
           {message.speaker}
         </div>
 

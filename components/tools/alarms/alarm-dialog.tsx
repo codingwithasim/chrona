@@ -142,7 +142,7 @@ function AlarmForm({
 
   return (
     <>
-      <div className="border-b-2 border-dashed border-border px-5 pt-5 pb-4">
+      <div className="border-b border-dashed border-border px-5 pt-5 pb-4">
         <DialogHeader>
           <DialogTitle className="text-base">
             {alarm ? "Edit alarm" : "New alarm"}
@@ -201,9 +201,9 @@ function AlarmForm({
                     aria-label={day.short}
                     onClick={() => toggleDay(day.day)}
                     className={cn(
-                      "flex size-10 flex-col items-center justify-center rounded-xl border-2 text-xs font-bold transition-all",
+                      "flex size-10 flex-col items-center justify-center rounded-xl border text-xs font-bold transition-all",
                       active
-                        ? "border-ink bg-lavender text-[#1b1530] shadow-cel-sm"
+                        ? "border-black/10 bg-lavender text-[#1b1530] shadow-cel-sm"
                         : "border-border hover:bg-muted"
                     )}
                   >
@@ -220,7 +220,7 @@ function AlarmForm({
                   key={option.label}
                   type="button"
                   onClick={() => setRepeat(option.days)}
-                  className="rounded-full border-2 border-border px-2.5 py-0.5 text-xs font-bold text-muted-foreground transition-colors hover:bg-muted"
+                  className="rounded-full border border-border px-2.5 py-0.5 text-xs font-bold text-muted-foreground transition-colors hover:bg-muted"
                 >
                   {option.label}
                 </button>
@@ -240,7 +240,7 @@ function AlarmForm({
           )}
         </div>
 
-        <div className="flex items-center justify-end gap-2 border-t-2 border-dashed border-border px-5 py-4">
+        <div className="flex items-center justify-end gap-2 border-t border-dashed border-border px-5 py-4">
           <Button type="button" variant="ghost" onClick={onDone}>
             Cancel
           </Button>

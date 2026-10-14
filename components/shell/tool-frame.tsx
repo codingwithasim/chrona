@@ -1,8 +1,9 @@
 import type { ReactNode } from "react";
-import { Cat } from "lucide-react";
 
 import { getNavItem } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
+
+import { ToolOptions } from "./tool-options";
 
 type ToolFrameProps = {
   href: string;
@@ -11,10 +12,7 @@ type ToolFrameProps = {
   children: ReactNode;
 };
 
-/**
- * The anime-style panel every tool sits in: a sticker title tab,
- * a line from Mochi, and the tool itself.
- */
+/** A soft glass card that holds a tool, with a quiet title row. */
 export function ToolFrame({
   href,
   actions,
@@ -23,45 +21,36 @@ export function ToolFrame({
 }: ToolFrameProps) {
   const item = getNavItem(href);
 
-  if (!item) {
-    return <>{children}</>;
-  }
-
-  const Icon = item.icon;
-
   return (
     <section
       className={cn(
-        "mx-auto w-full max-w-3xl pt-6",
+        "mx-auto my-auto w-full max-w-xl py-4",
         className
       )}
     >
-      <div className="panel px-4 pt-10 pb-6 sm:px-8 sm:pb-8">
-        <div
-          className="absolute -top-5 left-4 flex -rotate-2 items-center gap-2 rounded-xl border-2 border-ink px-3 py-1.5 text-[#1b1530] shadow-cel"
-          style={{ backgroundColor: item.color }}
-        >
-          <Icon className="size-4" strokeWidth={2.5} />
-          <h1 className="font-display text-base leading-none">
-            {item.title}
-          </h1>
-          <span className="text-xs font-bold opacity-70">
-            {item.jp}
-          </span>
-        </div>
+      <div className="panel px-5 pt-4 pb-6 sm:px-8 sm:pb-8">
+        <header className="mb-4 flex min-h-9 items-center justify-between gap-3">
+          {item && (
+            <div className="flex min-w-0 items-center gap-2.5">
+              <span
+                aria-hidden="true"
+                className="size-2 shrink-0 rounded-full"
+                style={{ backgroundColor: item.color }}
+              />
+              <h1 className="truncate font-display text-[15px]">
+                {item.title}
+              </h1>
+              <span className="hidden text-xs text-muted-foreground sm:inline">
+                {item.jp}
+              </span>
+            </div>
+          )}
 
-        {actions && (
-          <div className="absolute top-3 right-3 flex items-center gap-2">
+          <div className="flex shrink-0 items-center gap-1">
             {actions}
+            <ToolOptions />
           </div>
-        )}
-
-        <p className="mb-6 flex items-start gap-2 pr-24 text-sm text-muted-foreground">
-          <Cat className="mt-0.5 size-4 shrink-0 text-primary" />
-          <span>
-            「{item.line}」
-          </span>
-        </p>
+        </header>
 
         {children}
       </div>

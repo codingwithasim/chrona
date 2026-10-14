@@ -14,7 +14,7 @@ export function StopwatchActions() {
 
       <Button
         variant="ghost"
-        className="w-full shrink-0 border-2 border-dashed border-border"
+        className="w-full shrink-0 border border-dashed border-border"
         disabled={laps.length === 0}
         onClick={clearLaps}
       >

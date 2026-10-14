@@ -49,12 +49,12 @@ export function StopwatchTool() {
 
         <StopwatchControls />
 
-        {/* Laps live in the side panel on wide screens */}
-        <LapList
-          laps={laps}
-          limit={5}
-          className="w-full max-w-md xl:hidden"
-        />
+        {laps.length > 0 && (
+          <LapList
+            laps={laps}
+            className="max-h-64 w-full max-w-md overflow-y-auto pr-1"
+          />
+        )}
       </div>
     </ToolFrame>
   );
