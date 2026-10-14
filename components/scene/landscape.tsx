@@ -22,7 +22,7 @@ import {
   svgProps,
 } from "./scene-shared";
 import { GLASS_RECT } from "./projection";
-import { SkyEvents } from "./sky-events";
+import { RoadEvents, RoadLights, ROAD_Y, SkyEvents, useOutsideEvents } from "./sky-events";
 
 /** The painted landscape is taller than the window; show its lower part. */
 const VIEW_SHIFT = -68;
@@ -341,6 +341,8 @@ export function Landscape({
   glassRef: RefObject<SVGRectElement | null>;
   scene: ResolvedScene | null;
 }) {
+  const events = useOutsideEvents(scene);
+
   return (
     <svg {...svgProps} aria-hidden="true">
       <defs>
@@ -562,8 +564,16 @@ export function Landscape({
         <path d="M440 576 C 640 570 900 580 1160 574 L1160 600 C 900 606 640 594 440 600 Z" fill="var(--sc-field-2)" />
         <path d="M440 598 C 640 592 900 604 1160 598 L1160 624 C 900 630 640 618 440 624 Z" fill="var(--sc-field-1)" />
         <path d="M440 622 C 640 616 900 628 1160 622 L1160 640 L440 640 Z" fill="var(--sc-field-2)" />
+        {/* The farm road */}
+        <path
+          d={`M440 ${ROAD_Y} H1160`}
+          stroke="color-mix(in oklab, var(--sc-levee) 40%, #8f877a)"
+          strokeWidth="6"
+        />
+        <path d={`M440 ${ROAD_Y - 3} H1160`} stroke="#ffffff" strokeWidth="0.6" opacity="0.3" />
+        <RoadEvents events={events} />
+
         <g fill="none" stroke="var(--sc-levee)" strokeWidth="2.5" strokeLinecap="round">
-          <path d="M440 577 C 640 571 900 581 1160 575" />
           <path d="M440 599 C 640 593 900 605 1160 599" />
           <path d="M440 623 C 640 617 900 629 1160 623" />
         </g>
@@ -630,7 +640,8 @@ export function Landscape({
           )}
         </g>
 
-        {scene && <SkyEvents scene={scene} railY={RAIL_Y} />}
+        <RoadLights events={events} />
+        <SkyEvents events={events} railY={RAIL_Y} />
       </g>
       </g>
       </g>

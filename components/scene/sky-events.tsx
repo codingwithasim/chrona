@@ -9,31 +9,53 @@ import { announceOutside, type OutsideEventKind } from "./scene-shared";
 
 /*
  * Little things that happen outside every so often: a train rolls
- * through the valley, birds cross the sky, stars fall, a plane
- * blinks past at night, butterflies flutter by in the warm months.
+ * through the valley, cars and bicycles pass on the farm road, birds
+ * cross the sky, stars fall, a plane blinks past at night, butterflies
+ * flutter by in the warm months.
  */
 
-type SkyEvent = {
+type EventKind = OutsideEventKind | "car" | "bike";
+
+export type SkyEvent = {
   id: number;
-  kind: OutsideEventKind;
+  kind: EventKind;
   ltr: boolean;
   y: number;
   x: number;
   duration: number;
+  /** Which car or bike, and its colour. */
+  variant?: number;
 };
+
+/** The farm road between the rice fields. */
+export const ROAD_Y = 575.5;
+
+const CAR_COLORS = ["#f2f0ea", "#9cc3dd", "#d9534f", "#f2c94c", "#7fa88a", "#5c6b80", "#e8e4d8"];
 
 let eventId = 0;
 
 const rand = (min: number, max: number) => min + Math.random() * (max - min);
 
 type Rule = {
-  kind: OutsideEventKind;
+  kind: EventKind;
   every: [number, number];
   allowed: (scene: ResolvedScene) => boolean;
-  make: () => Pick<SkyEvent, "ltr" | "y" | "x" | "duration">;
+  make: () => Pick<SkyEvent, "ltr" | "y" | "x" | "duration" | "variant">;
 };
 
 const RULES: Rule[] = [
+  {
+    kind: "car",
+    every: [9_000, 24_000],
+    allowed: (s) => s.weather !== "storm" || Math.random() < 0.4,
+    make: () => ({ ltr: Math.random() > 0.5, y: 0, x: 0, duration: rand(8, 12), variant: Math.floor(Math.random() * 30) }),
+  },
+  {
+    kind: "bike",
+    every: [40_000, 100_000],
+    allowed: (s) => s.time !== "night" && (s.weather === "clear" || s.weather === "drizzle"),
+    make: () => ({ ltr: Math.random() > 0.5, y: 0, x: 0, duration: rand(30, 38), variant: Math.floor(Math.random() * 3) }),
+  },
   {
     kind: "train",
     every: [35_000, 80_000],
@@ -120,6 +142,93 @@ function Train({ event, railY }: { event: SkyEvent; railY: number }) {
   );
 }
 
+function Mover({ event, children }: { event: SkyEvent; children: React.ReactNode }) {
+  return (
+    <g className={event.ltr ? "ev-ltr" : "ev-rtl"} style={{ animationDuration: `${event.duration}s` }}>
+      <g transform={`translate(0 ${ROAD_Y}) ${event.ltr ? "" : "scale(-1 1)"}`}>{children}</g>
+    </g>
+  );
+}
+
+/** A small car, kei truck or van, drawn facing right. */
+function Car({ event }: { event: SkyEvent }) {
+  const variant = event.variant ?? 0;
+  const color = CAR_COLORS[variant % CAR_COLORS.length];
+  const type = variant % 3;
+
+  return (
+    <Mover event={event}>
+      <ellipse cx="0" cy="0.4" rx="10" ry="1.2" fill="#000000" opacity="0.18" />
+      {type === 0 && (
+        <g>
+          <path d="M-9 -1.6 V-5 Q-9 -6.2 -7.8 -6.3 L-4.6 -6.6 L-2.4 -9.6 H3.6 L6.2 -6.6 L8.4 -6 Q9.6 -5.6 9.6 -4.4 V-1.6 Z" fill={color} />
+          <path d="M-1.8 -9 H3.2 L5.2 -6.8 H-3.6 Z" fill="#3c4a5a" />
+          <line x1="0.9" y1="-9" x2="0.9" y2="-6.8" stroke={color} strokeWidth="0.7" />
+        </g>
+      )}
+      {type === 1 && (
+        <g>
+          {/* Kei truck: a little cab and a flatbed */}
+          <path d="M-9.6 -1.6 V-5.4 H1.4 V-1.6 Z" fill="#cfd3d6" />
+          <path d="M-9.6 -5.4 H1.4" stroke="#9aa0a6" strokeWidth="0.8" />
+          <path d="M1.4 -1.6 V-9.8 H6.4 Q8.8 -9.8 9.2 -7.4 L9.6 -1.6 Z" fill={color} />
+          <path d="M2.4 -9 H6.2 Q7.8 -9 8.2 -7 H2.4 Z" fill="#3c4a5a" />
+          {variant % 2 === 0 && <rect x="-8.6" y="-8.4" width="8" height="3" rx="0.8" fill="#c79a5a" />}
+        </g>
+      )}
+      {type === 2 && (
+        <g>
+          {/* A boxy little van */}
+          <path d="M-9 -1.6 V-10 Q-9 -10.6 -8.4 -10.6 H5 Q7 -10.6 8 -8 L9.6 -4.6 V-1.6 Z" fill={color} />
+          <path d="M3.6 -9.8 H5.4 Q6.6 -9.8 7.2 -8 L8 -6.4 H3.6 Z" fill="#3c4a5a" />
+          <path d="M-7.8 -9.4 H2.4 V-6.6 H-7.8 Z" fill="#3c4a5a" opacity="0.85" />
+        </g>
+      )}
+      <circle cx="-5.4" cy="-1.6" r="1.8" fill="#26262c" />
+      <circle cx="5.8" cy="-1.6" r="1.8" fill="#26262c" />
+      <circle cx="-5.4" cy="-1.6" r="0.6" fill="#9a9aa0" />
+      <circle cx="5.8" cy="-1.6" r="0.6" fill="#9a9aa0" />
+    </Mover>
+  );
+}
+
+/** Headlights and tail lights, drawn above the evening tint so they glow. */
+function CarLights({ event }: { event: SkyEvent }) {
+  return (
+    <Mover event={event}>
+      <g style={{ opacity: "var(--sc-window-glow)" }}>
+        <path d="M9.4 -4.6 L34 -8 L34 -0.6 Z" fill="url(#sc-headlight)" />
+        <circle cx="9.3" cy="-4.4" r="1.1" fill="#fff6d0" />
+        <circle cx="-9" cy="-4.4" r="0.9" fill="#ff5a4e" />
+        <circle cx="-9" cy="-4.4" r="2.6" fill="#ff5a4e" opacity="0.25" />
+      </g>
+    </Mover>
+  );
+}
+
+/** A kid on a bicycle, yellow school hat and all. */
+function Bike({ event }: { event: SkyEvent }) {
+  const shirt = ["#e57373", "#64b5f6", "#81c784"][event.variant ?? 0];
+
+  return (
+    <Mover event={event}>
+      <ellipse cx="0" cy="0.4" rx="8" ry="1" fill="#000000" opacity="0.15" />
+      <g fill="none" stroke="#3a3a44" strokeWidth="0.8">
+        <circle cx="-5" cy="-3.2" r="3.2" />
+        <circle cx="5" cy="-3.2" r="3.2" />
+        <path d="M-5 -3.2 L-1 -3.2 L2.6 -7.4 M-1 -3.2 L-2.4 -7.8 M5 -3.2 L2.6 -7.4 L1.8 -9" />
+      </g>
+      <g className="ev-bob" style={{ animationDuration: "0.9s" }}>
+        <path d="M-2.4 -8 L-0.2 -12.6 L1.6 -12 L0 -8 Z" fill={shirt} />
+        <path d="M-1.6 -8 L-0.6 -5 M-0.4 -8 L1 -5" stroke="#2f3a52" strokeWidth="1" />
+        <path d="M0.8 -11.8 L2.8 -9.6" stroke={shirt} strokeWidth="1" strokeLinecap="round" />
+        <circle cx="0.4" cy="-14" r="1.6" fill="#f2d2b6" />
+        <path d="M-1.6 -14.4 Q 0.4 -17 2.4 -14.4 Z" fill="#f2c94c" />
+      </g>
+    </Mover>
+  );
+}
+
 function Birds({ event }: { event: SkyEvent }) {
   const flock = [
     [0, 0],
@@ -203,18 +312,19 @@ function Butterfly({ event }: { event: SkyEvent }) {
   );
 }
 
-export function SkyEvents({
-  scene,
-  railY,
-}: {
-  scene: ResolvedScene;
-  railY: number;
-}) {
+/** Schedules everything that happens outside, for the current scene. */
+export function useOutsideEvents(scene: ResolvedScene | null) {
   const [events, setEvents] = useState<SkyEvent[]>([]);
 
-  const { time, season, weather } = scene;
+  const time = scene?.time;
+  const season = scene?.season;
+  const weather = scene?.weather;
 
   useEffect(() => {
+    if (!time || !season || !weather) {
+      return;
+    }
+
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       return;
     }
@@ -237,7 +347,11 @@ export function SkyEvents({
           const event: SkyEvent = { id: ++eventId, kind: rule.kind, ...rule.make() };
 
           setEvents((list) => [...list, event]);
-          announceOutside(rule.kind);
+
+          // Cars and bikes are everyday; the cat only looks up for the rest.
+          if (rule.kind !== "car" && rule.kind !== "bike") {
+            announceOutside(rule.kind);
+          }
 
           if (rule.kind === "train") {
             ambienceOneShot("train");
@@ -260,6 +374,34 @@ export function SkyEvents({
     };
   }, [time, season, weather]);
 
+  return events;
+}
+
+/** Cars and bikes on the road, drawn among the fields (under the tint). */
+export function RoadEvents({ events }: { events: SkyEvent[] }) {
+  return (
+    <g>
+      {events.map((event) =>
+        event.kind === "car" ? (
+          <Car key={event.id} event={event} />
+        ) : event.kind === "bike" ? (
+          <Bike key={event.id} event={event} />
+        ) : null
+      )}
+    </g>
+  );
+}
+
+/** Car lights, drawn above the tint. */
+export function RoadLights({ events }: { events: SkyEvent[] }) {
+  return (
+    <g>
+      {events.map((event) => (event.kind === "car" ? <CarLights key={event.id} event={event} /> : null))}
+    </g>
+  );
+}
+
+export function SkyEvents({ events, railY }: { events: SkyEvent[]; railY: number }) {
   return (
     <g>
       {events.map((event) => {
@@ -274,6 +416,8 @@ export function SkyEvents({
             return <Plane key={event.id} event={event} />;
           case "butterfly":
             return <Butterfly key={event.id} event={event} />;
+          default:
+            return null;
         }
       })}
     </g>
