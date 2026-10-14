@@ -610,7 +610,8 @@ function StretchPose({ earPoke }: { earPoke: number }) {
 
 /* ------------------------------------------------------------------ */
 
-export function Cat({ onBat }: { onBat: () => void }) {
+/** Mochi is drawn around x≈950; `offsetX` slides her along the rug. */
+export function Cat({ onBat, offsetX = 0 }: { onBat: () => void; offsetX?: number }) {
   const speak = useSpeak();
   const brain = useCatBrain(onBat);
   const [pets, setPets] = useState(0);
@@ -622,17 +623,18 @@ export function Cat({ onBat }: { onBat: () => void }) {
     setPets(count);
     brain.pet();
     burst(brain.pose === "sit" ? 950 : 868, brain.pose === "sit" ? 690 : 770, 3, 70);
+
     playSfx("purr");
 
     speak(
-      brain.pose === "sit" ? 950 : 868,
+      (brain.pose === "sit" ? 950 : 868) + offsetX,
       brain.pose === "sit" ? 684 : 764,
       count % 10 === 0 ? `That's ${count} pets! We're best friends now. 🐾` : pick(CAT_LINES)
     );
   }
 
   return (
-    <g>
+    <g transform={offsetX ? `translate(${offsetX} 0)` : undefined}>
       <g className="sc-hit" onClick={pet}>
         <g key={brain.pose} className="sc-pose-in">
           {brain.pose === "loaf" && (

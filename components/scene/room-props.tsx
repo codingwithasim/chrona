@@ -555,12 +555,13 @@ export function Furin() {
 /* Mochi's yarn ball, on the rug                                       */
 /* ------------------------------------------------------------------ */
 
-export function YarnBall({ kick }: { kick: number }) {
+export function YarnBall({ kick, offsetX = 0 }: { kick: number; offsetX?: number }) {
   const [poke, bump] = usePoke();
   const key = kick + poke * 1000;
 
   return (
     <g
+      transform={offsetX ? `translate(${offsetX} 0)` : undefined}
       className="sc-hit"
       onClick={() => {
         playSfx("pop");

@@ -26,7 +26,7 @@ export function StopwatchTool() {
   const secondSweep = (elapsed % 60_000) / 60_000;
 
   return (
-    <ToolFrame href="/stopwatch">
+    <ToolFrame href="/stopwatch" placement="side">
       <div className="flex flex-col items-center gap-8">
         <ProgressRing
           value={secondSweep}

@@ -70,7 +70,7 @@ export function PomodoroTool() {
   const todaySessions = stats.date === todayKey() ? stats.sessions : 0;
 
   return (
-    <ToolFrame href="/pomodoro">
+    <ToolFrame href="/pomodoro" placement="side">
       <div className="flex flex-col items-center gap-7">
         <div
           role="tablist"

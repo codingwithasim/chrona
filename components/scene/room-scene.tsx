@@ -67,6 +67,9 @@ import { SpeakContext, svgProps } from "./scene-shared";
 
 type Bubble = { id: number; x: number; y: number; text: string };
 
+/** Mochi's spot on the rug, nudged left of the tool card. */
+const CAT_OFFSET = -120;
+
 function SpeechBubble({ bubble }: { bubble: Bubble }) {
   const width = 340;
   const height = 150;
@@ -155,8 +158,8 @@ function RoomLayer({
         <Dresser />
         <Rug />
         <Chair />
-        <YarnBall kick={yarnKick} />
-        <Cat onBat={() => setYarnKick((value) => value + 1)} />
+        <YarnBall kick={yarnKick} offsetX={CAT_OFFSET} />
+        <Cat offsetX={CAT_OFFSET} onBat={() => setYarnKick((value) => value + 1)} />
 
         {/* Light, applied like a painter would */}
         <AmbientTint />

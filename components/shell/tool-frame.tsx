@@ -8,6 +8,11 @@ import { ToolOptions } from "./tool-options";
 type ToolFrameProps = {
   href: string;
   actions?: ReactNode;
+  /**
+   * "side" keeps compact tools to the right on wide screens,
+   * so the window stays in view.
+   */
+  placement?: "center" | "side";
   className?: string;
   children: ReactNode;
 };
@@ -16,6 +21,7 @@ type ToolFrameProps = {
 export function ToolFrame({
   href,
   actions,
+  placement = "center",
   className,
   children,
 }: ToolFrameProps) {
@@ -25,6 +31,7 @@ export function ToolFrame({
     <section
       className={cn(
         "mx-auto my-auto w-full max-w-xl py-4",
+        placement === "side" && "xl:mr-[4vw] xl:ml-auto xl:max-w-md",
         className
       )}
     >

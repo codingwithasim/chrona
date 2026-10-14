@@ -144,6 +144,7 @@ export function TimerTool() {
   return (
     <ToolFrame
       href="/timer"
+      placement="side"
       actions={
         canEdit && !editing ? (
           <Button
