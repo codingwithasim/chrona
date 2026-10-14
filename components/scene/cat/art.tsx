@@ -21,8 +21,26 @@ const PINK = "#f4a7b6";
 
 const r1 = (value: number) => Math.round(value * 10) / 10;
 
-/** Things she's wearing, earned as the room grows. */
-export const CatWear = createContext({ bell: false });
+export type Pupil = "slit" | "normal" | "wide";
+export type Mouth = "smile" | "meow" | "mlem" | "chatter";
+
+/**
+ * Details every pose shares: what she's wearing (earned as the room
+ * grows), how wide her pupils are, what her mouth is doing, and whether
+ * her front paws are kneading.
+ */
+export const CatWear = createContext<{ bell: boolean; pupil: Pupil; mouth: Mouth; kneading: boolean }>({
+  bell: false,
+  pupil: "normal",
+  mouth: "smile",
+  kneading: false,
+});
+
+const PUPIL_SIZE: Record<Pupil, { rx: number; ry: number }> = {
+  slit: { rx: 1.9, ry: 7.6 },
+  normal: { rx: 4, ry: 7.4 },
+  wide: { rx: 6.3, ry: 8.1 },
+};
 
 /** A red collar with a little gold bell, sitting under her chin. */
 function Collar() {
@@ -200,6 +218,8 @@ function Tail({ d, width = 20 }: { d: string; width?: number }) {
       </g>
       <path d={d} stroke={FUR} strokeWidth={width} />
       <path d={d} stroke={FUR} strokeWidth={width + 3} strokeDasharray="0.1 6.5" />
+      {/* The last bit of the tail in her darker patch colour */}
+      <path d={d} pathLength={100} stroke={PATCH_DARK} strokeWidth={width} strokeDasharray="0 80 20" />
       <path d={d} stroke="#ffffff" strokeOpacity="0.4" strokeWidth="2" transform="translate(-1.5 -3)" />
     </g>
   );
@@ -278,6 +298,7 @@ export const LOOK_OFFSET: Record<Look, { dx: number; dy: number; tilt: number }>
 
 function Eye({ cx, cy, eyes, look, mirror }: { cx: number; cy: number; eyes: Eyes; look: Look; mirror?: boolean }) {
   const { dx, dy } = LOOK_OFFSET[look];
+  const pupil = PUPIL_SIZE[useContext(CatWear).pupil];
   const line = { stroke: LINE, strokeWidth: 2.4, fill: "none", strokeLinecap: "round" as const, strokeOpacity: 0.85 };
 
   if (eyes === "closed") {
@@ -298,7 +319,15 @@ function Eye({ cx, cy, eyes, look, mirror }: { cx: number; cy: number; eyes: Eye
       <ellipse cx={cx} cy={cy} rx="9" ry="10.2" fill="#2a1d1f" />
       <ellipse cx={cx} cy={cy + 0.8} rx="7.6" ry="8.8" fill="url(#sc-cat-iris)" />
       <g style={{ transform: `translate(${dx}px, ${dy}px)`, transition: "transform 450ms ease" }}>
-        <ellipse cx={cx} cy={cy + 0.6} rx="4" ry="7.4" fill="#1a1214" />
+        {/* Pupils open wide in the dark and on the hunt, narrow in bright day */}
+        <ellipse
+          cx={cx}
+          cy={cy + 0.6}
+          rx={pupil.rx}
+          ry={pupil.ry}
+          fill="#1a1214"
+          style={{ rx: pupil.rx, ry: pupil.ry, transition: "rx 500ms ease, ry 500ms ease" } as React.CSSProperties}
+        />
         <circle cx={cx - 2.8} cy={cy - 3.6} r="3" fill="#ffffff" />
         <circle cx={cx + 2.6} cy={cy + 3.8} r="1.4" fill="#ffffff" opacity="0.85" />
       </g>
@@ -334,7 +363,7 @@ export function Head({
   licking?: boolean;
   earPoke: number;
 }) {
-  const { bell } = useContext(CatWear);
+  const { bell, mouth } = useContext(CatWear);
 
   return (
     <g>
@@ -370,14 +399,35 @@ export function Head({
       <path d="M-3.6 13.4 Q 0 12 3.6 13.4 Q 1.4 16.8 0 17 Q -1.4 16.8 -3.6 13.4 Z" fill="#ee8ea3" />
       <circle cx="-1.1" cy="13.6" r="0.9" fill="#ffffff" opacity="0.8" />
 
+      {/* Whisker pads: a few freckles each side of the muzzle */}
+      <g fill={LINE} opacity="0.28">
+        <circle cx="-9.5" cy="16.5" r="0.9" />
+        <circle cx="-12.5" cy="18.6" r="0.9" />
+        <circle cx="-10" cy="20.6" r="0.8" />
+        <circle cx="9.5" cy="16.5" r="0.9" />
+        <circle cx="12.5" cy="18.6" r="0.9" />
+        <circle cx="10" cy="20.6" r="0.8" />
+      </g>
+
       {yawning ? (
         <g>
           <ellipse cx="0" cy="25" rx="7.5" ry="9.5" fill="#7a3a4a" stroke={LINE} strokeOpacity="0.7" strokeWidth="1.4" />
           <ellipse cx="0" cy="30" rx="4.8" ry="3.2" fill="#f08aa3" />
           <path d="M-5.4 17.4 L-4.4 21 L-3.4 17.4 Z M3.4 17.4 L4.4 21 L5.4 17.4 Z" fill="#ffffff" />
         </g>
+      ) : mouth === "meow" || mouth === "chatter" ? (
+        // A little "mew", or her jaw quivering at the birds.
+        <g className={mouth === "chatter" ? "sc-chatter" : undefined} style={pivot("50% 0%")}>
+          <path d="M-5.6 19.2 Q 0 18 5.6 19.2 Q 4.6 27 0 27.6 Q -4.6 27 -5.6 19.2 Z" fill="#7a3a4a" stroke={LINE} strokeOpacity="0.7" strokeWidth="1.3" strokeLinejoin="round" />
+          <ellipse cx="0" cy="25.2" rx="3.2" ry="1.9" fill="#f08aa3" />
+          <path d="M-4.2 19.4 L-3.4 21.6 L-2.6 19.4 Z M2.6 19.4 L3.4 21.6 L4.2 19.4 Z" fill="#ffffff" />
+        </g>
       ) : (
-        <path d="M-6.5 19.5 Q -3.2 23 0 19.8 Q 3.2 23 6.5 19.5" fill="none" stroke={LINE} strokeOpacity="0.8" strokeWidth="1.6" strokeLinecap="round" />
+        <g>
+          <path d="M-6.5 19.5 Q -3.2 23 0 19.8 Q 3.2 23 6.5 19.5" fill="none" stroke={LINE} strokeOpacity="0.8" strokeWidth="1.6" strokeLinecap="round" />
+          {/* Mlem: the tip of her tongue, forgotten out in her sleep */}
+          {mouth === "mlem" && <path d="M-2.6 20.6 Q -2.8 25.4 0 25.6 Q 2.8 25.4 2.6 20.6 Z" fill="#f08aa3" stroke={LINE} strokeOpacity="0.5" strokeWidth="0.9" />}
+        </g>
       )}
 
       {licking && <ellipse cx="0" cy="23" rx="3.2" ry="2.6" fill="#f08aa3" className="sc-lick" />}
@@ -435,6 +485,22 @@ export function HeadAt({
 
 type HeadProps = { eyes: Eyes; look: Look; yawning: boolean; earPoke: number };
 
+/** Front paws; while kneading they press down in turn, making biscuits. */
+function KneadingPaws() {
+  const { kneading } = useContext(CatWear);
+
+  return (
+    <>
+      <g className={kneading ? "sc-knead" : undefined}>
+        <Paw x={-74} y={-6} rx={15} ry={8} />
+      </g>
+      <g className={kneading ? "sc-knead" : undefined} style={{ animationDelay: "-0.4s" }}>
+        <Paw x={-46} y={-4} rx={15} ry={8} />
+      </g>
+    </>
+  );
+}
+
 const LOAF_BODY = fluff(6, -42, 96, 42, { tufts: 46, depth: 3.4, seed: 31, only: [[170, 370]] });
 const LOAF_HIP = fluff(50, -52, 50, 40, { tufts: 24, depth: 3.6, seed: 33, only: [[200, 360]] });
 const LOAF_STRANDS = strands(20, -56, 80, 26, 34, 35, 8);
@@ -462,8 +528,7 @@ export function LoafPose({ sleeping, ...head }: HeadProps & { sleeping: boolean 
         <Tail d="M98 -22 C 112 4 40 2 -28 0 C -56 -1 -80 -4 -94 -10" />
       </g>
 
-      <Paw x={-74} y={-6} rx={15} ry={8} />
-      <Paw x={-46} y={-4} rx={15} ry={8} />
+      <KneadingPaws />
 
       {sleeping ? (
         <HeadAt x={-80} y={-40} scale={1} tilt={-10} {...head} />

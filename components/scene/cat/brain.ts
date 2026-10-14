@@ -19,6 +19,8 @@ export const BED_X = 600;
 export const BED_SPOT = BED_X + 8;
 const WALK_SPEED = 56;
 const CHASE_SPEED = 160;
+/** Zoomies, and running for cover. */
+const DASH_SPEED = 250;
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
@@ -37,7 +39,15 @@ export type Activity =
   | "yawn"
   | "crouch"
   | "pounce"
-  | "chase";
+  | "chase"
+  /** Making biscuits: front paws pressing in turn, purring. */
+  | "knead"
+  /** Zoomies, or running off to hide. */
+  | "dash"
+  /** Sitting up, watching something outside the window. */
+  | "watch"
+  /** Thunder! A hop, every hair on end. */
+  | "startle";
 
 /** Which drawing each activity uses. */
 export type ArtPose = "loaf" | "sit" | "stretch" | "walk";
@@ -56,6 +66,10 @@ export const ART_POSE: Record<Activity, ArtPose> = {
   crouch: "walk",
   pounce: "walk",
   stretch: "stretch",
+  knead: "loaf",
+  dash: "walk",
+  watch: "sit",
+  startle: "walk",
 };
 
 /** [min, max] seconds; walking and chasing last until she arrives. */
@@ -73,6 +87,10 @@ const DURATION: Record<Activity, Pt> = {
   crouch: [1.4, 2.4],
   pounce: [0.5, 0.5],
   chase: [0, 0],
+  knead: [4, 7],
+  dash: [0, 0],
+  watch: [5, 9],
+  startle: [0.7, 0.7],
 };
 
 const NEXT: Record<Activity, Array<[Activity, number]>> = {
@@ -89,10 +107,14 @@ const NEXT: Record<Activity, Array<[Activity, number]>> = {
   crouch: [["pounce", 1]],
   pounce: [["sit", 1]],
   chase: [["crouch", 1]],
+  knead: [["sleep", 0.6], ["loaf", 0.4]],
+  dash: [["sit", 1]],
+  watch: [["sit", 0.7], ["loaf", 0.3]],
+  startle: [["sit", 1]],
 };
 
-const LYING: Activity[] = ["sleep", "loaf"];
-const SITTING: Activity[] = ["sit", "groom", "look", "bat", "yawn"];
+const LYING: Activity[] = ["sleep", "loaf", "knead"];
+const SITTING: Activity[] = ["sit", "groom", "look", "bat", "yawn", "watch"];
 
 function weighted<T>(options: Array<[T, number]>) {
   let roll = Math.random();
@@ -109,6 +131,7 @@ function weighted<T>(options: Array<[T, number]>) {
 }
 
 const rand = (min: number, max: number) => min + Math.random() * (max - min);
+const pick = <T,>(items: T[]) => items[Math.floor(Math.random() * items.length)];
 
 export type Interest = { point: Pt; strength: number };
 
@@ -147,6 +170,17 @@ export class CatBrain {
   private glanceAt: Pt | null = null;
   private glanceUntil = 0;
 
+  /** Little expressions, each until a moment on her clock. */
+  private talkUntil = 0;
+  private slowBlinkUntil = 0;
+  private puffedUntil = 0;
+  private mlemUntil = 0;
+  private nextMlem = rand(25, 60);
+  private chattering = false;
+
+  /** Dusk is when cats get the zoomies; the room tells her the time. */
+  evening = false;
+
   /** Something she is interested in this frame (the pointer, mostly). */
   interest: Interest | null = null;
   /** Prey to hunt (the pointer or a mouse), in scene space. */
@@ -166,7 +200,7 @@ export class CatBrain {
    * Walks go to `target`, or somewhere random.
    */
   start(activity: Activity, target?: number) {
-    const needsLegs = activity === "walk" || activity === "chase";
+    const needsLegs = activity === "walk" || activity === "chase" || activity === "dash";
     const down = LYING.includes(this.activity) || SITTING.includes(this.activity);
 
     if (needsLegs && down) {
@@ -180,8 +214,16 @@ export class CatBrain {
     const [min, max] = DURATION[activity];
     this.timer = activity === "stand" && this.queue.length ? 0.45 : rand(min, max);
 
-    if (activity === "walk") {
+    if (activity === "walk" || activity === "dash") {
       this.walkTo(target ?? this.pickSpot());
+    }
+
+    if (activity === "watch") {
+      // Up at the window.
+      this.glanceAt = [800, 380];
+      this.glanceUntil = this.clock + this.timer;
+    } else {
+      this.chattering = false;
     }
 
     if (activity === "chase" && this.prey) {
@@ -225,7 +267,19 @@ export class CatBrain {
       return;
     }
 
+    // Now and then, out of nowhere: zoomies. More likely at dusk.
+    const awake = this.activity === "sit" || this.activity === "stand" || this.activity === "stretch";
+    if (awake && !this.prey && Math.random() < (this.evening ? 0.09 : 0.035)) {
+      this.zoomies();
+      return;
+    }
+
     let next = weighted(NEXT[this.activity]);
+
+    // Settling into her bed, she kneads it first sometimes.
+    if (next === "sleep" && this.inBed && this.activity === "loaf" && Math.random() < 0.3) {
+      next = "knead";
+    }
 
     // Batting needs the yarn in reach: walk over first.
     if (next === "bat") {
@@ -255,7 +309,7 @@ export class CatBrain {
 
   /** Curled up in her bed. */
   get inBed() {
-    return (this.activity === "sleep" || this.activity === "loaf") && Math.abs(this.x - BED_SPOT) < 16;
+    return (this.activity === "sleep" || this.activity === "loaf" || this.activity === "knead") && Math.abs(this.x - BED_SPOT) < 16;
   }
 
   /* ---------------------------------------------------------------- */
@@ -266,11 +320,18 @@ export class CatBrain {
     this.happyUntil = this.clock + 2.6;
     this.events.purr();
 
-    if (this.activity === "sleep") {
+    if (this.inBed && this.activity !== "knead" && Math.random() < 0.45) {
+      // Petted in her bed: biscuits.
+      this.start("knead");
+      this.happyUntil = this.clock + this.timer;
+    } else if (this.activity === "knead") {
+      this.timer = Math.max(this.timer, 3);
+      this.happyUntil = this.clock + this.timer;
+    } else if (this.activity === "sleep") {
       this.start("loaf");
     } else if (this.activity === "loaf") {
       this.start("sit");
-    } else if (this.activity === "walk" || this.activity === "chase" || this.activity === "crouch" || this.activity === "stand") {
+    } else if (["walk", "chase", "crouch", "stand", "dash"].includes(this.activity)) {
       this.queue = [];
       this.targetX = this.x;
       this.start("sit");
@@ -313,6 +374,83 @@ export class CatBrain {
       this.glanceAt = point;
       this.glanceUntil = this.clock + seconds;
     }
+  }
+
+  /** Something outside: sit up and watch it, chattering at birds. */
+  watchWindow(kind: string) {
+    if (this.prey || ["sleep", "dash", "startle", "walk", "chase", "pounce", "crouch"].includes(this.activity)) {
+      this.glance([800, 380], 3.5);
+      return;
+    }
+
+    if (Math.random() < 0.65) {
+      this.queue = [];
+      this.start("watch");
+      this.chattering = kind === "birds" || kind === "butterfly";
+
+      if (this.chattering) {
+        this.events.speak(this.headSpot(), pick(["ek-ek-ek…", "*chatters at the birds*", "Mrrrk! Birb!"]));
+      }
+    } else {
+      this.glance([800, 380], 4);
+    }
+  }
+
+  /** Thunder: a hop with every hair on end, then off to hide in her bed. */
+  startle() {
+    this.puffedUntil = this.clock + 1.6;
+    this.twitches++;
+
+    if (this.activity === "sleep") {
+      // Woken with a start, but she stays put.
+      this.start("loaf");
+      return;
+    }
+
+    if (this.inBed) {
+      return;
+    }
+
+    this.prey = null;
+    this.queue = [{ activity: "dash", target: BED_SPOT }, { activity: "loaf" }];
+    this.start("startle");
+  }
+
+  /** Zoomies: tear across the rug and back, then sit as if nothing happened. */
+  zoomies() {
+    const far = this.x < (RANGE[0] + RANGE[1]) / 2 ? RANGE[1] - rand(0, 60) : RANGE[0] + rand(0, 60);
+    const back = clamp(this.x + rand(-80, 80), RANGE[0], RANGE[1]);
+    this.queue = [{ activity: "dash", target: back }, { activity: "sit" }];
+    this.start("dash", far);
+  }
+
+  /** You came back after a while: she trots over to say hello. */
+  greet(): boolean {
+    if (this.prey || this.activity === "dash" || this.activity === "startle") {
+      return false;
+    }
+
+    const spot = clamp(800 + rand(-60, 60), RANGE[0], RANGE[1]);
+    this.queue = [{ activity: "walk", target: spot }, { activity: "sit" }];
+    this.happyUntil = this.clock + 6;
+    this.start("stretch");
+    return true;
+  }
+
+  /** You held still near her face: she slow-blinks back, a cat's "I love you". */
+  slowBlink() {
+    if (this.activity === "sleep" || this.slowBlinkUntil > this.clock) {
+      return false;
+    }
+
+    this.slowBlinkUntil = this.clock + 1.6;
+    this.timer = Math.max(this.timer, 2.5);
+    return true;
+  }
+
+  /** She's saying something: open her mouth for a moment. */
+  talk(seconds = 0.7) {
+    this.talkUntil = this.clock + seconds;
   }
 
   /** The pointer is wiggling on the floor, or a mouse ran in: hunt it. */
@@ -365,6 +503,35 @@ export class CatBrain {
     return this.activity !== "sleep" && this.blink > 0.4;
   }
 
+  /** Slow blink: eyes closed for most of it, then a soft opening. */
+  get slowBlinking() {
+    return this.slowBlinkUntil - this.clock > 0.5;
+  }
+
+  get puffed() {
+    return this.clock < this.puffedUntil;
+  }
+
+  get kneading() {
+    return this.activity === "knead";
+  }
+
+  get mouth(): "smile" | "meow" | "mlem" | "chatter" {
+    if (this.activity === "watch" && this.chattering) return "chatter";
+    if (this.clock < this.talkUntil) return "meow";
+    if (this.activity === "sleep" && this.clock < this.mlemUntil) return "mlem";
+    return "smile";
+  }
+
+  /** Pupils: wide for the hunt and the dark, slim in bright daylight. */
+  pupil(daylight: boolean): "slit" | "normal" | "wide" {
+    if (this.prey || ["crouch", "chase", "pounce", "dash", "startle", "watch", "bat"].includes(this.activity) || this.puffed) {
+      return "wide";
+    }
+
+    return daylight ? "slit" : this.evening ? "wide" : "normal";
+  }
+
   headSpot(): Pt {
     const head = HEAD_SPOT[this.pose];
     return [this.x + head.x * SCALE * this.facing, FLOOR_Y - this.lift + head.y * SCALE];
@@ -372,7 +539,7 @@ export class CatBrain {
 
   /** Where she is looking, relative to her head (-1 to 1), or null for "at you". */
   gaze(): Pt | null {
-    if (this.happy || this.activity === "sleep") {
+    if ((this.happy && this.activity !== "watch") || this.activity === "sleep" || this.activity === "knead") {
       return null;
     }
 
@@ -402,23 +569,24 @@ export class CatBrain {
     this.activityClock += dt;
 
     /* Turning around: a quick flip through facing you. */
-    const turnRate = this.activity === "chase" || this.prey ? 8 : 5;
+    const turnRate = this.activity === "chase" || this.activity === "dash" || this.prey ? 9 : 5;
     this.facing += clamp(this.facingTarget - this.facing, -turnRate * dt, turnRate * dt);
     const turning = Math.abs(this.facing - this.facingTarget) > 0.05;
 
     /* Walking and chasing */
-    const moving = this.activity === "walk" || this.activity === "chase";
+    const moving = this.activity === "walk" || this.activity === "chase" || this.activity === "dash";
 
     if (moving) {
       if (this.activity === "chase" && this.prey) {
         this.walkTo(this.prey.point[0] - Math.sign(this.prey.point[0] - this.x || 1) * 100);
       }
 
-      const top = this.activity === "chase" ? CHASE_SPEED : WALK_SPEED;
+      const top = this.activity === "dash" ? DASH_SPEED : this.activity === "chase" ? CHASE_SPEED : WALK_SPEED;
       const remaining = this.targetX - this.x;
       // Ease in, and slow down on arrival.
       const wanted = turning ? 0 : Math.min(top, Math.abs(remaining) * 2.2 + 8);
-      this.speed += clamp(wanted - this.speed, -top * 2.5 * dt, top * 1.8 * dt);
+      const accel = this.activity === "dash" ? 4 : 1.8;
+      this.speed += clamp(wanted - this.speed, -top * 2.5 * dt, top * accel * dt);
       this.x += Math.sign(remaining) * Math.min(Math.abs(remaining), this.speed * dt);
 
       if (Math.abs(remaining) < 1.5 && !turning) {
@@ -434,8 +602,13 @@ export class CatBrain {
       const t = clamp(this.activityClock / DURATION.pounce[0], 0, 1);
       this.x = lerp(this.pounceFrom, this.pounceTo, smoothstep(t));
       this.lift = Math.sin(Math.PI * t) * 30;
+    } else if (this.activity === "startle" && this.activityClock < 0.42) {
+      // Straight up in the air, all four paws.
+      this.lift = Math.sin((Math.PI * this.activityClock) / 0.42) * 28;
     } else {
-      this.lift += (0 - this.lift) * Math.min(1, dt * 12);
+      // Kneading in her bed, she rises onto the rim so her paws show.
+      const rest = this.activity === "knead" && Math.abs(this.x - BED_SPOT) < 16 ? 17 : 0;
+      this.lift += (rest - this.lift) * Math.min(1, dt * (rest ? 4 : 12));
     }
 
     /* Activity timer */
@@ -469,6 +642,16 @@ export class CatBrain {
       this.events.bat();
     }
 
+    /* A forgotten tongue tip in her sleep, now and then */
+    if (this.activity === "sleep") {
+      this.nextMlem -= dt;
+
+      if (this.nextMlem <= 0) {
+        this.mlemUntil = this.clock + rand(2.5, 5);
+        this.nextMlem = rand(30, 70);
+      }
+    }
+
     /* Blinks and ear twitches */
     this.nextBlink -= dt;
 
@@ -488,7 +671,7 @@ export class CatBrain {
 
   /** Legs: still, walking, or running. */
   get legs(): "still" | "walk" | "run" {
-    if (this.activity === "chase" || this.activity === "pounce") {
+    if (this.activity === "chase" || this.activity === "pounce" || (this.activity === "dash" && this.speed > 4)) {
       return "run";
     }
 

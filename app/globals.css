@@ -865,6 +865,22 @@
   50% { transform: translateY(-3px); }
 }
 
+@keyframes sc-knead {
+  0%, 100% { transform: translateY(0); }
+  35% { transform: translateY(-5px); }
+  60% { transform: translateY(0.5px); }
+}
+
+@keyframes sc-chatter {
+  0%, 100% { transform: scaleY(1); }
+  50% { transform: scaleY(0.55); }
+}
+
+@keyframes sc-puff {
+  0%, 100% { transform: scale(1.1, 1.07); }
+  50% { transform: scale(1.12, 1.09); }
+}
+
 @keyframes sc-wiggle {
   0%, 100% { transform: skewX(0deg); }
   50% { transform: skewX(4deg); }
@@ -912,12 +928,6 @@
   70% { transform: skewY(-2deg) scaleY(1); }
 }
 
-@keyframes sc-swivel {
-  0%, 100% { transform: scaleX(1); }
-  35% { transform: scaleX(0.84); }
-  70% { transform: scaleX(1.03); }
-}
-
 @keyframes sc-roll {
   0% { transform: translateX(0); }
   30% { transform: translateX(28px); }
@@ -936,6 +946,9 @@
 .sc-pose-in { animation: sc-pose-in 0.35s ease-out; }
 .sc-lick { animation: sc-lick 0.42s ease-in-out infinite; }
 .sc-wiggle { animation: sc-wiggle 0.16s ease-in-out infinite; }
+.sc-knead { animation: sc-knead 0.8s ease-in-out infinite; }
+.sc-chatter { animation: sc-chatter 0.12s linear infinite; }
+.sc-puff { transform-box: fill-box; transform-origin: 50% 100%; animation: sc-puff 0.25s ease-in-out infinite; }
 /* Mochi's legs: the walk speed and pausing come from her root group. */
 .sc-leg {
   animation: sc-leg var(--leg-speed, 0.9s) ease-in-out infinite;
@@ -957,7 +970,6 @@
 .sc-fluff { animation: sc-fluff 0.8s ease-out; }
 .sc-sip { animation: sc-sip 1.8s ease-in-out; }
 .sc-flutter { animation: sc-flutter 1.1s ease-out; }
-.sc-swivel { animation: sc-swivel 1.1s ease-in-out; }
 .sc-roll { animation: sc-roll 2.4s cubic-bezier(0.2, 0.8, 0.3, 1); }
 .sc-roll-spin { animation: sc-roll-spin 2.4s cubic-bezier(0.2, 0.8, 0.3, 1); }
 .sc-beam { animation: sc-beam 7s ease-in-out infinite; }

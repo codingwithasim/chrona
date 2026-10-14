@@ -15,6 +15,7 @@ import {
   useParticles,
   useSpeak,
 } from "../scene-shared";
+import { SKY_EVENT, type SkyEventKind } from "../rain-canvas";
 import { useCoatStyle } from "../room-unlocks";
 import {
   CatDefs,
@@ -22,6 +23,8 @@ import {
   type Eyes,
   type Look,
   LoafPose,
+  type Mouth,
+  type Pupil,
   SitPose,
   StretchPose,
   WalkPose,
@@ -126,21 +129,32 @@ type View = {
   earPoke: number;
   legs: "still" | "walk" | "run";
   zzz: Pt | null;
+  pupil: Pupil;
+  mouth: Mouth;
+  kneading: boolean;
+  puffed: boolean;
 };
+
+/** Bright daylight narrows her pupils; the room says what time it is. */
+function daylight() {
+  const tod = document.documentElement.dataset.tod;
+  return tod === "day" || tod === "morning";
+}
 
 function viewOf(brain: CatBrain): View {
   const { activity } = brain;
 
   let eyes: Eyes = "open";
 
-  if (brain.happy) eyes = "happy";
+  if (brain.slowBlinking) eyes = "closed";
+  else if (brain.happy) eyes = "happy";
   else if (activity === "sleep" || activity === "groom") eyes = "closed";
   else if (activity === "stretch" || activity === "yawn") eyes = "squint";
   else if (brain.blinking) eyes = "closed";
   else if (activity === "loaf") eyes = "half";
 
   const gaze = brain.gaze();
-  const onTheMove = ["walk", "chase", "crouch", "pounce", "stand"].includes(activity);
+  const onTheMove = ["walk", "chase", "crouch", "pounce", "stand", "dash", "startle"].includes(activity);
   let look: Look = onTheMove ? "left" : "viewer";
 
   if (activity === "groom") {
@@ -166,6 +180,10 @@ function viewOf(brain: CatBrain): View {
     earPoke: brain.twitches,
     legs: brain.legs,
     zzz: activity === "sleep" ? brain.headSpot() : null,
+    pupil: brain.pupil(daylight()),
+    mouth: brain.mouth,
+    kneading: brain.kneading,
+    puffed: brain.puffed,
   };
 }
 
@@ -178,6 +196,10 @@ const sameView = (a: View, b: View) =>
   a.yawning === b.yawning &&
   a.earPoke === b.earPoke &&
   a.legs === b.legs &&
+  a.pupil === b.pupil &&
+  a.mouth === b.mouth &&
+  a.kneading === b.kneading &&
+  a.puffed === b.puffed &&
   (a.zzz === null) === (b.zzz === null);
 
 /**
@@ -204,9 +226,18 @@ export function Mochi({ yarnX, onBat }: { yarnX: number; onBat: () => void }) {
     earPoke: 0,
     legs: "still",
     zzz: null,
+    pupil: "normal",
+    mouth: "smile",
+    kneading: false,
+    puffed: false,
   });
 
   const latest = useRef({ speak, onBat });
+  const burstRef = useRef(burst);
+
+  useEffect(() => {
+    burstRef.current = burst;
+  });
 
   useEffect(() => {
     latest.current = { speak, onBat };
@@ -222,7 +253,10 @@ export function Mochi({ yarnX, onBat }: { yarnX: number; onBat: () => void }) {
 
     const brain = new CatBrain(
       {
-        speak: (point, text) => latest.current.speak(point[0], point[1] - 40, text),
+        speak: (point, text) => {
+          brainRef.current?.talk();
+          latest.current.speak(point[0], point[1] - 40, text);
+        },
         bat: () => latest.current.onBat(),
         purr: () => playSfx("purr"),
       },
@@ -234,7 +268,7 @@ export function Mochi({ yarnX, onBat }: { yarnX: number; onBat: () => void }) {
     let shown = viewOf(brain);
 
     /* Pointer: she watches it, and hunts it if you wiggle it on the floor */
-    const pointer = { point: [0, 0] as Pt, at: -10, energy: 0, onFloor: false };
+    const pointer = { point: [0, 0] as Pt, at: -10, energy: 0, onFloor: false, blinkedBack: false };
     let clock = 0;
 
     const svg = node.ownerSVGElement;
@@ -270,9 +304,26 @@ export function Mochi({ yarnX, onBat }: { yarnX: number; onBat: () => void }) {
       }
     }
 
-    function onOutside() {
-      // Something outside: glance at the window.
-      brain.glance([800, 380], 3.5);
+    function onOutside(event: Event) {
+      // Something outside: sit up and watch, or at least glance.
+      brain.watchWindow((event as CustomEvent<string>).detail ?? "");
+    }
+
+    function onSky(event: Event) {
+      if ((event as CustomEvent<SkyEventKind>).detail === "lightning") {
+        // Light first, then the thunder that makes her jump.
+        window.setTimeout(() => brain.startle(), 300);
+      }
+    }
+
+    // Away for a while? She comes over to say hello when you're back.
+    let hiddenAt = 0;
+    function onVisibility() {
+      if (document.hidden) {
+        hiddenAt = Date.now();
+      } else if (hiddenAt && Date.now() - hiddenAt > 3 * 60_000 && brain.greet()) {
+        window.setTimeout(() => brain.events.speak(brain.headSpot(), pick(["Mrrp! You're back~", "Oh! Hi hi hi.", "Where did you go? I waited."])), 2600);
+      }
     }
 
     function onSession(event: Event) {
@@ -290,6 +341,8 @@ export function Mochi({ yarnX, onBat }: { yarnX: number; onBat: () => void }) {
     document.documentElement.addEventListener("pointerleave", onPointerLeave);
     window.addEventListener(MOUSE_EVENT, spawnMouse);
     window.addEventListener(OUTSIDE_EVENT, onOutside);
+    window.addEventListener(SKY_EVENT, onSky);
+    document.addEventListener("visibilitychange", onVisibility);
 
     let nextMouse = 70 + Math.random() * 80;
     let frame = 0;
@@ -350,6 +403,22 @@ export function Mochi({ yarnX, onBat }: { yarnX: number; onBat: () => void }) {
         brain.interest = recent && near ? { point: pointer.point, strength: 0.85 } : null;
       }
 
+      /* Hold the pointer still by her face and she slow-blinks back */
+      const head = brain.headSpot();
+      const nearFace = Math.hypot(pointer.point[0] - head[0], pointer.point[1] - head[1]) < 75;
+
+      if (!nearFace) {
+        pointer.blinkedBack = false;
+      } else if (!pointer.blinkedBack && clock - pointer.at > 1.1 && clock - pointer.at < 8) {
+        pointer.blinkedBack = true;
+
+        if (brain.slowBlink()) {
+          window.setTimeout(() => burstRef.current(head[0], head[1] - 40, 1, 20), 900);
+        }
+      }
+
+      const tod = document.documentElement.dataset.tod;
+      brain.evening = tod === "evening" || tod === "night";
       brain.update(dt);
 
       /* Place her; this is cheap, so it happens every frame */
@@ -379,6 +448,8 @@ export function Mochi({ yarnX, onBat }: { yarnX: number; onBat: () => void }) {
       document.documentElement.removeEventListener("pointerleave", onPointerLeave);
       window.removeEventListener(MOUSE_EVENT, spawnMouse);
       window.removeEventListener(OUTSIDE_EVENT, onOutside);
+      window.removeEventListener(SKY_EVENT, onSky);
+      document.removeEventListener("visibilitychange", onVisibility);
       mouse?.remove();
       brainRef.current = null;
     };
@@ -405,6 +476,7 @@ export function Mochi({ yarnX, onBat }: { yarnX: number; onBat: () => void }) {
     }
 
     const [x, y] = brain.pet();
+    brain.talk();
     pets.current += 1;
     burst(x, y - 50, 3, 70);
     speak(
@@ -415,7 +487,10 @@ export function Mochi({ yarnX, onBat }: { yarnX: number; onBat: () => void }) {
   }
 
   const head = { eyes: view.eyes, look: view.look, yawning: view.yawning, earPoke: view.earPoke };
-  const wear = useMemo(() => ({ bell: showsBell }), [showsBell]);
+  const wear = useMemo(
+    () => ({ bell: showsBell, pupil: view.pupil, mouth: view.mouth, kneading: view.kneading }),
+    [showsBell, view.pupil, view.mouth, view.kneading]
+  );
 
   const legStyle = {
     "--leg-speed": view.legs === "run" ? "0.42s" : "0.9s",
@@ -430,6 +505,7 @@ export function Mochi({ yarnX, onBat }: { yarnX: number; onBat: () => void }) {
 
       <g ref={root} transform={`translate(${BED_X + 8} ${FLOOR_Y}) scale(${SCALE} ${SCALE})`} style={legStyle}>
         <g className="sc-hit" onClick={pet}>
+          <g className={view.puffed ? "sc-puff" : undefined}>
           <g key={view.pose} className="sc-pose-in">
             {view.pose === "loaf" && <LoafPose {...head} sleeping={view.activity === "sleep"} />}
             {view.pose === "sit" && <SitPose {...head} activity={view.activity} />}
@@ -449,6 +525,7 @@ export function Mochi({ yarnX, onBat }: { yarnX: number; onBat: () => void }) {
               ) : (
                 <WalkPose {...head} />
               ))}
+          </g>
           </g>
         </g>
       </g>
