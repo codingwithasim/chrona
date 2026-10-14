@@ -12,7 +12,9 @@ import { RoomScene } from "@/components/scene/room-scene";
 import { SceneController } from "@/components/scene/scene-controller";
 import { DialogueBox } from "@/components/shell/dialogue-box";
 import { GazeExit } from "@/components/shell/gaze-exit";
+import { KeepAwake } from "@/components/shell/keep-awake";
 import { NotesSheet } from "@/components/shell/notes-sheet";
+import { OfflineSupport } from "@/components/shell/offline-support";
 import { ShortcutsHelp } from "@/components/shell/shortcuts-help";
 import { AlarmWatcher } from "@/components/tools/alarms/alarm-watcher";
 import { ToolTicker } from "@/components/tools/tool-ticker";
@@ -84,6 +86,8 @@ export default function RootLayout({
           <SceneController />
           <AlarmWatcher />
           <ToolTicker />
+          <KeepAwake />
+          <OfflineSupport />
 
           <div
             data-passthrough

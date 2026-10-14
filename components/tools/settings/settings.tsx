@@ -1,7 +1,7 @@
 "use client";
 
 import { type ReactNode, useState } from "react";
-import { Bell, Clock3, Keyboard, LayoutPanelLeft, Music2, Play, Sofa } from "lucide-react";
+import { Bell, Clock3, HardDrive, Keyboard, LayoutPanelLeft, Music2, Play, Sofa } from "lucide-react";
 
 import { PanelStylePicker } from "@/components/shell/panel-style";
 import { RoomControls } from "@/components/shell/room-controls";
@@ -13,6 +13,8 @@ import { requestNotifications } from "@/lib/notify";
 import { SHORTCUTS } from "@/lib/shortcuts";
 import { previewSound } from "@/lib/sounds";
 import { useSceneStore } from "@/stores/scene-store";
+
+import { YourData } from "./your-data";
 import {
   type SoundSlot,
   soundSlots,
@@ -52,6 +54,9 @@ export function SettingsPanel() {
 
   const hour24 = useSceneStore((state) => state.hour24);
   const toggleHour24 = useSceneStore((state) => state.toggleHour24);
+
+  const keepAwake = useSettingsStore((state) => state.keepAwake);
+  const setKeepAwake = useSettingsStore((state) => state.setKeepAwake);
 
   const focusFade = useSettingsStore((state) => state.focusFade);
   const setFocusFade = useSettingsStore((state) => state.setFocusFade);
@@ -165,6 +170,20 @@ export function SettingsPanel() {
             24-hour time
             <Switch checked={hour24} onCheckedChange={toggleHour24} />
           </label>
+
+          <label className="flex items-center justify-between gap-3 text-[13px] font-medium">
+            <span>
+              Keep the screen on
+              <span className="block text-xs font-normal text-muted-foreground">
+                While a timer, pomodoro or stopwatch is running.
+              </span>
+            </span>
+            <Switch checked={keepAwake} onCheckedChange={setKeepAwake} />
+          </label>
+        </Section>
+
+        <Section icon={HardDrive} title="Your data" jp="データ">
+          <YourData />
         </Section>
 
         <Section icon={Keyboard} title="Shortcuts" jp="ショートカット">

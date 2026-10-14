@@ -36,6 +36,10 @@ type SettingsStore = {
   /** Fade the panel to just the time while counting and idle. */
   focusFade: boolean;
   setFocusFade: (focusFade: boolean) => void;
+
+  /** Keep the screen from sleeping while something is counting. */
+  keepAwake: boolean;
+  setKeepAwake: (keepAwake: boolean) => void;
 };
 
 export const soundSlots: Record<
@@ -86,6 +90,9 @@ export const useSettingsStore = create<SettingsStore>()(
 
       focusFade: false,
       setFocusFade: (focusFade) => set({ focusFade }),
+
+      keepAwake: true,
+      setKeepAwake: (keepAwake) => set({ keepAwake }),
     }),
     {
       name: "chrona-settings",
