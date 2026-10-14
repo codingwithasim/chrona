@@ -552,6 +552,23 @@
   50% { transform: skewX(-1.2deg); }
 }
 
+@keyframes sc-curtain-breeze {
+  0%, 100% { transform: skewX(0deg) scaleX(1); }
+  35% { transform: skewX(-3.2deg) scaleX(1.02); }
+  70% { transform: skewX(1.4deg) scaleX(0.99); }
+}
+
+@keyframes sc-louver {
+  0%, 100% { transform: translateY(6px) scaleY(1.6) skewX(0deg); }
+  50% { transform: translateY(7px) scaleY(1.9) skewX(-4deg); }
+}
+
+@keyframes sc-airflow {
+  0% { opacity: 0; transform: translateY(-6px); }
+  30% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(26px); }
+}
+
 @keyframes sc-twinkle {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.35; }
@@ -595,6 +612,10 @@
 
 .sc-sway { animation: sc-sway 6s ease-in-out infinite; }
 .sc-curtain { animation: sc-curtain 9s ease-in-out infinite; }
+/* The air conditioner is on: the curtains catch the breeze. */
+[data-breeze] .sc-curtain { animation: sc-curtain-breeze 3.6s ease-in-out infinite; }
+.sc-louver { animation: sc-louver 6s ease-in-out infinite; }
+.sc-airflow { animation: sc-airflow 2.6s ease-in infinite; opacity: 0; }
 .sc-twinkle { animation: sc-twinkle 2.8s ease-in-out infinite; }
 .sc-steam { animation: sc-steam 3.6s ease-out infinite; }
 .sc-zzz { animation: sc-zzz 3.2s ease-out infinite; }

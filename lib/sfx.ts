@@ -19,7 +19,8 @@ export type Sfx =
   | "rustle"
   | "sparkle"
   | "furin"
-  | "firework";
+  | "firework"
+  | "beep";
 
 
 function noiseBuffer(ctx: AudioContext, seconds: number, brown = false) {
@@ -195,6 +196,12 @@ const players: Record<Sfx, (ctx: AudioContext) => void> = {
     [2093, 2637, 3136].forEach((frequency, index) => {
       tone(ctx, "sine", frequency, frequency * 1.02, 0.07, 0.35, index * 0.07);
     });
+  },
+
+  // An air conditioner's little remote-control beep.
+  beep: (ctx) => {
+    tone(ctx, "sine", 2350, 2350, 0.05, 0.07);
+    tone(ctx, "sine", 2350, 2350, 0.05, 0.07, 0.11);
   },
 };
 
