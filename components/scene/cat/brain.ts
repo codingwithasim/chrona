@@ -282,6 +282,31 @@ export class CatBrain {
     return this.headSpot();
   }
 
+  /** A session just ended: wake up, stretch, and look pleased with you. */
+  celebrate() {
+    this.prey = null;
+    this.queue = [{ activity: "sit" }];
+    this.happyUntil = this.clock + 4;
+    this.start("stretch");
+  }
+
+  /** Back to work: she pads off to her bed for a nap while you focus. */
+  settle() {
+    if (this.activity === "sleep") {
+      return;
+    }
+
+    this.prey = null;
+
+    if (this.inBed) {
+      this.start("sleep");
+      return;
+    }
+
+    this.queue = [{ activity: "loaf" }, { activity: "sleep" }];
+    this.start("walk", BED_SPOT);
+  }
+
   /** Look at something for a moment (a train outside, a sound). */
   glance(point: Pt, seconds: number) {
     if (this.activity !== "sleep" && !this.prey) {

@@ -900,6 +900,38 @@
   opacity: 0.18;
 }
 
+/*
+ * Focus mode: while something is counting and you're not touching
+ * anything, the panel's glass and the buttons melt away, leaving only
+ * the time floating over the room.
+ */
+[data-focus-panel],
+[data-recede] {
+  transition:
+    background-color 1.4s ease,
+    border-color 1.4s ease,
+    box-shadow 1.4s ease,
+    backdrop-filter 1.4s ease,
+    opacity 1.4s ease;
+}
+
+[data-idle="true"][data-running] [data-focus-panel] {
+  background-color: transparent;
+  border-color: transparent;
+  box-shadow: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+[data-idle="true"][data-running] [data-recede] {
+  opacity: 0;
+  pointer-events: none;
+}
+
+[data-idle="true"][data-running] [data-focus-panel] .font-display {
+  text-shadow: 0 0 18px var(--background), 0 0 4px var(--background);
+}
+
 [data-idle="true"] [data-chrome]:hover,
 [data-idle="true"] [data-chrome]:focus-within {
   opacity: 1;

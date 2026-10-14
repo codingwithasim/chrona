@@ -35,8 +35,8 @@ export function ToolFrame({
         className
       )}
     >
-      <div className="panel px-6 pt-4 pb-7 sm:px-8 sm:pb-8">
-        <header className="mb-2 flex min-h-9 items-center justify-between gap-3">
+      <div data-focus-panel className="panel px-6 pt-4 pb-7 sm:px-8 sm:pb-8">
+        <header data-recede className="mb-2 flex min-h-9 items-center justify-between gap-3">
           {item && (
             <div className="flex min-w-0 items-center gap-2">
               <span

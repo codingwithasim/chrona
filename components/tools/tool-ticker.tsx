@@ -4,11 +4,13 @@ import { useEffect } from "react";
 
 import { formatClock } from "@/components/shell/digits";
 import { pomodoroModes, usePomodoroStore } from "@/stores/pomodoro-store";
+import { useStopwatchStore } from "@/stores/stopwatch-store";
 import { useTimerStore } from "@/stores/timer-store";
 
 /**
  * Drives the timer and pomodoro from the root layout, so they finish
- * (and ring) on any page. Also mirrors the countdown in the tab title.
+ * (and ring) on any page. Also mirrors the countdown in the tab title,
+ * and marks the page while anything is running (for focus mode).
  */
 export function ToolTicker() {
   useEffect(() => {
@@ -23,6 +25,13 @@ export function ToolTicker() {
 
       const pomodoro = usePomodoroStore.getState();
       const timer = useTimerStore.getState();
+
+      // Something is counting: the interface may recede into focus mode.
+      const running =
+        pomodoro.status === "running" ||
+        timer.status === "running" ||
+        useStopwatchStore.getState().status === "running";
+      document.documentElement.toggleAttribute("data-running", running);
 
       let countdown: string | null = null;
 

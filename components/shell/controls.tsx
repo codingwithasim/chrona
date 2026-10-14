@@ -103,7 +103,11 @@ export function QuietAction({
 
 /** Play in the middle, quiet actions either side. */
 export function ControlRow({ children }: { children: React.ReactNode }) {
-  return <div className="flex items-center justify-center gap-5">{children}</div>;
+  return (
+    <div data-recede className="flex items-center justify-center gap-5">
+      {children}
+    </div>
+  );
 }
 
 /** A small, lowercase status line, e.g. "ready". */

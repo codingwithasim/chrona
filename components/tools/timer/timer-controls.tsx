@@ -29,7 +29,7 @@ export function TimerControls() {
       </ControlRow>
 
       {counting && (
-        <div className="flex gap-1 animate-in fade-in-0 duration-500">
+        <div data-recede className="flex gap-1 animate-in fade-in-0 duration-500">
           {quickAdds.map((minutes) => (
             <button
               key={minutes}

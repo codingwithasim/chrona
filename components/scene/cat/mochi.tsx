@@ -2,6 +2,7 @@
 
 import { type CSSProperties, useEffect, useRef, useState } from "react";
 
+import { SESSION_EVENT, type SessionEnd } from "@/lib/session-events";
 import { playSfx } from "@/lib/sfx";
 import { useDialogueStore } from "@/stores/dialogue-store";
 
@@ -269,6 +270,17 @@ export function Mochi({ yarnX, onBat }: { yarnX: number; onBat: () => void }) {
       brain.glance([800, 380], 3.5);
     }
 
+    function onSession(event: Event) {
+      const kind = (event as CustomEvent<SessionEnd>).detail;
+
+      if (kind === "break") {
+        brain.settle();
+      } else {
+        brain.celebrate();
+      }
+    }
+
+    window.addEventListener(SESSION_EVENT, onSession);
     window.addEventListener("pointermove", onPointerMove);
     document.documentElement.addEventListener("pointerleave", onPointerLeave);
     window.addEventListener(MOUSE_EVENT, spawnMouse);
@@ -357,6 +369,7 @@ export function Mochi({ yarnX, onBat }: { yarnX: number; onBat: () => void }) {
 
     return () => {
       cancelAnimationFrame(frame);
+      window.removeEventListener(SESSION_EVENT, onSession);
       window.removeEventListener("pointermove", onPointerMove);
       document.documentElement.removeEventListener("pointerleave", onPointerLeave);
       window.removeEventListener(MOUSE_EVENT, spawnMouse);

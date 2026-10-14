@@ -44,7 +44,7 @@ export function PomodoroTool() {
   return (
     <ToolFrame href="/pomodoro" placement="side">
       <div className="flex flex-col items-center gap-7">
-        <div role="tablist" aria-label="Pomodoro phase" className="flex gap-1">
+        <div data-recede role="tablist" aria-label="Pomodoro phase" className="flex gap-1">
           {(Object.keys(pomodoroModes) as PomodoroMode[]).map((item) => {
             const active = item === mode;
 
@@ -99,6 +99,7 @@ export function PomodoroTool() {
         <PomodoroControls />
 
         <div
+          data-recede
           className="flex items-center gap-3 text-[11px] text-muted-foreground/70"
           role="img"
           aria-label={`${doneInSet} of ${setSize} focus sessions done before the long break, ${todaySessions} today`}

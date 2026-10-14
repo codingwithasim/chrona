@@ -108,7 +108,7 @@ function InlinePresets() {
   const setDuration = useTimerStore((state) => state.setDuration);
 
   return (
-    <div className="flex max-w-xs flex-wrap justify-center gap-x-1 gap-y-0.5">
+    <div data-recede className="flex max-w-xs flex-wrap justify-center gap-x-1 gap-y-0.5">
       {presets.map((preset) => (
         <button
           key={preset.id}

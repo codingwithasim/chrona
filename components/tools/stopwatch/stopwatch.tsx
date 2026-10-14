@@ -51,10 +51,12 @@ export function StopwatchTool() {
         <StopwatchControls />
 
         {laps.length > 0 && (
+          <div data-recede className="w-full">
           <LapList
             laps={laps}
-            className="max-h-64 w-full max-w-md overflow-y-auto pr-1"
+            className="mx-auto max-h-64 w-full max-w-md overflow-y-auto pr-1"
           />
+          </div>
         )}
       </div>
     </ToolFrame>

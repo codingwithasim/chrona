@@ -4,6 +4,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 import { notify } from "@/lib/notify";
+import { announceSession } from "@/lib/session-events";
 import { playSound } from "@/lib/sounds";
 
 import { say } from "./dialogue-store";
@@ -166,6 +167,7 @@ export const useTimerStore = create<TimerStore>()(
         const { sounds, toneVolume } = useSettingsStore.getState();
         playSound(sounds.timer, { volume: toneVolume });
         notify("Time's up ⏳", label ? `${label} is done.` : "Your timer finished.");
+        announceSession("timer");
 
         say({
           tone: "alert",
