@@ -730,6 +730,16 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes sc-leg {
+  0%, 100% { transform: rotate(16deg); }
+  50% { transform: rotate(-16deg); }
+}
+
+@keyframes sc-walk-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2.5px); }
+}
+
 @keyframes sc-lick {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-3px); }
@@ -748,6 +758,8 @@
 }
 
 .sc-pose-in { animation: sc-pose-in 0.35s ease-out; }
+.sc-leg { animation: sc-leg 0.9s ease-in-out infinite; }
+.sc-walk-bob { animation: sc-walk-bob 0.45s ease-in-out infinite; }
 .sc-lick { animation: sc-lick 0.42s ease-in-out infinite; }
 .sc-roll { animation: sc-roll 2.4s cubic-bezier(0.2, 0.8, 0.3, 1); }
 .sc-roll-spin { animation: sc-roll-spin 2.4s cubic-bezier(0.2, 0.8, 0.3, 1); }
