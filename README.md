@@ -1,34 +1,42 @@
 # Chrona ⏰
 
-Chrona is a free, modern productivity toolkit built with **Next.js**, **React**, **TypeScript**, **Tailwind CSS**, and **shadcn/ui**.
+Chrona is a cozy room of time tools: a countdown timer, stopwatch, Pomodoro, world clock and alarms, set in a hand-drawn anime room with rain on the window and a sleepy cat named Mochi on the rug.
 
-It combines essential time-management tools—including a countdown timer, stopwatch, Pomodoro timer, world clock, and browser alarms—inside a clean, responsive interface designed for desktop and mobile devices.
+It's built with **Next.js**, **React**, **TypeScript**, **Tailwind CSS** and **shadcn/ui**. The room is drawn entirely in SVG, with no images, and every sound is synthesized with the Web Audio API.
 
-> **Status:** Chrona is actively under development. Core time-management tools are available, with additional productivity utilities planned.
+> **Status:** Chrona is actively under development.
 
 ---
 
-## Features
+## The room
 
-### Productivity Tools
+* 🏠 **A real room in perspective.** It has a bookcase, desk, chair, bed, rug and clutter, drawn with a small one-point-perspective camera ([`components/scene/projection.ts`](components/scene/projection.ts)).
+* 🌤️ **Time of day.** Morning, day, evening and night follow your clock, or you can pick one.
+* 🌸 **Seasons.** Sakura in spring, fireflies and fireworks in summer, falling leaves and persimmons in autumn, snow in winter.
+* 🌧️ **Weather.** Clear, drizzle, storm or snow, with drops running down the glass and lightning at night.
+* ☀️ **Light.** Sun and moon patches are cast through the window panes onto the floor and desk, with soft light shafts and dust motes, plus a warm desk lamp.
+* 🐈 **Mochi has a mind of her own.** She sleeps, stretches, sits, grooms, yawns, bats her yarn and watches the window when a train or birds pass.
+* 🚃 **Things happen outside.** Trains roll through the valley, birds fly over, stars fall, a plane blinks past at night.
+* 👆 **Almost everything is clickable.** Pet the cat, sip the tea, switch the lamp, play the radio, pull an omikuji fortune, ring the summer fūrin, or tap the teru teru bōzu to change the weather.
+* 🎧 **Ambient sound.** Rain, wind, birds, cicadas and crickets, all generated live.
 
-* ⏱️ **Timer** — Create countdown timers for studying, cooking, workouts, and everyday tasks.
-* 🕒 **Stopwatch** — Measure elapsed time with lap support.
-* 🍅 **Pomodoro Timer** — Alternate between focus sessions, short breaks, and long breaks.
-* 🌍 **World Clock** — Track the current time across multiple cities and time zones.
-* ⏰ **Alarms** — Create multiple browser alarms with custom times and labels.
+## Tools
 
-### Application Features
+* ⏳ **Timer** with presets, a time editor and quick adds.
+* ⏱️ **Stopwatch** with laps, highlighting your best and slowest.
+* 🍅 **Pomodoro** with custom lengths, auto-start options and daily stats.
+* 🌍 **World clock** with a draggable 24-hour timeline to compare times across cities.
+* ⏰ **Alarms** with repeat days and a sound per alarm.
 
-* 💾 **Local persistence** — Alarms and supported preferences are stored in the browser.
-* 🌙 **Light and dark mode**
-* 📱 **Responsive interface** for desktop, tablet, and mobile
-* 🧭 **Sidebar navigation** with a mobile-friendly tool panel
-* 💬 **Feedback form** for suggestions and bug reports
-* 📊 **Privacy-conscious analytics consent**
-* ⚡ **Fast client-side interactions**
-* 🎨 **Reusable and composable UI components**
-* 🔒 **No account required - for now**
+The timer, stopwatch and Pomodoro keep running while you switch tools, and even across reloads. They show up in the top bar and the tab title, and finish with a sound on any page.
+
+## Extras
+
+* 🎵 **15 synthesized tones** in five categories (gentle, classic, Japanese, cute, nature), with previews.
+* ⌨️ **Keyboard shortcuts:** Space start/pause, R reset, L lap, S skip, G watch the rain.
+* 🔔 **Optional desktop notifications** when something finishes in a background tab.
+* 👁️ **Watch-the-rain mode** hides the interface; the interface also fades while you're idle.
+* 💾 **Everything stays in your browser.** No account.
 
 ---
 
@@ -42,6 +50,7 @@ It combines essential time-management tools—including a countdown timer, stopw
 | `/pomodoro`    | Pomodoro timer  |
 | `/world-clock` | World clock     |
 | `/alarms`      | Browser alarms  |
+| `/settings`    | Sounds, room and clock settings |
 | `/feedback`    | Feedback form   |
 
 ---
@@ -56,7 +65,7 @@ It combines essential time-management tools—including a countdown timer, stopw
 * **Icons:** Lucide React
 * **State Management:** Zustand
 * **Persistence:** Zustand persist middleware and browser storage
-* **Analytics:** Microsoft Clarity
+* **Analytics:** Microsoft Clarity and Vercel Analytics
 * **Email:** Resend
 * **Deployment:** Vercel
 
@@ -66,25 +75,12 @@ It combines essential time-management tools—including a countdown timer, stopw
 
 Chrona uses the Next.js App Router and separates application-shell concerns from individual productivity tools.
 
-Each tool is organized into focused components that may include:
-
-* Main tool interface
-* Display components
-* Control components
-* Dialogs and supporting UI
-* Custom hooks for tool logic
-* Zustand stores for shared or persistent state
-* Server-rendered route metadata
-
-Shared application components handle:
-
-* Sidebar navigation
-* Top navigation
-* Responsive mobile panels
-* Theme support
-* Analytics consent
-* SEO utilities
-* Reusable shadcn/ui primitives
+* **`components/scene/`** is the room. `landscape.tsx` draws the view outside, `rain-canvas.tsx` the weather, `room-*.tsx` the room in perspective (via `projection.ts`), `room-cat.tsx` Mochi and her behavior, and `ambience-sound.ts` the soundscape.
+* **`components/shell/`** holds the interface around the tools: the top bar, dock, tool frame, dialogue box and room controls.
+* **`components/tools/`** holds one folder per tool.
+* **`stores/`** contains Zustand stores. The timer, Pomodoro and stopwatch run on wall-clock end times, so they survive navigation and reloads.
+* **`lib/scene-time.ts`** resolves time of day, season and weather. A tiny boot script applies them before the first paint, so there's no flash.
+* **`lib/sounds.ts`** and **`lib/sfx.ts`** synthesize every tone and sound effect.
 
 This structure keeps the application modular and makes it easier to introduce new tools without duplicating infrastructure.
 
