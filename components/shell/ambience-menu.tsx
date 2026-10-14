@@ -18,24 +18,27 @@ import { useResolvedScene } from "@/stores/scene-store";
 
 import { RoomControls } from "./room-controls";
 
+const ICONS: Record<string, LucideIcon> = {
+  drizzle: CloudDrizzle,
+  storm: CloudLightning,
+  snow: Snowflake,
+  night: Moon,
+  clear: Sun,
+  cloudy: CloudSun,
+  loading: CloudMoonRain,
+};
+
 /** The room's weather and time, as one little icon. */
-function useWeatherIcon(): LucideIcon {
+function WeatherIcon() {
   const mounted = useMounted();
   const { weather, dark } = useResolvedScene();
+  const key = !mounted ? "loading" : weather !== "clear" ? weather : dark ? "night" : "clear";
+  const Icon = ICONS[key] ?? CloudSun;
 
-  if (!mounted) {
-    return CloudMoonRain;
-  }
-
-  if (weather === "drizzle") return CloudDrizzle;
-  if (weather === "storm") return CloudLightning;
-  if (weather === "snow") return Snowflake;
-  return dark ? Moon : weather === "clear" ? Sun : CloudSun;
+  return <Icon className="size-[17px]" strokeWidth={1.7} />;
 }
 
 export function AmbienceMenu() {
-  const Icon = useWeatherIcon();
-
   return (
     <Popover.Root>
       <Popover.Trigger
@@ -47,7 +50,7 @@ export function AmbienceMenu() {
             className="size-8 rounded-full text-foreground/55 hover:text-foreground"
             aria-label="Room settings: time, season, weather and sound"
           >
-            <Icon className="size-[17px]" strokeWidth={1.7} />
+            <WeatherIcon />
           </Button>
         }
       />

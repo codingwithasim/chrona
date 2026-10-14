@@ -1,5 +1,6 @@
 /** Every keyboard shortcut, shown in Settings and on the ? sheet. */
 export const SHORTCUTS: Array<[key: string, description: string]> = [
+  ["Ctrl K", "Quick menu: jump anywhere, start a timer, change the room"],
   ["Space", "Start or pause the timer, stopwatch or pomodoro"],
   ["R", "Reset"],
   ["L", "Lap (stopwatch)"],

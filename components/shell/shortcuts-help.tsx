@@ -1,16 +1,24 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useShortcuts } from "@/hooks/use-shortcuts";
 import { SHORTCUTS } from "@/lib/shortcuts";
+
+import { SHORTCUTS_EVENT } from "./command-menu";
 
 /** Press ? anywhere for a little sheet of shortcuts. */
 export function ShortcutsHelp() {
   const [open, setOpen] = useState(false);
 
   useShortcuts({ "?": () => setOpen((value) => !value) });
+
+  useEffect(() => {
+    const show = () => setOpen(true);
+    window.addEventListener(SHORTCUTS_EVENT, show);
+    return () => window.removeEventListener(SHORTCUTS_EVENT, show);
+  }, []);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>

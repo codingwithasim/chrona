@@ -20,7 +20,7 @@ export function useShortcuts(map: Record<string, () => void>) {
         return;
       }
 
-      const target = event.target as HTMLElement | null;
+      const target = event.target instanceof HTMLElement ? event.target : null;
 
       if (
         target &&

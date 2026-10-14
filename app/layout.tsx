@@ -10,6 +10,7 @@ import { createRootStructuredData, rootMetadata } from "@/lib/seo";
 import { SCENE_BOOT_SCRIPT } from "@/lib/scene-time";
 import { RoomScene } from "@/components/scene/room-scene";
 import { SceneController } from "@/components/scene/scene-controller";
+import { CommandMenu } from "@/components/shell/command-menu";
 import { DialogueBox } from "@/components/shell/dialogue-box";
 import { GazeExit } from "@/components/shell/gaze-exit";
 import { KeepAwake } from "@/components/shell/keep-awake";
@@ -100,6 +101,7 @@ export default function RootLayout({
           <GazeExit />
           <NotesSheet />
           <ShortcutsHelp />
+          <CommandMenu />
 
           <VercelAnalytics/>
           <ClarityAnalytics/>

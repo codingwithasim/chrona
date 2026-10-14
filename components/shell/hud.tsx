@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import {
   Eye,
   Hourglass,
+  Search,
   Settings,
   Timer,
   TimerReset,
@@ -25,6 +26,7 @@ import { useStopwatchElapsed, useStopwatchStore } from "@/stores/stopwatch-store
 import { useTimerStore } from "@/stores/timer-store";
 
 import { AmbienceMenu } from "./ambience-menu";
+import { COMMAND_EVENT } from "./command-menu";
 import { LogoMark } from "./logo-mark";
 import { MusicPlayer } from "./music-player";
 import { SoundMixer } from "./sound-mixer";
@@ -258,6 +260,10 @@ export function Hud() {
 
         <div data-chrome className="panel flex items-center gap-0.5 rounded-full p-0.5">
           <Clock />
+
+          <HudButton label="Quick menu (Ctrl K)" onClick={() => window.dispatchEvent(new Event(COMMAND_EVENT))}>
+            <Search className="size-[17px]" strokeWidth={1.7} />
+          </HudButton>
 
           <AmbienceMenu />
 
