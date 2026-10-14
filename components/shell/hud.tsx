@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  CloudMoonRain,
   Eye,
   Hourglass,
   Settings,
@@ -26,6 +25,7 @@ import { useStopwatchElapsed, useStopwatchStore } from "@/stores/stopwatch-store
 import { useTimerStore } from "@/stores/timer-store";
 
 import { AmbienceMenu } from "./ambience-menu";
+import { LogoMark } from "./logo-mark";
 import { SoundMixer } from "./sound-mixer";
 import { formatClock } from "./digits";
 
@@ -196,10 +196,7 @@ export function Logo({ className, ...props }: { className?: string; "data-chrome
         className
       )}
     >
-      <CloudMoonRain
-        className="size-[18px] transition-transform duration-500 group-hover:-rotate-6"
-        strokeWidth={1.7}
-      />
+      <LogoMark className="size-[19px] transition-transform duration-500 group-hover:-rotate-6" />
       <span className="font-display text-[15px] tracking-[0.12em]">Chrona</span>
     </Link>
   );

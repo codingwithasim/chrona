@@ -43,12 +43,12 @@ export const viewport: Viewport = {
     {
       media:
         "(prefers-color-scheme: light)",
-      color: "#ece3dc",
+      color: "#dde4e9",
     },
     {
       media:
         "(prefers-color-scheme: dark)",
-      color: "#15122b",
+      color: "#0e1626",
     },
   ],
 };

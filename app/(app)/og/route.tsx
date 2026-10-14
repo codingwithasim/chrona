@@ -45,7 +45,7 @@ export function GET(
           height: "100%",
           overflow: "hidden",
           background:
-            "linear-gradient(135deg, #09090b 0%, #18181b 55%, #27272a 100%)",
+            "linear-gradient(160deg, #22305a 0%, #3a4a80 55%, #6f7ab3 100%)",
           color: "#fafafa",
           fontFamily:
             "Arial, Helvetica, sans-serif",
@@ -109,25 +109,14 @@ export function GET(
               gap: 18,
             }}
           >
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent:
-                  "center",
-                width: 58,
-                height: 58,
-                border:
-                  "1px solid rgba(255,255,255,0.18)",
-                borderRadius: 16,
-                background:
-                  "rgba(255,255,255,0.09)",
-                fontSize: 31,
-                fontWeight: 700,
-              }}
-            >
-              C
-            </div>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={new URL("/icons/icon-192.png", request.url).toString()}
+              width={58}
+              height={58}
+              alt=""
+              style={{ borderRadius: 14 }}
+            />
 
             <div
               style={{

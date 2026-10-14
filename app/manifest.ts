@@ -21,8 +21,8 @@ export default function manifest():
     display: "standalone",
     orientation: "any",
 
-    background_color: "#09090b",
-    theme_color: "#09090b",
+    background_color: "#1f2a4d",
+    theme_color: "#2a3864",
 
     lang: siteConfig.language,
 
