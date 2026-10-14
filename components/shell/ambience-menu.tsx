@@ -19,7 +19,7 @@ import { useMounted } from "@/hooks/use-now";
 import type { Season, TimeOfDay, Weather } from "@/lib/scene-time";
 import { useResolvedScene, useSceneStore } from "@/stores/scene-store";
 
-import { RoomControls } from "./room-controls";
+import { RoomBanner, RoomControls } from "./room-controls";
 
 const ICONS: Record<string, LucideIcon> = {
   drizzle: CloudDrizzle,
@@ -93,29 +93,27 @@ export function AmbienceMenu() {
           collisionPadding={12}
           className="isolate z-50"
         >
-          <Popover.Popup className="panel max-h-[min(85dvh,46rem)] w-[min(25rem,calc(100vw-1.5rem))] origin-(--transform-origin) overflow-y-auto p-4 text-sm outline-none data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95">
-            <div className="mb-3 flex items-center justify-between gap-3">
-              <Popover.Title className="flex items-baseline gap-2 font-display text-[17px]">
+          <Popover.Popup className="panel max-h-[min(85dvh,40rem)] w-[min(23rem,calc(100vw-1.5rem))] origin-(--transform-origin) overflow-y-auto p-3 text-sm outline-none data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95">
+            <RoomBanner>
+              <Popover.Title className="flex items-baseline gap-2 font-display text-[17px] text-white [text-shadow:0_1px_4px_rgb(0_0_0/0.35)]">
                 The room
-                <span className="font-sans text-[11px] text-muted-foreground">へや</span>
+                <span className="font-sans text-[11px] text-white/75">へや</span>
               </Popover.Title>
 
               <button
                 type="button"
                 onClick={surprise}
-                className="chip group"
-                title="A random time, season and weather"
+                title="Surprise me: a random time, season and weather"
+                aria-label="Surprise me"
+                className="pointer-events-auto grid size-8 place-items-center rounded-full bg-black/25 text-white backdrop-blur-sm transition-transform duration-500 hover:rotate-180"
               >
-                <Dices className="size-3.5 transition-transform duration-500 group-hover:rotate-180" strokeWidth={1.8} />
-                Surprise me
+                <Dices className="size-4" strokeWidth={1.8} />
               </button>
+            </RoomBanner>
+
+            <div className="px-1 pt-4 pb-1">
+              <RoomControls onHappen={watch} />
             </div>
-
-            <RoomControls onHappen={watch} />
-
-            <p className="mt-5 text-center text-[11px] text-muted-foreground">
-              Psst… almost everything in the room reacts when you click it 🐾
-            </p>
           </Popover.Popup>
         </Popover.Positioner>
       </Popover.Portal>

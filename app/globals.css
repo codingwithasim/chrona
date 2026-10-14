@@ -973,17 +973,13 @@
   to { height: 100%; }
 }
 
-/* The room menu's little window, and its animated weather icons. */
+/* The room menu's little sky. */
 .rp-rain { animation: rp-fall 0.85s linear infinite; }
 .rp-snow { animation: rp-snow 6s linear infinite; }
 .rp-flash { opacity: 0; animation: rp-flash 5.5s ease-out infinite; }
 .rp-drift { animation: rp-drift 14s ease-in-out infinite alternate; }
 .rp-tail { transform-box: fill-box; transform-origin: 0% 100%; animation: rp-tail 2.6s ease-in-out infinite; }
 .rp-steam { animation: rp-steam 2.4s ease-in-out infinite; }
-.wx-spin { animation: wx-spin 12s linear infinite; }
-.wx-bob { animation: wx-bob 2.2s ease-in-out infinite; }
-.wx-flicker { animation: wx-flicker 3.2s steps(1) infinite; }
-.wx-hop { animation: wx-hop 1.6s ease-in-out infinite; }
 
 @keyframes rp-fall { to { transform: translate(-14px, 150px); } }
 @keyframes rp-snow {
@@ -1000,10 +996,6 @@
 @keyframes rp-drift { from { transform: translateX(-8px); } to { transform: translateX(10px); } }
 @keyframes rp-tail { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(-16deg); } }
 @keyframes rp-steam { 0%, 100% { opacity: 0.2; transform: translateY(0); } 50% { opacity: 0.8; transform: translateY(-2px); } }
-@keyframes wx-spin { to { transform: rotate(360deg); } }
-@keyframes wx-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(2px); } }
-@keyframes wx-flicker { 0%, 100% { opacity: 1; } 88% { opacity: 0.35; } 90% { opacity: 1; } 92% { opacity: 0.4; } }
-@keyframes wx-hop { 0%, 100% { transform: translateY(0); } 40% { transform: translateY(-2.5px); } }
 
 /* The star lamp's stars: only after dark, and only while it's on. */
 .sc-starfield { opacity: 0; transition: opacity 2.5s ease; }

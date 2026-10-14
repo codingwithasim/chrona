@@ -123,11 +123,14 @@ export function RoomPreview({
   time,
   season,
   weather,
+  framed = true,
   className,
 }: {
   time: TimeOfDay;
   season: Season;
   weather: Weather;
+  /** Draw the window frame, the sill and the cat. Off for a slim banner. */
+  framed?: boolean;
   className?: string;
 }) {
   const hills = HILLS[season];
@@ -136,7 +139,12 @@ export function RoomPreview({
   const id = useId().replace(/:/g, "");
 
   return (
-    <svg viewBox="0 0 320 150" className={cn("block w-full", className)} aria-hidden="true">
+    <svg
+      viewBox="0 0 320 150"
+      preserveAspectRatio={framed ? undefined : "xMidYMid slice"}
+      className={cn("block w-full", className)}
+      aria-hidden="true"
+    >
       <defs>
         <linearGradient id={`${id}-sky`} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stopColor={top} />
@@ -198,6 +206,8 @@ export function RoomPreview({
         )}
 
         {/* The window: frame, cross, and a sill with the cat on it */}
+        {framed && (
+        <>
         <g fill="none" stroke="#fbf7f0" strokeOpacity="0.95">
           <rect x="1.5" y="1.5" width="317" height="147" rx="13" strokeWidth="3" />
           <path d="M160 0 V150 M0 64 H320" strokeWidth="3.4" />
@@ -217,6 +227,8 @@ export function RoomPreview({
           <path d="M5 -8 q4 0 4 3.5 q0 3.5 -4 3.5" stroke="#8fb3a8" strokeWidth="1.6" fill="none" />
           {time !== "day" && <path d="M-1 -14 q2 -3 0 -6 M2 -14 q2 -3 0 -6" stroke="#ffffff" strokeOpacity="0.6" strokeWidth="1" fill="none" className="rp-steam" />}
         </g>
+        </>
+        )}
       </g>
     </svg>
   );
