@@ -28,12 +28,13 @@ export function MobileRightPanel() {
         <TooltipTrigger
           render={
             <SheetTrigger
-              className={"lg:hidden"}
+              className={"xl:hidden"}
               render={
                 <Button
                   type="button"
                   variant="ghost"
                   size="icon"
+                  className="rounded-full"
                   aria-label={`Open ${config.title}`}
                 >
                   <LucideSlidersHorizontal className="size-5" />
@@ -43,7 +44,7 @@ export function MobileRightPanel() {
           }
         />
 
-        <TooltipContent>
+        <TooltipContent side="bottom">
           Open {config.title}
         </TooltipContent>
       </Tooltip>
@@ -58,9 +59,12 @@ export function MobileRightPanel() {
           p-0
         "
       >
-        <SheetHeader className="shrink-0 border-b px-5 py-4 text-left">
-          <SheetTitle className="text-base">
+        <SheetHeader className="shrink-0 border-b-2 border-dashed px-5 py-4 text-left">
+          <SheetTitle className="flex items-baseline gap-2 font-display text-base">
             {config.title}
+            <span className="font-sans text-xs font-bold text-muted-foreground">
+              {config.jp}
+            </span>
           </SheetTitle>
         </SheetHeader>
 

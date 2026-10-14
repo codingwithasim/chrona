@@ -9,11 +9,8 @@ import { useAlarmStore } from "@/stores/alarms-store";
 
 import { AlarmDialog } from "./alarm-dialog";
 import { AlarmList } from "./alarm-list";
-import { useAlarmChecker } from "./use-alarm-checker";
 
 export function Alarms() {
-  useAlarmChecker();
-
   const [addOpen, setAddOpen] = useState(false);
 
   const editingAlarmId = useAlarmStore(

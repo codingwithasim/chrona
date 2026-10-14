@@ -390,6 +390,7 @@ export const useAlarmStore =
       }),
       {
         name: "alarms-storage",
+        skipHydration: true,
 
         /**
          * UI state should not survive

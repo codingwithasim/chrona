@@ -1,7 +1,8 @@
 "use client";
 
+import { Flag, Pause, Play, RotateCcw } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
-import { Pause, Play, RotateCcw } from "lucide-react";
 
 type Props = {
   status: "idle" | "running" | "paused";
@@ -16,33 +17,35 @@ export function StopwatchControls({
   start,
   pause,
   reset,
-  lap
+  lap,
 }: Props) {
   return (
-    <div className="flex gap-4">
+    <div className="flex flex-wrap justify-center gap-3">
       {status === "running" ? (
-        <Button onClick={pause}>
-          <Pause className="mr-2 h-4 w-4" />
+        <Button size="lg" onClick={pause}>
+          <Pause />
           Pause
         </Button>
       ) : (
-        <Button onClick={start}>
-          <Play className="mr-2 h-4 w-4" />
-          Start
+        <Button size="lg" onClick={start}>
+          <Play />
+          {status === "paused" ? "Resume" : "Start"}
         </Button>
       )}
 
-      <Button variant="outline" onClick={reset}>
-        <RotateCcw className="mr-2 h-4 w-4" />
-        Reset
-      </Button>
-
       <Button
+        size="lg"
         variant="secondary"
         onClick={lap}
         disabled={status !== "running"}
       >
+        <Flag />
         Lap
+      </Button>
+
+      <Button size="lg" variant="outline" onClick={reset}>
+        <RotateCcw />
+        Reset
       </Button>
     </div>
   );

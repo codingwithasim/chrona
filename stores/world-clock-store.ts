@@ -213,6 +213,7 @@ export const useWorldClockStore = create<WorldClockState>()(
     }),
     {
       name: "world-clock-storage",
+      skipHydration: true,
       partialize: (state) => ({
         cities: state.cities,
       }),

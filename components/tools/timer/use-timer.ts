@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { playAlarm } from "@/lib/play-alarm";
+import { say } from "@/stores/dialogue-store";
 
 export type TimerStatus = "idle" | "running" | "paused" | "finished";
 
@@ -32,7 +33,11 @@ export function useTimer(initialSeconds: number) {
         setStatus("finished");
         endTimeRef.current = null;
         clearInterval(interval);
-        playAlarm()
+        playAlarm();
+        say({
+          text: "Ding! Time's up~ Stretch a little and sip some tea.",
+          tone: "alert",
+        });
       }
     }, 250);
 

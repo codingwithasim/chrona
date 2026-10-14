@@ -1,67 +1,62 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { useTimerStore } from "@/stores/timer-store";
 import { Pause, Play, RotateCcw } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
+
+import type { TimerStatus } from "./use-timer";
+
 type TimerControlsProps = {
-  status: "idle" | "running" | "paused" | "finished";
+  status: TimerStatus;
   start: () => void;
   pause: () => void;
   reset: () => void;
+  addTime: (seconds: number) => void;
 };
 
-const stamps = [1, 5, 10, 25]
+const quickAdds = [1, 5, 10, 25];
 
 export function TimerControls({
   status,
   start,
   pause,
   reset,
+  addTime,
 }: TimerControlsProps) {
-
-  const actions = useTimerStore(s => s.actions)
-
   return (
-    <div className="flex flex-col gap-4">
-
-      <div>
-        {
-          stamps.map(stamp => {
-            return (
-              <Button
-                key={stamp}
-                variant={"ghost"}
-                className="cursor-pointer text-black/50 dark:text-white/50 hover:bg-background"
-                onClick={()=> actions?.addTime?.(stamp * 60)}
-              >
-                +{stamp} min
-              </Button>
-            )
-          })
-        }
+    <div className="flex flex-col items-center gap-6">
+      <div className="flex flex-wrap justify-center gap-2">
+        {quickAdds.map((minutes) => (
+          <Button
+            key={minutes}
+            variant="outline"
+            size="sm"
+            className="rounded-full"
+            onClick={() => addTime(minutes * 60)}
+          >
+            +{minutes} min
+          </Button>
+        ))}
       </div>
 
-      <div className="flex gap-4 justify-center">
+      <div className="flex gap-3">
         {status === "running" ? (
-          <Button onClick={pause}>
-            <Pause className="mr-2 h-4 w-4" />
+          <Button size="lg" onClick={pause}>
+            <Pause />
             Pause
           </Button>
         ) : (
-          <Button onClick={start}>
-            <Play className="mr-2 h-4 w-4" />
+          <Button size="lg" onClick={start}>
+            <Play />
             {status === "paused" ? "Resume" : "Start"}
           </Button>
         )}
 
-        <Button variant="outline" onClick={reset}>
-          <RotateCcw className="mr-2 h-4 w-4" />
+        <Button size="lg" variant="outline" onClick={reset}>
+          <RotateCcw />
           Reset
         </Button>
       </div>
-
-      
     </div>
   );
 }

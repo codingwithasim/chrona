@@ -82,6 +82,7 @@ export const useTimerStore = create<TimerStore>()(
     }),
     {
       name: "timer-store",
+      skipHydration: true,
 
       partialize: (state) => ({
         presets: state.presets,

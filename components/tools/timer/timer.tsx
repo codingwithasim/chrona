@@ -1,54 +1,81 @@
 "use client";
 
-import { Card, CardContent } from "@/components/ui/card";
+import { useEffect, useRef } from "react";
 
-import { TimerDisplay } from "./timer-display";
-import { TimerControls } from "./timer-controls";
-import { TimerProgress } from "./timer-progress";
-import { useEffect } from "react";
-
-import { useTimer } from "./use-timer";
+import { Digits, formatClock } from "@/components/shell/digits";
+import { ProgressRing } from "@/components/shell/progress-ring";
+import { ToolFrame } from "@/components/shell/tool-frame";
 import { useTimerStore } from "@/stores/timer-store";
+
+import { TimerControls } from "./timer-controls";
+import { type TimerStatus, useTimer } from "./use-timer";
+
+const statusLabels: Record<TimerStatus, string> = {
+  idle: "READY · じゅんび",
+  running: "COUNTING · カウント中",
+  paused: "PAUSED · ひとやすみ",
+  finished: "DONE · おわり",
+};
 
 export function TimerTool() {
   const timer = useTimer(25 * 60);
+  const setActions = useTimerStore((state) => state.setActions);
 
-  const setActions = useTimerStore((s) => s.setActions)
+  // The presets panel calls into the latest timer functions.
+  const latest = useRef(timer);
 
-    useEffect(() => {
-      setActions({
-        setDuration: timer.changeDuration,
-        addTime: timer.addTime,
-        start: timer.start,
-        reset: timer.reset,
-      });
+  useEffect(() => {
+    latest.current = timer;
+  });
 
-      return () => setActions(undefined);
-    }, [timer]);
+  useEffect(() => {
+    setActions({
+      setDuration: (seconds) => latest.current.changeDuration(seconds),
+      addTime: (seconds) => latest.current.addTime(seconds),
+      start: () => latest.current.start(),
+      reset: () => latest.current.reset(),
+    });
+
+    return () => setActions(undefined);
+  }, [setActions]);
+
+  const progress =
+    timer.duration > 0
+      ? (timer.duration - timer.remaining) / timer.duration
+      : 0;
 
   return (
-    <div className="flex h-full items-center justify-center">
-      <Card className="w-full ring-0 shadow-none bg-background max-w-4xl rounded-3xl">
-        <CardContent className="flex flex-col items-center gap-10 py-16">
-          
-          <TimerDisplay remaining={timer.remaining} />
+    <ToolFrame href="/timer">
+      <div className="flex flex-col items-center gap-8">
+        <ProgressRing
+          value={progress}
+          color="var(--sakura)"
+          className="w-[min(76vw,20rem)]"
+        >
+          <div className="flex flex-col items-center gap-2">
+            <span className="text-[11px] font-bold tracking-[0.2em] text-muted-foreground">
+              {statusLabels[timer.status]}
+            </span>
 
-          {/* NEW: progress bar */}
-          <div className="w-full max-w-md px-6">
-            <TimerProgress
-              remaining={timer.remaining}
-              duration={timer.duration}
+            <Digits
+              value={formatClock(timer.remaining)}
+              className="cel-text text-[clamp(2.6rem,12vw,4.1rem)]"
             />
-          </div>
 
-          <TimerControls
-            status={timer.status}
-            start={timer.start}
-            pause={timer.pause}
-            reset={timer.reset}
-          />
-        </CardContent>
-      </Card>
-    </div>
+            <span className="text-xs text-muted-foreground">
+              of {formatClock(timer.duration)}
+            </span>
+          </div>
+        </ProgressRing>
+
+        <TimerControls
+          status={timer.status}
+          start={timer.start}
+          pause={timer.pause}
+          reset={timer.reset}
+          addTime={timer.addTime}
+        />
+      </div>
+    </ToolFrame>
   );
 }

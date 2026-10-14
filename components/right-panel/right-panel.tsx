@@ -1,12 +1,13 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { usePathname } from "next/navigation";
 
+import { cn } from "@/lib/utils";
+
+import { PomodoroControls } from "./pomodoro-controls";
 import { StopwatchActions } from "./stopwatch-actions";
 import { TimerPresets } from "./timer-presets";
-import { PomodoroControls } from "./pomodoro-controls";
-import { cn } from "@/lib/utils";
-import { ReactNode } from "react";
 
 type RightPanelProps = {
   className?: string;
@@ -14,6 +15,7 @@ type RightPanelProps = {
 
 type RightPanelConfig = {
   title: string;
+  jp: string;
   content: ReactNode;
 };
 
@@ -24,18 +26,21 @@ export function useRightPanelConfig(): RightPanelConfig | null {
     case "/timer":
       return {
         title: "Timer Presets",
+        jp: "プリセット",
         content: <TimerPresets />,
       };
 
     case "/stopwatch":
       return {
-        title: "Stopwatch Controls",
+        title: "Laps",
+        jp: "ラップ",
         content: <StopwatchActions />,
       };
 
     case "/pomodoro":
       return {
         title: "Pomodoro Controls",
+        jp: "せってい",
         content: <PomodoroControls />,
       };
 
@@ -45,21 +50,33 @@ export function useRightPanelConfig(): RightPanelConfig | null {
 }
 
 export function RightPanel({ className }: RightPanelProps) {
-  const pathname = usePathname();
+  const config = useRightPanelConfig();
 
-  if (pathname === "/world-clock") return null;
-  if (pathname === "/alarms") return null;
-  if (pathname === "/feedback") return null;
+  if (!config) {
+    return null;
+  }
 
   return (
-    <aside className={cn("flex h-full w-96 shrink-0 flex-col border-l bg-background p-4", className)}>
-      <h2 className="mb-4 text-sm font-medium text-muted-foreground">
-        Controls
-      </h2>
+    <aside
+      data-ui
+      className={cn(
+        "panel mt-6 mb-6 w-80 shrink-0 flex-col self-start overflow-hidden",
+        "max-h-[calc(100%-3rem)]",
+        className
+      )}
+    >
+      <div className="flex items-baseline justify-between gap-2 border-b-2 border-dashed border-border px-5 pt-4 pb-3">
+        <h2 className="font-display text-base">
+          {config.title}
+        </h2>
+        <span className="text-xs font-bold text-muted-foreground">
+          {config.jp}
+        </span>
+      </div>
 
-      {pathname === "/timer" && <TimerPresets />}
-      {pathname === "/stopwatch" && <StopwatchActions />}
-      {pathname === "/pomodoro" && <PomodoroControls />}
+      <div className="min-h-0 flex-1 overflow-y-auto p-5">
+        {config.content}
+      </div>
     </aside>
   );
 }

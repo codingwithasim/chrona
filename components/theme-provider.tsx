@@ -11,7 +11,8 @@ export function ThemeProvider({
   return (
     <NextThemesProvider
       attribute="class"
-      defaultTheme="system"
+      // Night is Chrona's signature look; day is a rainy afternoon.
+      defaultTheme="dark"
       enableSystem
       disableTransitionOnChange
     >

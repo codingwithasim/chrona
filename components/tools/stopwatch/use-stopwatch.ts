@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+
 import { useUIStore } from "@/components/stores/ui-store";
-import { playAlarm } from "@/lib/play-alarm";
 
 type Status = "idle" | "running" | "paused";
 
-type Lap = {
+export type Lap = {
   id: number;
   split: number;
   total: number;
@@ -15,21 +15,22 @@ type Lap = {
 export function useStopwatch() {
   const [elapsed, setElapsed] = useState(0);
   const [status, setStatus] = useState<Status>("idle");
+  const [laps, setLaps] = useState<Lap[]>([]);
 
   const startTimeRef = useRef<number | null>(null);
-  const pausedAtRef = useRef<number>(0);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
-
-  const [laps, setLaps] = useState<Lap[]>([]);
+  const pausedAtRef = useRef(0);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const lastLapRef = useRef(0);
 
-  const setStopwatchLaps = useUIStore(
-    (s) => s.setStopwatchLaps
-  );
+  const setStopwatchLaps = useUIStore((s) => s.setStopwatchLaps);
+  const setStopwatchActions = useUIStore((s) => s.setStopwatchActions);
 
-  const setStopwatchActions = useUIStore(
-    (s) => s.setStopwatchActions
-  );
+  function stopTicking() {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+  }
 
   function lap() {
     if (status !== "running") return;
@@ -55,25 +56,25 @@ export function useStopwatch() {
 
     setStatus("running");
 
+    stopTicking();
     intervalRef.current = setInterval(() => {
       if (!startTimeRef.current) return;
 
       setElapsed(Date.now() - startTimeRef.current);
-    }, 100);
+    }, 50);
   }
 
   function pause() {
     if (status !== "running") return;
 
     setStatus("paused");
-
-    if (intervalRef.current) clearInterval(intervalRef.current);
+    stopTicking();
 
     pausedAtRef.current = elapsed;
   }
 
   function reset() {
-    if (intervalRef.current) clearInterval(intervalRef.current);
+    stopTicking();
 
     setElapsed(0);
     setStatus("idle");
@@ -93,14 +94,27 @@ export function useStopwatch() {
     setStopwatchLaps(laps);
   }, [laps, setStopwatchLaps]);
 
+  // The laps panel calls into the latest functions, not the
+  // ones captured on the first render.
+  const latest = useRef({ lap, clearLaps });
+
+  useEffect(() => {
+    latest.current = { lap, clearLaps };
+  });
+
   useEffect(() => {
     setStopwatchActions({
-      lap,
-      clearLaps,
+      lap: () => latest.current.lap(),
+      clearLaps: () => latest.current.clearLaps(),
     });
 
-    return () => setStopwatchActions(undefined);
-  }, []);
+    return () => {
+      setStopwatchActions(undefined);
+      setStopwatchLaps([]);
+    };
+  }, [setStopwatchActions, setStopwatchLaps]);
+
+  useEffect(() => stopTicking, []);
 
   return {
     elapsed,
@@ -110,6 +124,6 @@ export function useStopwatch() {
     reset,
     lap,
     clearLaps,
-    laps
+    laps,
   };
 }
