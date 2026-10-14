@@ -49,21 +49,21 @@ export function AlarmCard({
   return (
     <article
       className={cn(
-        "panel flex flex-col gap-3 p-4 transition-opacity",
-        !alarm.enabled && "opacity-60"
+        "group flex flex-col gap-3 rounded-3xl border border-foreground/[0.06] bg-foreground/[0.025] p-5 transition-all duration-300 hover:bg-foreground/[0.04]",
+        !alarm.enabled && "opacity-55"
       )}
       data-clarity-mask="true"
     >
       <header className="flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <h2 className="truncate font-bold">{alarmLabel}</h2>
-          <p className="flex items-center gap-1 text-xs text-muted-foreground">
-            <BellRing className="size-3" />
+          <h2 className="truncate text-sm font-medium">{alarmLabel}</h2>
+          <p className="flex items-center gap-1 text-[11px] text-muted-foreground/80">
+            <BellRing className="size-3" strokeWidth={1.7} />
             {sound?.name ?? "Default"}
           </p>
         </div>
 
-        <div className="-mt-1 -mr-1 flex shrink-0 items-center">
+        <div className="-mt-1 -mr-1 flex shrink-0 items-center opacity-0 transition-opacity duration-300 group-hover:opacity-100 focus-within:opacity-100">
           <Button variant="ghost" size="icon-sm" onClick={onEdit} aria-label={`Edit ${alarmLabel}`}>
             <Pencil />
           </Button>
@@ -75,9 +75,9 @@ export function AlarmCard({
 
       <div className="flex items-end justify-between gap-3">
         <div className="flex items-baseline gap-1.5">
-          <Digits value={`${hour}:${minute}`} className="cel-text text-[2.6rem]" />
+          <Digits value={`${hour}:${minute}`} className="text-[2.3rem]" />
           {meridiem && (
-            <span className="text-sm font-bold text-muted-foreground">{meridiem}</span>
+            <span className="text-xs text-muted-foreground/80">{meridiem}</span>
           )}
         </div>
 
@@ -98,10 +98,10 @@ export function AlarmCard({
                 key={day.day}
                 aria-hidden="true"
                 className={cn(
-                  "grid size-6 place-items-center rounded-full text-[10px] font-bold",
+                  "grid size-6 place-items-center rounded-full text-[10px]",
                   active
-                    ? "border border-black/10 bg-lavender text-[#1b1530]"
-                    : "border border-border text-muted-foreground"
+                    ? "bg-foreground/10 text-foreground"
+                    : "text-muted-foreground/50"
                 )}
               >
                 {day.jp}
@@ -110,8 +110,8 @@ export function AlarmCard({
           })}
         </div>
 
-        <span className="flex items-center gap-1 text-xs font-bold text-muted-foreground">
-          {repeat.length > 0 && <Repeat className="size-3" />}
+        <span className="flex items-center gap-1 text-[11px] text-muted-foreground/80">
+          {repeat.length > 0 && <Repeat className="size-3" strokeWidth={1.7} />}
           {remaining}
         </span>
       </div>

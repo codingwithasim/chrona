@@ -1,5 +1,6 @@
 "use client";
 
+import { StatusLine } from "@/components/shell/controls";
 import { Digits, formatClock } from "@/components/shell/digits";
 import { ProgressRing } from "@/components/shell/progress-ring";
 import { ToolFrame } from "@/components/shell/tool-frame";
@@ -15,35 +16,6 @@ import {
 } from "@/stores/pomodoro-store";
 
 import { PomodoroControls } from "./pomodoro-controls";
-
-function Tomato({ filled }: { filled: boolean }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      className={cn("size-7 transition-transform", filled && "scale-110")}
-      aria-hidden="true"
-    >
-      <circle
-        cx="12"
-        cy="13.5"
-        r="8.5"
-        fill={filled ? "var(--ember)" : "transparent"}
-        stroke="var(--ink)"
-        strokeWidth="1.6"
-        strokeDasharray={filled ? undefined : "2.4 2"}
-        opacity={filled ? 1 : 0.55}
-      />
-      {filled && <ellipse cx="9" cy="11" rx="2" ry="1.3" fill="#fff" opacity="0.7" />}
-      <path
-        d="M12 5.5 L10 3.5 M12 5.5 L14.5 3.8 M12 5.5 L8.5 6.5 M12 5.5 L15.5 6.6"
-        stroke="var(--mint)"
-        strokeWidth="2"
-        strokeLinecap="round"
-        opacity={filled ? 1 : 0.55}
-      />
-    </svg>
-  );
-}
 
 export function PomodoroTool() {
   const mode = usePomodoroStore((state) => state.mode);
@@ -72,11 +44,7 @@ export function PomodoroTool() {
   return (
     <ToolFrame href="/pomodoro" placement="side">
       <div className="flex flex-col items-center gap-7">
-        <div
-          role="tablist"
-          aria-label="Pomodoro phase"
-          className="flex w-full max-w-md gap-1 rounded-2xl border border-border bg-card/60 p-1"
-        >
+        <div role="tablist" aria-label="Pomodoro phase" className="flex gap-1">
           {(Object.keys(pomodoroModes) as PomodoroMode[]).map((item) => {
             const active = item === mode;
 
@@ -87,20 +55,23 @@ export function PomodoroTool() {
                 role="tab"
                 aria-selected={active}
                 onClick={() => setMode(item)}
+                title={`${pomodoroModes[item].jp} · ${settings[item]} min`}
                 className={cn(
-                  "flex flex-1 flex-col items-center rounded-xl border px-2 py-1.5 transition-all",
+                  "relative rounded-full px-3 py-1.5 text-xs transition-colors duration-300",
                   active
-                    ? "border-black/10 text-[#1b1530] shadow-cel-sm"
-                    : "border-transparent text-muted-foreground hover:bg-muted"
+                    ? "text-foreground"
+                    : "text-muted-foreground/70 hover:text-foreground"
                 )}
-                style={active ? { backgroundColor: pomodoroModes[item].color } : undefined}
               >
-                <span className="text-xs font-bold sm:text-sm">
-                  {pomodoroModes[item].label}
-                </span>
-                <span className="text-[10px] opacity-75">
-                  {pomodoroModes[item].jp} · {settings[item]}m
-                </span>
+                {pomodoroModes[item].label}
+                <span
+                  aria-hidden="true"
+                  className={cn(
+                    "absolute inset-x-0 -bottom-0.5 mx-auto size-1 rounded-full transition-opacity duration-300",
+                    active ? "opacity-100" : "opacity-0"
+                  )}
+                  style={{ backgroundColor: pomodoroModes[item].color }}
+                />
               </button>
             );
           })}
@@ -109,44 +80,43 @@ export function PomodoroTool() {
         <ProgressRing
           value={progress}
           color={current.color}
-          className="w-[min(72vw,19rem)]"
+          className="w-[min(70vw,16.5rem)]"
         >
-          <div className="flex flex-col items-center gap-2">
-            <span className="text-[11px] font-bold tracking-[0.2em] text-muted-foreground">
-              {mode === "focus" ? `SESSION ${cycle}` : "BREAK"} · {current.jp}
-            </span>
+          <div className="flex flex-col items-center gap-3">
+            <StatusLine>{mode === "focus" ? `session ${cycle}` : "break"}</StatusLine>
 
             <Digits
               value={formatClock(remaining)}
-              className="cel-text text-[clamp(2.6rem,12vw,4.1rem)]"
+              className="text-[clamp(2.6rem,11vw,3.6rem)]"
             />
 
-            <span className="text-xs text-muted-foreground">
-              next: {pomodoroModes[next].label.toLowerCase()}
+            <span className="text-[11px] text-muted-foreground/70">
+              then {pomodoroModes[next].label.toLowerCase()}
             </span>
           </div>
         </ProgressRing>
 
-        <div className="flex flex-col items-center gap-2">
-          <div
-            className="flex items-center gap-2"
-            role="img"
-            aria-label={`${doneInSet} of ${setSize} focus sessions done before the long break`}
-          >
-            {Array.from({ length: setSize }, (_, index) => (
-              <Tomato key={index} filled={index < doneInSet} />
-            ))}
-          </div>
-          <p className="text-xs text-muted-foreground">
-            {todaySessions} {todaySessions === 1 ? "session" : "sessions"} today
-          </p>
-        </div>
-
         <PomodoroControls />
 
-        <p className="hidden text-[11px] text-muted-foreground/70 sm:block">
-          Space start / pause · S skip · R reset
-        </p>
+        <div
+          className="flex items-center gap-3 text-[11px] text-muted-foreground/70"
+          role="img"
+          aria-label={`${doneInSet} of ${setSize} focus sessions done before the long break, ${todaySessions} today`}
+        >
+          <span className="flex gap-1.5">
+            {Array.from({ length: setSize }, (_, index) => (
+              <span
+                key={index}
+                className={cn(
+                  "size-1.5 rounded-full transition-colors duration-500",
+                  index < doneInSet ? "" : "bg-foreground/15"
+                )}
+                style={index < doneInSet ? { backgroundColor: "var(--ember)" } : undefined}
+              />
+            ))}
+          </span>
+          <span>{todaySessions} today</span>
+        </div>
       </div>
     </ToolFrame>
   );

@@ -3,6 +3,7 @@
 import { type FormEvent, useState } from "react";
 import { Pencil } from "lucide-react";
 
+import { StatusLine } from "@/components/shell/controls";
 import { Digits, formatClock } from "@/components/shell/digits";
 import { ProgressRing } from "@/components/shell/progress-ring";
 import { ToolFrame } from "@/components/shell/tool-frame";
@@ -14,10 +15,10 @@ import { type TimerStatus, useTimerStore } from "@/stores/timer-store";
 import { TimerControls } from "./timer-controls";
 
 const statusLabels: Record<TimerStatus, string> = {
-  idle: "READY · じゅんび",
-  running: "COUNTING · カウント中",
-  paused: "PAUSED · ひとやすみ",
-  finished: "DONE · おわり",
+  idle: "ready",
+  running: "counting",
+  paused: "paused",
+  finished: "done",
 };
 
 function DurationEditor({
@@ -54,13 +55,13 @@ function DurationEditor({
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex w-full max-w-sm flex-col items-center gap-4 rounded-2xl border border-dashed border-border p-4"
+      className="flex w-full max-w-sm flex-col items-center gap-5 py-6"
     >
       <div className="flex items-end gap-2">
         {fields.map((field, index) => (
           <div key={field.label} className="flex items-end gap-2">
             {index > 0 && (
-              <span className="pb-2 font-display text-2xl text-muted-foreground">
+              <span className="pb-7 font-display text-2xl font-light text-muted-foreground/60">
                 :
               </span>
             )}
@@ -80,9 +81,9 @@ function DurationEditor({
                     )
                   )
                 }
-                className="h-14 w-18 text-center font-display text-2xl"
+                className="h-14 w-18 rounded-2xl border-foreground/10 bg-foreground/[0.03] text-center font-display text-2xl font-light"
               />
-              <span className="text-[11px] font-bold text-muted-foreground uppercase">
+              <span className="text-[10px] tracking-[0.25em] text-muted-foreground/80 lowercase">
                 {field.label}
               </span>
             </label>
@@ -91,11 +92,11 @@ function DurationEditor({
       </div>
 
       <div className="flex gap-2">
-        <Button type="button" variant="ghost" size="sm" onClick={onDone}>
+        <Button type="button" variant="ghost" size="sm" className="rounded-full px-4" onClick={onDone}>
           Cancel
         </Button>
-        <Button type="submit" size="sm">
-          Set timer
+        <Button type="submit" size="sm" className="rounded-full px-4">
+          Set
         </Button>
       </div>
     </form>
@@ -107,18 +108,16 @@ function InlinePresets() {
   const setDuration = useTimerStore((state) => state.setDuration);
 
   return (
-    <div className="flex max-w-md flex-wrap justify-center gap-1.5">
+    <div className="flex max-w-xs flex-wrap justify-center gap-x-1 gap-y-0.5">
       {presets.map((preset) => (
         <button
           key={preset.id}
           type="button"
           onClick={() => setDuration(preset.duration, preset.label)}
-          className="rounded-full px-3 py-1 text-xs font-bold text-muted-foreground transition-colors hover:bg-foreground/6 hover:text-foreground"
+          title={formatClock(preset.duration)}
+          className="rounded-full px-2.5 py-1 text-xs text-muted-foreground/80 transition-colors duration-300 hover:bg-foreground/5 hover:text-foreground"
         >
           {preset.label}
-          <span className="ml-1.5 font-display font-normal text-muted-foreground">
-            {formatClock(preset.duration)}
-          </span>
         </button>
       ))}
     </div>
@@ -149,11 +148,12 @@ export function TimerTool() {
         canEdit && !editing ? (
           <Button
             variant="ghost"
-            size="sm"
+            size="icon-sm"
+            aria-label="Set time"
+            title="Set time"
             onClick={() => setEditing(true)}
           >
-            <Pencil />
-            Set time
+            <Pencil strokeWidth={1.7} />
           </Button>
         ) : null
       }
@@ -168,27 +168,25 @@ export function TimerTool() {
           <ProgressRing
             value={progress}
             color="var(--ember)"
-            className="w-[min(76vw,20rem)]"
+            className="w-[min(70vw,16.5rem)]"
           >
             <button
               type="button"
               disabled={!canEdit}
               onClick={() => setEditing(true)}
               aria-label="Set timer duration"
-              className="flex flex-col items-center gap-2 rounded-3xl p-2 enabled:cursor-pointer"
+              className="flex flex-col items-center gap-3 rounded-3xl p-2"
             >
-              <span className="text-[11px] font-bold tracking-[0.2em] text-muted-foreground">
-                {statusLabels[status]}
-              </span>
+              <StatusLine>{statusLabels[status]}</StatusLine>
 
               <Digits
                 value={formatClock(remaining)}
-                className="cel-text text-[clamp(2.6rem,12vw,4.1rem)]"
+                className="text-[clamp(2.6rem,11vw,3.6rem)]"
               />
 
-              <span className="text-xs text-muted-foreground">
+              <span className="text-[11px] text-muted-foreground/70">
                 {label ? `${label} · ` : ""}
-                of {formatClock(duration)}
+                {formatClock(duration)}
               </span>
             </button>
           </ProgressRing>
@@ -196,11 +194,7 @@ export function TimerTool() {
 
         <TimerControls />
 
-        <InlinePresets />
-
-        <p className="hidden text-[11px] text-muted-foreground/70 sm:block">
-          Space start / pause · R reset
-        </p>
+        {status === "idle" && !editing && <InlinePresets />}
       </div>
     </ToolFrame>
   );

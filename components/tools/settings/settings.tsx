@@ -29,11 +29,11 @@ function Section({
   children: ReactNode;
 }) {
   return (
-    <section className="space-y-4 border-t border-dashed border-border pt-6 first:border-t-0 first:pt-0">
-      <h2 className="flex items-center gap-2 font-display text-lg">
-        <Icon className="size-5 text-primary" />
+    <section className="space-y-4 border-t border-foreground/[0.06] pt-7 first:border-t-0 first:pt-0">
+      <h2 className="flex items-center gap-2 text-sm font-medium text-foreground/80">
+        <Icon className="size-4 text-muted-foreground" strokeWidth={1.7} />
         {title}
-        <span className="font-sans text-xs font-bold text-muted-foreground">
+        <span className="font-sans text-[11px] text-muted-foreground/60">
           {jp}
         </span>
       </h2>
@@ -71,8 +71,8 @@ export function SettingsPanel() {
     <ToolFrame href="/settings">
       <div className="space-y-8">
         <Section icon={Music2} title="Sounds" jp="おと">
-          <div className="flex flex-wrap items-center gap-3 rounded-2xl bg-muted/60 p-3">
-            <span className="text-sm font-bold">Volume</span>
+          <div className="flex flex-wrap items-center gap-3 py-1">
+            <span className="text-[13px] text-foreground/80">Volume</span>
             <input
               type="range"
               min={0}
@@ -94,9 +94,9 @@ export function SettingsPanel() {
           </div>
 
           {(Object.keys(soundSlots) as SoundSlot[]).map((slot) => (
-            <div key={slot} className="space-y-3 rounded-2xl border border-border bg-card/40 p-4">
+            <div key={slot} className="space-y-3">
               <div>
-                <p className="font-bold">
+                <p className="text-[13px] font-medium">
                   {soundSlots[slot].label}
                   <span className="ml-2 text-xs font-normal text-muted-foreground">
                     {soundSlots[slot].jp}
@@ -120,7 +120,7 @@ export function SettingsPanel() {
         </Section>
 
         <Section icon={Bell} title="Notifications" jp="おしらせ">
-          <label className="flex items-center justify-between gap-3 text-sm font-bold">
+          <label className="flex items-center justify-between gap-3 text-[13px] font-medium">
             <span>
               Notify me in the background
               <span className="block text-xs font-normal text-muted-foreground">
@@ -139,7 +139,7 @@ export function SettingsPanel() {
         </Section>
 
         <Section icon={Clock3} title="Clock" jp="とけい">
-          <label className="flex items-center justify-between gap-3 text-sm font-bold">
+          <label className="flex items-center justify-between gap-3 text-[13px] font-medium">
             24-hour time
             <Switch checked={hour24} onCheckedChange={toggleHour24} />
           </label>
@@ -157,7 +157,7 @@ export function SettingsPanel() {
             ].map(([key, description]) => (
               <div key={key} className="contents">
                 <dt>
-                  <kbd className="rounded-md border border-border bg-card/60 px-2 py-0.5 font-sans text-xs font-bold">
+                  <kbd className="rounded-md bg-foreground/[0.06] px-2 py-0.5 font-sans text-xs">
                     {key}
                   </kbd>
                 </dt>

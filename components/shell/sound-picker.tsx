@@ -51,16 +51,16 @@ export function SoundPicker({ value, onChange, compact }: SoundPickerProps) {
               aria-selected={selected}
               onClick={() => setCategory(item.id)}
               className={cn(
-                "relative rounded-full border px-3 py-1 text-xs font-bold transition-all",
+                "relative rounded-full px-3 py-1 text-xs transition-all duration-300",
                 selected
-                  ? "border-black/10 bg-lavender text-[#1b1530] shadow-cel-sm"
-                  : "border-border text-muted-foreground hover:bg-muted"
+                  ? "bg-foreground/[0.08] text-foreground"
+                  : "text-muted-foreground/80 hover:bg-foreground/5 hover:text-foreground"
               )}
             >
               {item.label}
               <span className="ml-1 font-normal opacity-70">{item.jp}</span>
               {holdsValue && !selected && (
-                <span className="absolute -top-1 -right-1 size-2.5 rounded-full border border-black/10 bg-primary" />
+                <span className="absolute top-0.5 right-0.5 size-1.5 rounded-full bg-primary/70" />
               )}
             </button>
           );
@@ -90,29 +90,29 @@ export function SoundPicker({ value, onChange, compact }: SoundPickerProps) {
                 previewSound(id, toneVolume);
               }}
               className={cn(
-                "group flex items-center gap-2 rounded-xl border px-3 py-2 text-left transition-all",
+                "group flex items-center gap-2.5 rounded-2xl px-3 py-2 text-left transition-all duration-300",
                 selected
-                  ? "border-black/10 bg-primary/15 shadow-cel-sm"
-                  : "border-border bg-card/50 hover:-translate-y-0.5 hover:border-primary/60"
+                  ? "bg-foreground/[0.08]"
+                  : "bg-foreground/[0.025] hover:bg-foreground/[0.05]"
               )}
             >
               <span
                 className={cn(
-                  "grid size-7 shrink-0 place-items-center rounded-full border transition-colors",
+                  "grid size-7 shrink-0 place-items-center rounded-full transition-colors duration-300",
                   selected
-                    ? "border-black/10 bg-primary text-primary-foreground"
-                    : "border-border text-muted-foreground group-hover:text-primary"
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-foreground/5 text-muted-foreground group-hover:text-foreground"
                 )}
               >
                 {selected ? (
-                  <Check className="size-3.5" strokeWidth={3} />
+                  <Check className="size-3.5" strokeWidth={2.2} />
                 ) : (
                   <Play className="size-3 translate-x-px" fill="currentColor" />
                 )}
               </span>
 
               <span className="min-w-0">
-                <span className="block truncate text-sm font-bold">
+                <span className="block truncate text-[13px]">
                   {sound.name}
                 </span>
                 <span className="block truncate text-[11px] text-muted-foreground">

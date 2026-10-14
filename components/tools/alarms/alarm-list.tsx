@@ -47,7 +47,7 @@ export function AlarmList({ onCreate }: Props) {
           you don&apos;t want to miss.
         </EmptyDescription>
 
-        <Button size="sm" className="mt-4" onClick={onCreate}>
+        <Button size="sm" className="mt-4 rounded-full px-4" onClick={onCreate}>
           <Plus />
           Add alarm
         </Button>
@@ -56,7 +56,7 @@ export function AlarmList({ onCreate }: Props) {
   }
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2">
+    <div className="grid gap-3 sm:grid-cols-2">
       {alarms.map((alarm) => (
         <AlarmCard
           key={alarm.id}

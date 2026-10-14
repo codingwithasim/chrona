@@ -1,5 +1,6 @@
 "use client";
 
+import { StatusLine } from "@/components/shell/controls";
 import { Digits } from "@/components/shell/digits";
 import { ProgressRing } from "@/components/shell/progress-ring";
 import { ToolFrame } from "@/components/shell/tool-frame";
@@ -27,37 +28,27 @@ export function StopwatchTool() {
 
   return (
     <ToolFrame href="/stopwatch" placement="side">
-      <div className="flex flex-col items-center gap-8">
+      <div className="flex flex-col items-center gap-7">
         <ProgressRing
           value={secondSweep}
           color="var(--sky)"
-          className="w-[min(76vw,20rem)]"
+          className="w-[min(70vw,16.5rem)]"
         >
-          <div className="flex flex-col items-center gap-2">
-            <span className="text-[11px] font-bold tracking-[0.2em] text-muted-foreground">
-              {status === "running"
-                ? "RUNNING · けいそく中"
-                : status === "paused"
-                  ? "PAUSED · ストップ"
-                  : "READY · じゅんび"}
-            </span>
+          <div className="flex flex-col items-center gap-3">
+            <StatusLine>{status === "running" ? "running" : status === "paused" ? "paused" : "ready"}</StatusLine>
 
             <Digits
               value={formatStopwatch(elapsed)}
-              className="cel-text text-[clamp(2.1rem,9.5vw,3.3rem)]"
+              className="text-[clamp(2.1rem,9vw,2.9rem)]"
             />
 
-            <span className="text-xs text-muted-foreground">
+            <span className="text-[11px] text-muted-foreground/70">
               {laps.length} {laps.length === 1 ? "lap" : "laps"}
             </span>
           </div>
         </ProgressRing>
 
         <StopwatchControls />
-
-        <p className="hidden text-[11px] text-muted-foreground/70 sm:block">
-          Space start / pause · L lap · R reset
-        </p>
 
         {laps.length > 0 && (
           <LapList

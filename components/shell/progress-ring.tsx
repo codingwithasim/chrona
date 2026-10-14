@@ -38,8 +38,8 @@ export function ProgressRing({
           r={RADIUS}
           fill="none"
           stroke="currentColor"
-          strokeWidth="1.2"
-          className="text-foreground/10"
+          strokeWidth="0.6"
+          className="text-foreground/15"
         />
         <circle
           cx="50"
@@ -47,7 +47,7 @@ export function ProgressRing({
           r={RADIUS}
           fill="none"
           stroke={color}
-          strokeWidth="2.2"
+          strokeWidth="1.3"
           strokeLinecap="round"
           strokeDasharray={CIRCUMFERENCE}
           strokeDashoffset={CIRCUMFERENCE * (1 - progress)}
@@ -55,8 +55,8 @@ export function ProgressRing({
         />
         {progress > 0 && progress < 1 && (
           <>
-            <circle cx={dotX} cy={dotY} r="4" fill={color} opacity="0.25" />
-            <circle cx={dotX} cy={dotY} r="1.9" fill={color} />
+            <circle cx={dotX} cy={dotY} r="3.4" fill={color} opacity="0.18" />
+            <circle cx={dotX} cy={dotY} r="1.5" fill={color} />
           </>
         )}
       </svg>

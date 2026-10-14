@@ -47,7 +47,7 @@ function HudButton({
             type="button"
             variant="ghost"
             size="icon"
-            className="size-9 rounded-full"
+            className="size-8 rounded-full text-foreground/55 hover:text-foreground"
             onClick={onClick}
             aria-label={label}
           >
@@ -78,7 +78,7 @@ function Clock() {
       type="button"
       onClick={toggleHour24}
       aria-label={hour24 ? "Switch to 12-hour time" : "Switch to 24-hour time"}
-      className="hidden h-9 items-center px-3 font-display text-sm tabular-nums text-foreground/80 transition-colors hover:text-foreground sm:flex"
+      className="hidden h-8 items-center px-3 font-display text-[13px] tabular-nums text-foreground/65 transition-colors duration-300 hover:text-foreground sm:flex"
     >
       {time}
     </button>
@@ -102,12 +102,12 @@ function ActiveChip({
     <Link
       href={href}
       className={cn(
-        "panel flex h-9 items-center gap-2 rounded-full px-3 font-display text-sm transition-opacity hover:opacity-100",
-        paused ? "opacity-60" : "opacity-90"
+        "panel flex h-8 items-center gap-2 rounded-full px-3 font-display text-[13px] transition-opacity duration-300 hover:opacity-100",
+        paused ? "opacity-55" : "opacity-85"
       )}
     >
-      <span className="size-2 rounded-full" style={{ backgroundColor: color }} />
-      <Icon className="size-3.5 text-muted-foreground" />
+      <span className="size-1.5 rounded-full" style={{ backgroundColor: color }} />
+      <Icon className="size-3.5 text-muted-foreground" strokeWidth={1.7} />
       <span className="tabular-nums">{children}</span>
     </Link>
   );
@@ -191,15 +191,15 @@ export function Logo({ className }: { className?: string }) {
     <Link
       href="/"
       className={cn(
-        "group flex items-center gap-2 text-foreground [text-shadow:0_1px_12px_rgb(0_0_0/0.12)]",
+        "group flex items-center gap-2 text-foreground/75 transition-colors duration-300 hover:text-foreground",
         className
       )}
     >
       <CloudMoonRain
-        className="size-5 text-primary transition-transform group-hover:-rotate-6"
-        strokeWidth={2.2}
+        className="size-[18px] transition-transform duration-500 group-hover:-rotate-6"
+        strokeWidth={1.7}
       />
-      <span className="font-display text-lg tracking-wide">Chrona</span>
+      <span className="font-display text-[15px] tracking-[0.12em]">Chrona</span>
     </Link>
   );
 }
@@ -220,7 +220,7 @@ export function Hud() {
       <div className="flex items-center gap-2">
         <ActiveTools />
 
-        <div className="panel flex items-center gap-0.5 rounded-full p-1">
+        <div className="panel flex items-center gap-0.5 rounded-full p-0.5">
           <Clock />
 
           <AmbienceMenu />
@@ -229,14 +229,14 @@ export function Hud() {
             label={soundOn ? "Mute the room" : "Play rain & ambient sounds"}
             onClick={() => setSoundOn(!soundOn)}
           >
-            {soundOn ? <Volume2 className="size-[18px]" /> : <VolumeX className="size-[18px]" />}
+            {soundOn ? <Volume2 className="size-[17px]" strokeWidth={1.7} /> : <VolumeX className="size-[17px]" strokeWidth={1.7} />}
           </HudButton>
 
           <HudButton
             label="Watch the rain (Esc to return)"
             onClick={() => setGaze(true)}
           >
-            <Eye className="size-[18px]" />
+            <Eye className="size-[17px]" strokeWidth={1.7} />
           </HudButton>
 
           <Tooltip>
@@ -245,9 +245,9 @@ export function Hud() {
                 <Link
                   href="/settings"
                   aria-label="Settings"
-                  className="grid size-9 place-items-center rounded-full transition-colors hover:bg-foreground/6"
+                  className="grid size-8 place-items-center rounded-full text-foreground/55 transition-colors duration-300 hover:bg-foreground/5 hover:text-foreground"
                 >
-                  <Settings className="size-[18px]" />
+                  <Settings className="size-[17px]" strokeWidth={1.7} />
                 </Link>
               }
             />

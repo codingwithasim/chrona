@@ -35,7 +35,7 @@ const phases: Record<DayPhase, { icon: typeof Sun; color: string; label: string 
 };
 
 const SKY_GRADIENT =
-  "linear-gradient(to right, #1d1a4a 0%, #1d1a4a 19%, #f2a3a8 26%, #9fd5f2 33%, #a6dcf5 69%, #f7b267 76%, #7a4f9a 82%, #1d1a4a 88%, #1d1a4a 100%)";
+  "linear-gradient(to right, #4a4d72 0%, #4a4d72 19%, #e9bcb6 26%, #c6e0ee 33%, #cfe5f0 69%, #efcb9f 76%, #9a8db5 82%, #4a4d72 88%, #4a4d72 100%)";
 
 const SNAP = 15;
 
@@ -125,16 +125,16 @@ export function TimezoneCard({
   }
 
   return (
-    <article className="panel flex flex-col gap-3 p-4">
+    <article className="group flex flex-col gap-3 rounded-3xl border border-foreground/[0.06] bg-foreground/[0.025] p-5 transition-colors duration-300 hover:bg-foreground/[0.04]">
       <header className="flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <h2 className="truncate text-base font-bold">{city.name}</h2>
-          <p className="truncate text-xs text-muted-foreground">
+          <h2 className="truncate text-sm font-medium">{city.name}</h2>
+          <p className="truncate text-[11px] text-muted-foreground/80">
             {city.country} · {gmtLabel(preview, city.timezone)}
           </p>
         </div>
 
-        <div className="-mt-1 -mr-1 flex shrink-0 items-center">
+        <div className="-mt-1 -mr-1 flex shrink-0 items-center opacity-0 transition-opacity duration-300 group-hover:opacity-100 focus-within:opacity-100">
           <Button variant="ghost" size="icon-sm" aria-label={`Change ${city.name}`} onClick={onEdit}>
             <Pencil />
           </Button>
@@ -145,39 +145,29 @@ export function TimezoneCard({
       </header>
 
       <div className="flex items-center gap-3">
-        <span
-          className="grid size-10 shrink-0 place-items-center rounded-xl border border-black/10 text-[#1b1530] shadow-cel-sm"
-          style={{ backgroundColor: phase.color }}
-          title={phase.label}
-        >
-          <PhaseIcon className="size-5" strokeWidth={2.4} />
+        <span title={phase.label} className="shrink-0">
+          <PhaseIcon className="size-[18px]" strokeWidth={1.7} style={{ color: phase.color }} />
         </span>
 
         <div className="flex items-baseline gap-1.5">
-          <Digits value={time} className={cn("cel-text text-[2.4rem]", previewing && "text-primary")} />
+          <Digits value={time} className={cn("text-[2.1rem]", previewing && "text-foreground")} />
           {meridiem && (
-            <span className="text-sm font-bold text-muted-foreground">{meridiem}</span>
+            <span className="text-xs text-muted-foreground/80">{meridiem}</span>
           )}
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-1.5 text-xs">
-        <span className="text-muted-foreground">{formatZonedDate(preview, city.timezone)}</span>
-
-        {offset ? (
-          <span className="rounded-full border border-border px-2 py-0.5 font-bold">
-            {offset}
-          </span>
-        ) : (
-          <span className="rounded-full bg-mint/25 px-2 py-0.5 font-bold">same as you</span>
-        )}
-
+      <p className="flex flex-wrap items-center gap-x-2 text-[11px] text-muted-foreground/80">
+        <span>{formatZonedDate(preview, city.timezone)}</span>
+        <span aria-hidden="true">·</span>
+        <span>{offset || "same as you"}</span>
         {shift !== 0 && (
-          <span className="rounded-full bg-lavender/25 px-2 py-0.5 font-bold">
-            {shift > 0 ? "tomorrow" : "yesterday"}
-          </span>
+          <>
+            <span aria-hidden="true">·</span>
+            <span>{shift > 0 ? "tomorrow" : "yesterday"}</span>
+          </>
         )}
-      </div>
+      </p>
 
       {/* 24-hour timeline: drag to see what time it would be */}
       <div
@@ -194,28 +184,23 @@ export function TimezoneCard({
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerUp}
         onKeyDown={handleKeyDown}
-        className="relative mt-2 h-8 cursor-grab touch-none rounded-full border border-black/10 outline-none select-none focus-visible:ring-3 focus-visible:ring-ring/50 active:cursor-grabbing"
-        style={{ background: SKY_GRADIENT }}
+        className="relative mt-2 h-5 cursor-grab touch-none rounded-full outline-none select-none focus-visible:ring-3 focus-visible:ring-ring/40 active:cursor-grabbing"
       >
-        {[6, 12, 18].map((hour) => (
-          <span
-            key={hour}
-            aria-hidden="true"
-            className="absolute top-1/2 h-3 w-0.5 -translate-y-1/2 rounded-full bg-white/60"
-            style={{ left: `${(hour / 24) * 100}%` }}
-          />
-        ))}
+        {/* The day, as a thin soft band */}
+        <span
+          aria-hidden="true"
+          className="absolute inset-x-0 top-1/2 h-1.5 -translate-y-1/2 rounded-full opacity-80"
+          style={{ background: SKY_GRADIENT }}
+        />
 
         <span
           aria-hidden="true"
-          className="absolute top-1/2 grid size-9 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border border-black/10 bg-card shadow-cel-sm"
+          className="absolute top-1/2 size-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-card shadow-[0_1px_6px_rgb(0_0_0/0.25)] ring-1 ring-black/5"
           style={{ left: `${(minutes / 1440) * 100}%` }}
-        >
-          <PhaseIcon className="size-4" style={{ color: phase.color }} strokeWidth={2.6} />
-        </span>
+        />
       </div>
 
-      <div className="flex justify-between px-1 text-[10px] font-bold text-muted-foreground">
+      <div className="flex justify-between px-0.5 text-[10px] text-muted-foreground/60">
         <span>0</span>
         <span>6</span>
         <span>12</span>

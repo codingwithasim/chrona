@@ -13,7 +13,7 @@ export function Digits({ value, className }: DigitsProps) {
   return (
     <span
       className={cn(
-        "inline-flex items-baseline font-display font-light leading-none tracking-tight",
+        "inline-flex items-baseline font-display font-light leading-none tracking-tight text-foreground/90",
         className
       )}
     >

@@ -33,9 +33,9 @@ export function Alarms() {
   return (
     <ToolFrame
       href="/alarms"
-      className="max-w-4xl"
+      className="max-w-3xl"
       actions={
-        <Button size="sm" onClick={openCreateDialog}>
+        <Button variant="ghost" size="sm" className="rounded-full" onClick={openCreateDialog}>
           <Plus />
           <span className="hidden sm:inline">Add alarm</span>
         </Button>
@@ -43,8 +43,8 @@ export function Alarms() {
     >
       <AlarmList onCreate={openCreateDialog} />
 
-      <p className="mt-6 flex items-start gap-2 rounded-xl bg-muted/70 p-3 text-xs leading-5 text-muted-foreground">
-        <Info className="mt-0.5 size-4 shrink-0 text-lavender" />
+      <p className="mt-6 flex items-start gap-2 text-[11px] leading-5 text-muted-foreground/70">
+        <Info className="mt-0.5 size-3.5 shrink-0" strokeWidth={1.7} />
         Alarms ring on any Chrona page as long as the tab stays
         open. Click anywhere once after opening Chrona so your
         browser allows the sound.

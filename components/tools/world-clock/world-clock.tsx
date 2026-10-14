@@ -53,10 +53,12 @@ export function WorldClockTool() {
   return (
     <ToolFrame
       href="/world-clock"
-      className="max-w-5xl"
+      className="max-w-4xl"
       actions={
         <Button
+          variant="ghost"
           size="sm"
+          className="rounded-full"
           onClick={() => {
             closeEditCity();
             setIsAddOpen(true);
@@ -103,7 +105,7 @@ export function WorldClockTool() {
           </Button>
         </Empty>
       ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {cities.map((city) => (
             <TimezoneCard
               key={city.timezone}

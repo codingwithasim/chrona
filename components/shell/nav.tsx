@@ -27,7 +27,7 @@ export function NavDock({ orientation, className }: DockProps) {
       data-chrome
       aria-label="Tools"
       className={cn(
-        "panel flex gap-1 rounded-full p-1.5",
+        "panel flex gap-0.5 rounded-full p-1",
         vertical ? "flex-col" : "flex-row",
         className
       )}
@@ -45,14 +45,23 @@ export function NavDock({ orientation, className }: DockProps) {
                   aria-current={active ? "page" : undefined}
                   aria-label={item.title}
                   className={cn(
-                    "grid size-10 place-items-center rounded-full transition-colors",
+                    "relative grid size-9 place-items-center rounded-full transition-colors duration-300",
                     active
-                      ? "text-[#1b1530] shadow-cel-sm"
-                      : "text-muted-foreground hover:bg-foreground/6 hover:text-foreground"
+                      ? "bg-foreground/[0.07] text-foreground"
+                      : "text-foreground/45 hover:bg-foreground/5 hover:text-foreground/80"
                   )}
-                  style={active ? { backgroundColor: item.color } : undefined}
                 >
-                  <Icon className="size-[18px]" strokeWidth={2.2} />
+                  <Icon className="size-[17px]" strokeWidth={1.7} />
+                  {active && (
+                    <span
+                      aria-hidden="true"
+                      className={cn(
+                        "absolute size-1 rounded-full",
+                        vertical ? "-left-0.5 top-1/2 -translate-y-1/2" : "-bottom-0.5 left-1/2 -translate-x-1/2"
+                      )}
+                      style={{ backgroundColor: item.color }}
+                    />
+                  )}
                 </Link>
               }
             />

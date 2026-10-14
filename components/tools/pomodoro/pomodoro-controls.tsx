@@ -1,8 +1,8 @@
 "use client";
 
-import { Pause, Play, RotateCcw, SkipForward } from "lucide-react";
+import { RotateCcw, SkipForward } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
+import { ControlRow, PlayButton, QuietAction } from "@/components/shell/controls";
 import { usePomodoroStore } from "@/stores/pomodoro-store";
 
 export function PomodoroControls() {
@@ -14,21 +14,14 @@ export function PomodoroControls() {
   const running = status === "running";
 
   return (
-    <div className="flex flex-wrap justify-center gap-3">
-      <Button size="lg" onClick={toggle}>
-        {running ? <Pause /> : <Play />}
-        {running ? "Pause" : status === "paused" ? "Resume" : "Start"}
-      </Button>
-
-      <Button size="lg" variant="secondary" onClick={skip}>
-        <SkipForward />
-        Skip
-      </Button>
-
-      <Button size="lg" variant="outline" onClick={reset}>
-        <RotateCcw />
-        Reset
-      </Button>
-    </div>
+    <ControlRow>
+      <QuietAction icon={RotateCcw} label="Reset" keys="R" onClick={reset} />
+      <PlayButton
+        running={running}
+        label={running ? "Pause" : status === "paused" ? "Resume" : "Start"}
+        onClick={toggle}
+      />
+      <QuietAction icon={SkipForward} label="Skip" keys="S" onClick={skip} />
+    </ControlRow>
   );
 }
