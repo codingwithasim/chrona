@@ -994,7 +994,12 @@
 
 /* Floating: a soft glow around the words keeps them readable. */
 [data-panel="float"] [data-focus-panel] {
-  text-shadow: 0 0 14px var(--background), 0 0 3px var(--background);
+  text-shadow: 0 0 14px rgb(255 255 255 / 0.9), 0 0 3px rgb(255 255 255 / 0.8);
+}
+
+/* At night the room is dark and the words are light: a dark glow, faint. */
+.dark [data-panel="float"] [data-focus-panel] {
+  text-shadow: 0 1px 10px rgb(0 0 0 / 0.45);
 }
 
 [data-idle="true"][data-running] [data-halo] {

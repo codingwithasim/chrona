@@ -93,7 +93,7 @@ export function ToolFrame({
             <div
               aria-hidden="true"
               data-halo
-              className="pointer-events-none absolute -inset-x-20 -inset-y-16 -z-10 bg-background/50 backdrop-blur-md [mask-image:radial-gradient(closest-side,black_55%,transparent)]"
+              className="pointer-events-none absolute -inset-x-12 -inset-y-14 -z-10 bg-white/30 backdrop-blur-[3px] [mask-image:radial-gradient(closest-side,black_50%,transparent)] dark:bg-transparent dark:backdrop-blur-none"
             />
           )}
 
