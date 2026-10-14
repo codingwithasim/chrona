@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { type PanelStyle, useSettingsStore } from "@/stores/settings-store";
 
 import { PanelStyleContext } from "./panel-style";
+import { PopOutButton } from "./pop-out";
 import { ToolOptions } from "./tool-options";
 
 type ToolFrameProps = {
@@ -73,6 +74,7 @@ export function ToolFrame({
   const tools = (
     <div className="flex shrink-0 items-center gap-0.5 text-foreground/60">
       {actions}
+      {placement === "side" && <PopOutButton />}
       <ToolOptions />
     </div>
   );

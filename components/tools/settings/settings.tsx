@@ -161,6 +161,8 @@ export function SettingsPanel() {
               ["L", "Lap (stopwatch)"],
               ["S", "Skip to the next phase (pomodoro)"],
               ["G", "Watch the rain"],
+              ["F", "Full screen"],
+              ["M", "Mute or unmute the sounds"],
               ["Esc", "Back to the room"],
             ].map(([key, description]) => (
               <div key={key} className="contents">

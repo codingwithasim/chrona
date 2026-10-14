@@ -15,6 +15,7 @@ import { useTimerStore } from "@/stores/timer-store";
 import { useWorldClockStore } from "@/stores/world-clock-store";
 
 import { useShortcuts } from "@/hooks/use-shortcuts";
+import { toggleFullscreen } from "@/lib/fullscreen";
 import { useFocusStore } from "@/stores/focus-store";
 import { useMixerStore } from "@/stores/mixer-store";
 
@@ -41,7 +42,7 @@ export function SceneController() {
 
   const setSoundOn = useSceneStore((state) => state.setSoundOn);
 
-  useShortcuts({ g: () => setGaze(!gaze), m: () => setSoundOn(!soundOn) });
+  useShortcuts({ g: () => setGaze(!gaze), m: () => setSoundOn(!soundOn), f: toggleFullscreen });
 
   // Persisted stores skip automatic hydration so the first
   // client render matches the server. Restore them here.
