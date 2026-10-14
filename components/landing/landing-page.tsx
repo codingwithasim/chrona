@@ -11,7 +11,7 @@ import {
 
 import { AnalyticsSettingsButton } from "@/components/analytics/analytics-settings-button";
 import { Logo } from "@/components/shell/hud";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { navigation } from "@/lib/navigation";
 
 import { LandingControls, WatchRainButton } from "./landing-controls";
@@ -64,13 +64,11 @@ export function LandingPage() {
               雨の日の時間 · time tools for rainy days
             </p>
 
-            <h1 className="mt-6 font-display text-6xl leading-none sm:text-7xl">
-              <ruby className="cel-text">
-                Chrona
-                <rt className="pb-2 font-sans text-sm font-bold tracking-[0.5em] text-muted-foreground [text-shadow:none]">
-                  クロナ
-                </rt>
-              </ruby>
+            <p className="mt-6 text-xs font-bold tracking-[0.6em] text-muted-foreground">
+              クロナ
+            </p>
+            <h1 className="mt-2 font-display text-6xl leading-none cel-text sm:text-7xl">
+              Chrona
             </h1>
 
             <p className="mx-auto mt-6 max-w-md text-base leading-7 text-muted-foreground">
@@ -80,10 +78,10 @@ export function LandingPage() {
             </p>
 
             <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-              <Button size="lg" nativeButton={false} render={<Link href="/timer" />}>
+              <Link href="/timer" className={buttonVariants({ size: "lg" })}>
                 Enter the room
                 <ArrowRight />
-              </Button>
+              </Link>
 
               <WatchRainButton />
             </div>
