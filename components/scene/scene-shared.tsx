@@ -7,14 +7,10 @@ import { createContext, useContext, useState } from "react";
  * The camera frames a slightly zoomed-in view around the window.
  */
 export const VIEWBOX = "130 78 1340 838";
-export const WIN = { x: 450, y: 110, w: 700, h: 540 };
 export const GLASS = { x: 472, y: 132, w: 656, h: 496 };
 export const GLASS_RIGHT = GLASS.x + GLASS.w;
 export const GLASS_BOTTOM = GLASS.y + GLASS.h;
-export const DESK_Y = 770;
 
-/** Soft, tinted outline for room props. */
-export const EDGE = "var(--sc-edge)";
 /** Stronger outline, used for the cat. */
 export const LINE = "var(--sc-line)";
 

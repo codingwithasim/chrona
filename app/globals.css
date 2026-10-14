@@ -151,57 +151,23 @@
   --sc-sun-morning: 0;
   --sc-sun-day: 1;
   --sc-sun-evening: 0;
-  --sc-city-far: #a7b6cc;
-  --sc-city-mid: #8a9bb7;
-  --sc-city-near: #6d7c9a;
-  --sc-light-opacity: 0.25;
-  --sc-neon-opacity: 0.3;
   --sc-outside-tint: transparent;
   --sc-branch: #6b4b44;
 
-  --sc-wall-1: #f1e6dc;
   --sc-wall-2: #e7d8cd;
-  --sc-wall-low: #dbc6bb;
-  --sc-trim: #f8f1ea;
-  --sc-stripe: rgb(150 110 100 / 0.06);
-  --sc-wall-light: rgb(255 255 255 / 0.35);
-  --sc-shadow: rgb(90 60 70 / 0.22);
   --sc-line: #43363c;
 
-  --sc-frame: #fbf6ef;
-  --sc-frame-light: #ffffff;
-  --sc-frame-dark: #d5c5b8;
-  --sc-curtain-1: #cbbef2;
-  --sc-curtain-2: #ad9de3;
-  --sc-curtain-3: #8d7bcc;
 
-  --sc-desk-1: #c8936f;
-  --sc-desk-2: #d6a582;
-  --sc-desk-edge: #9a6a4f;
-  --sc-desk-front: #7e533f;
-  --sc-paper: #fffaf2;
-  --sc-cork: #d2a172;
 
-  --sc-lamp: #8fd3c0;
-  --sc-lamp-dark: #64ad9a;
-  --sc-lamp-glow-opacity: 0.4;
-  --sc-spill-opacity: 0.55;
-  --sc-dark-room: 0.08;
   --sc-fairy-opacity: 0.5;
   --sc-glass-opacity: 0.06;
 
-  --sc-plant: #5fb48d;
-  --sc-plant-dark: #3f8c6c;
-  --sc-pot: #e07a62;
   --sc-cat: #fff6ee;
   --sc-cat-shade: #ead8cc;
   --sc-cat-patch: #f3a65c;
   --sc-cat-patch-2: #6a4c42;
-  --sc-mug: #f5a8c1;
-  --sc-tea: #9c6046;
 
   --sc-vignette: rgb(80 60 90 / 0.2);
-  --sc-rain: 255 255 255;
 
   /* Landscape */
   --sc-cloud-light: #ffffff;
@@ -219,17 +185,10 @@
   --sc-train-window: #8fb3cc;
   --sc-bird: #3d3a4f;
   --sc-skyray-opacity: 0.25;
-  --sc-edge: rgb(70 50 70 / 0.42);
   --sc-silhouette: #4b4a5e;
   --sc-window-glow: 0;
 
   /* Light coming into the room */
-  --sc-ray-color: #fff6dc;
-  --sc-ray-opacity: 0.32;
-  --sc-ray-skew: -9deg;
-  --sc-sunpatch: #fff1cc;
-  --sc-sunpatch-opacity: 0.42;
-  --sc-mote-opacity: 0.9;
   --sc-bloom: 0.14;
   --sc-grade: #ffe9c9;
   --sc-grade-opacity: 0.12;
@@ -259,26 +218,10 @@
   --sc-overcast: #b5aec4;
   --sc-sun-morning: 1;
   --sc-sun-day: 0;
-  --sc-city-far: #aaa5cb;
-  --sc-city-mid: #8f89b8;
-  --sc-city-near: #716b9a;
-  --sc-light-opacity: 0.2;
-  --sc-neon-opacity: 0.25;
   --sc-branch: #6e4a4c;
 
-  --sc-wall-1: #f6e4dc;
   --sc-wall-2: #edd5cc;
-  --sc-wall-low: #e0c3b9;
-  --sc-trim: #fbefe8;
-  --sc-stripe: rgb(160 110 100 / 0.06);
-  --sc-wall-light: rgb(255 214 190 / 0.4);
-  --sc-shadow: rgb(110 70 80 / 0.2);
 
-  --sc-frame: #fdf3ec;
-  --sc-frame-dark: #dcc4b8;
-  --sc-lamp-glow-opacity: 0.3;
-  --sc-spill-opacity: 0.6;
-  --sc-dark-room: 0.06;
   --sc-vignette: rgb(120 70 90 / 0.18);
 
   --sc-cloud-light: #fff6ec;
@@ -297,12 +240,6 @@
   --sc-skyray-opacity: 0.7;
   --sc-silhouette: #5b4b66;
 
-  --sc-ray-color: #ffe3c6;
-  --sc-ray-opacity: 0.4;
-  --sc-ray-skew: 16deg;
-  --sc-sunpatch: #ffe0c8;
-  --sc-sunpatch-opacity: 0.4;
-  --sc-mote-opacity: 0.85;
   --sc-bloom: 0.16;
   --sc-grade: #ffd6dc;
   --sc-grade-opacity: 0.18;
@@ -330,52 +267,18 @@
   --sc-sun-morning: 0;
   --sc-sun-day: 0;
   --sc-sun-evening: 1;
-  --sc-city-far: #5b4a86;
-  --sc-city-mid: #40356a;
-  --sc-city-near: #2a2350;
-  --sc-light-opacity: 0.7;
-  --sc-neon-opacity: 0.85;
   --sc-outside-tint: rgb(80 30 70 / 0.12);
   --sc-branch: #3a2534;
 
-  --sc-wall-1: #5a4269;
   --sc-wall-2: #4a3459;
-  --sc-wall-low: #3c2a4a;
-  --sc-trim: #6c5079;
-  --sc-stripe: rgb(255 255 255 / 0.03);
-  --sc-wall-light: rgb(255 170 140 / 0.18);
-  --sc-shadow: rgb(20 8 30 / 0.38);
 
-  --sc-frame: #6e4a68;
-  --sc-frame-light: #93698a;
-  --sc-frame-dark: #4d3249;
-  --sc-curtain-1: #8a6fbf;
-  --sc-curtain-2: #6c56a3;
-  --sc-curtain-3: #523f86;
 
-  --sc-desk-1: #6e4852;
-  --sc-desk-2: #835a62;
-  --sc-desk-edge: #4a2e38;
-  --sc-desk-front: #351f2a;
-  --sc-paper: #f2e3e3;
-  --sc-cork: #7d5650;
 
-  --sc-lamp: #7fc2b2;
-  --sc-lamp-dark: #548f82;
-  --sc-lamp-glow-opacity: 0.8;
-  --sc-spill-opacity: 0.45;
-  --sc-dark-room: 0.2;
   --sc-fairy-opacity: 0.85;
   --sc-glass-opacity: 0.08;
 
-  --sc-plant: #4b9a7d;
-  --sc-plant-dark: #336b58;
-  --sc-pot: #c8695f;
-  --sc-mug: #f09ab6;
-  --sc-tea: #7a4636;
 
   --sc-vignette: rgb(30 10 40 / 0.45);
-  --sc-rain: 235 210 235;
 
   --sc-cloud-light: #ffcb92;
   --sc-cloud-shade: #7d6c8c;
@@ -392,16 +295,9 @@
   --sc-train-window: #ffd9a0;
   --sc-bird: #2d1f35;
   --sc-skyray-opacity: 0.9;
-  --sc-edge: rgb(30 15 40 / 0.55);
   --sc-silhouette: #2a1c33;
   --sc-window-glow: 0.8;
 
-  --sc-ray-color: #ffc48a;
-  --sc-ray-opacity: 0.5;
-  --sc-ray-skew: -22deg;
-  --sc-sunpatch: #ffb877;
-  --sc-sunpatch-opacity: 0.5;
-  --sc-mote-opacity: 1;
   --sc-bloom: 0.16;
   --sc-grade: #ff9f5a;
   --sc-grade-opacity: 0.2;
@@ -430,52 +326,18 @@
   --sc-sun-morning: 0;
   --sc-sun-day: 0;
   --sc-sun-evening: 0;
-  --sc-city-far: #2d2b66;
-  --sc-city-mid: #201e4e;
-  --sc-city-near: #141238;
-  --sc-light-opacity: 1;
-  --sc-neon-opacity: 1;
   --sc-outside-tint: rgb(12 10 46 / 0.55);
   --sc-branch: #17132f;
 
-  --sc-wall-1: #2c2650;
   --sc-wall-2: #221d42;
-  --sc-wall-low: #1b1736;
-  --sc-trim: #3a3263;
-  --sc-stripe: rgb(255 255 255 / 0.025);
-  --sc-wall-light: rgb(140 150 255 / 0.12);
-  --sc-shadow: rgb(5 3 15 / 0.45);
 
-  --sc-frame: #4a3358;
-  --sc-frame-light: #6c4f7c;
-  --sc-frame-dark: #31223f;
-  --sc-curtain-1: #6b58ab;
-  --sc-curtain-2: #4f4189;
-  --sc-curtain-3: #3a2f6b;
 
-  --sc-desk-1: #563a48;
-  --sc-desk-2: #6a4855;
-  --sc-desk-edge: #3b2633;
-  --sc-desk-front: #2a1b26;
-  --sc-paper: #e9e1f0;
-  --sc-cork: #6e4c48;
 
-  --sc-lamp: #6fb6a6;
-  --sc-lamp-dark: #477d73;
-  --sc-lamp-glow-opacity: 1;
-  --sc-spill-opacity: 0.35;
-  --sc-dark-room: 0.3;
   --sc-fairy-opacity: 1;
   --sc-glass-opacity: 0.07;
 
-  --sc-plant: #3f8a74;
-  --sc-plant-dark: #2a6152;
-  --sc-pot: #b85f58;
-  --sc-mug: #e98fb0;
-  --sc-tea: #7a4636;
 
   --sc-vignette: rgb(6 4 20 / 0.6);
-  --sc-rain: 200 212 255;
 
   --sc-cloud-light: #3b5590;
   --sc-cloud-shade: #1c2c5c;
@@ -492,16 +354,9 @@
   --sc-train-window: #ffe2a0;
   --sc-bird: #12102a;
   --sc-skyray-opacity: 0;
-  --sc-edge: rgb(8 5 22 / 0.62);
   --sc-silhouette: #0d0c22;
   --sc-window-glow: 1;
 
-  --sc-ray-color: #b9c6ff;
-  --sc-ray-opacity: 0.2;
-  --sc-ray-skew: -6deg;
-  --sc-sunpatch: #aeb9ff;
-  --sc-sunpatch-opacity: 0.22;
-  --sc-mote-opacity: 0.3;
   --sc-bloom: 0.06;
   --sc-grade: #3a46a0;
   --sc-grade-opacity: 0.22;
