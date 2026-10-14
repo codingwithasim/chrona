@@ -15,6 +15,7 @@ import {
   usePomodoroStore,
 } from "@/stores/pomodoro-store";
 
+import { CurrentTask } from "./current-task";
 import { PomodoroControls } from "./pomodoro-controls";
 
 export function PomodoroTool() {
@@ -95,6 +96,10 @@ export function PomodoroTool() {
             </span>
           </div>
         </ProgressRing>
+
+        <div data-compact-hide className="-my-3 flex max-w-full justify-center">
+          <CurrentTask />
+        </div>
 
         <PomodoroControls />
 

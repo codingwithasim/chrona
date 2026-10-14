@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { usePathname } from "next/navigation";
 import { SlidersHorizontal } from "lucide-react";
 
+import { FocusStats } from "@/components/right-panel/focus-stats";
 import { PomodoroControls } from "@/components/right-panel/pomodoro-controls";
 import { StopwatchActions } from "@/components/right-panel/stopwatch-actions";
 import { TimerPresets } from "@/components/right-panel/timer-presets";
@@ -35,7 +36,16 @@ function useToolOptions(): ToolOptionsConfig | null {
       return { title: "Laps", jp: "ラップ", content: <StopwatchActions /> };
 
     case "/pomodoro":
-      return { title: "Pomodoro settings", jp: "せってい", content: <PomodoroControls /> };
+      return {
+        title: "Pomodoro",
+        jp: "ポモドーロ",
+        content: (
+          <>
+            <FocusStats />
+            <PomodoroControls />
+          </>
+        ),
+      };
 
     default:
       return null;

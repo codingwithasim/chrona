@@ -4,10 +4,12 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 import { notify } from "@/lib/notify";
+import { todayKey } from "@/lib/day-key";
 import { announceSession } from "@/lib/session-events";
 import { playSound } from "@/lib/sounds";
 
 import { say } from "./dialogue-store";
+import { useFocusStore } from "./focus-store";
 import { useSettingsStore } from "./settings-store";
 
 /*
@@ -74,9 +76,7 @@ export function nextModeAfter(
     : "shortBreak";
 }
 
-export function todayKey(date = new Date()) {
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
-}
+export { todayKey };
 
 type AdvanceKind = "complete" | "late" | "skip";
 
@@ -150,10 +150,15 @@ export const usePomodoroStore = create<PomodoroStore>()(
             : base,
         });
 
+        // Keep a history of focus time, and credit the task you were on.
+        if (counted) {
+          useFocusStore.getState().recordFocus(settings.focus);
+        }
+
         if (kind === "complete") {
           const { sounds, toneVolume } = useSettingsStore.getState();
           playSound(sounds.pomodoro, { volume: toneVolume });
-          announceSession(finishedFocus ? "focus" : "break");
+          announceSession(finishedFocus ? "focus" : "break", finishedFocus ? settings.focus : 0);
           notify(
             next === "focus" ? "Back to focus 🍅" : "Break time ☕",
             FINISH_LINES[next]

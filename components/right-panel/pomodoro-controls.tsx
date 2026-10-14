@@ -8,7 +8,6 @@ import { Switch } from "@/components/ui/switch";
 import {
   type PomodoroSettings,
   pomodoroModes,
-  todayKey,
   usePomodoroStore,
 } from "@/stores/pomodoro-store";
 import { useSettingsStore } from "@/stores/settings-store";
@@ -78,13 +77,10 @@ function Stepper({
 export function PomodoroControls() {
   const settings = usePomodoroStore((state) => state.settings);
   const updateSettings = usePomodoroStore((state) => state.updateSettings);
-  const stats = usePomodoroStore((state) => state.stats);
   const reset = usePomodoroStore((state) => state.reset);
 
   const sound = useSettingsStore((state) => state.sounds.pomodoro);
   const setSound = useSettingsStore((state) => state.setSound);
-
-  const today = stats.date === todayKey() ? stats : { sessions: 0, minutes: 0 };
 
   function toggle(key: keyof Pick<PomodoroSettings, "autoStartBreaks" | "autoStartFocus">) {
     updateSettings({ [key]: !settings[key] });
@@ -92,17 +88,6 @@ export function PomodoroControls() {
 
   return (
     <div className="flex flex-col gap-6">
-      <section className="grid grid-cols-2 gap-2">
-        <div className="rounded-2xl border border-dashed border-border p-3 text-center">
-          <p className="font-display text-2xl">{today.sessions}</p>
-          <p className="text-[11px] text-muted-foreground">sessions today</p>
-        </div>
-        <div className="rounded-2xl border border-dashed border-border p-3 text-center">
-          <p className="font-display text-2xl">{today.minutes}</p>
-          <p className="text-[11px] text-muted-foreground">focus minutes</p>
-        </div>
-      </section>
-
       <section className="space-y-3">
         <p className="text-xs font-bold tracking-wider text-muted-foreground uppercase">
           Lengths

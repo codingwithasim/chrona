@@ -15,6 +15,7 @@ import { useTimerStore } from "@/stores/timer-store";
 import { useWorldClockStore } from "@/stores/world-clock-store";
 
 import { useShortcuts } from "@/hooks/use-shortcuts";
+import { useFocusStore } from "@/stores/focus-store";
 import { useMixerStore } from "@/stores/mixer-store";
 
 import { startAmbience, stopAmbience } from "./ambience-sound";
@@ -53,6 +54,7 @@ export function SceneController() {
     void useAlarmStore.persist.rehydrate();
     void useWorldClockStore.persist.rehydrate();
     void useMixerStore.persist.rehydrate();
+    void useFocusStore.persist.rehydrate();
   }, []);
 
   // The boot script painted the first frame; take over once the

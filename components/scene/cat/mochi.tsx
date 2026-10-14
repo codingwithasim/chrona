@@ -2,7 +2,7 @@
 
 import { type CSSProperties, useEffect, useRef, useState } from "react";
 
-import { SESSION_EVENT, type SessionEnd } from "@/lib/session-events";
+import { SESSION_EVENT, type SessionDetail } from "@/lib/session-events";
 import { playSfx } from "@/lib/sfx";
 import { useDialogueStore } from "@/stores/dialogue-store";
 
@@ -271,7 +271,7 @@ export function Mochi({ yarnX, onBat }: { yarnX: number; onBat: () => void }) {
     }
 
     function onSession(event: Event) {
-      const kind = (event as CustomEvent<SessionEnd>).detail;
+      const { kind } = (event as CustomEvent<SessionDetail>).detail;
 
       if (kind === "break") {
         brain.settle();
