@@ -46,6 +46,10 @@ type SettingsStore = {
   setGazeClock: (gazeClock: boolean) => void;
   gazeDim: boolean;
   setGazeDim: (gazeDim: boolean) => void;
+
+  /** The cat's little welcome has been shown. */
+  welcomed: boolean;
+  setWelcomed: () => void;
 };
 
 export const soundSlots: Record<
@@ -104,6 +108,9 @@ export const useSettingsStore = create<SettingsStore>()(
       setGazeClock: (gazeClock) => set({ gazeClock }),
       gazeDim: false,
       setGazeDim: (gazeDim) => set({ gazeDim }),
+
+      welcomed: false,
+      setWelcomed: () => set({ welcomed: true }),
     }),
     {
       name: "chrona-settings",

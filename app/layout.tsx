@@ -17,6 +17,7 @@ import { KeepAwake } from "@/components/shell/keep-awake";
 import { NotesSheet } from "@/components/shell/notes-sheet";
 import { OfflineSupport } from "@/components/shell/offline-support";
 import { ShortcutsHelp } from "@/components/shell/shortcuts-help";
+import { Welcome } from "@/components/shell/welcome";
 import { AlarmWatcher } from "@/components/tools/alarms/alarm-watcher";
 import { ToolTicker } from "@/components/tools/tool-ticker";
 
@@ -102,6 +103,7 @@ export default function RootLayout({
           <NotesSheet />
           <ShortcutsHelp />
           <CommandMenu />
+          <Welcome />
 
           <VercelAnalytics/>
           <ClarityAnalytics/>

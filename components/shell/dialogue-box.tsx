@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+
+import { LogoMark } from "./logo-mark";
 import {
   type DialogueMessage,
   useDialogueStore,
@@ -84,7 +86,8 @@ function DialogueContent({ message }: { message: DialogueMessage }) {
         )}
         onClick={handleClick}
       >
-        <div className="absolute -top-4 left-5 -rotate-2 rounded-lg border border-black/10 bg-primary px-3 py-1 font-display text-sm text-primary-foreground shadow-cel-sm">
+        <div className="absolute -top-4 left-5 flex -rotate-2 items-center gap-1.5 rounded-lg border border-black/10 bg-primary px-3 py-1 font-display text-sm text-primary-foreground shadow-cel-sm">
+          <LogoMark className="size-4" />
           {message.speaker}
         </div>
 
