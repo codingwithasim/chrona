@@ -15,6 +15,7 @@ import { useTimerStore } from "@/stores/timer-store";
 import { useWorldClockStore } from "@/stores/world-clock-store";
 
 import { useShortcuts } from "@/hooks/use-shortcuts";
+import { useMixerStore } from "@/stores/mixer-store";
 
 import { startAmbience, stopAmbience } from "./ambience-sound";
 
@@ -33,9 +34,13 @@ export function SceneController() {
   const volume = useSceneStore((state) => state.volume);
   const natureOn = useSceneStore((state) => state.natureOn);
   const gaze = useSceneStore((state) => state.gaze);
+  const follow = useMixerStore((state) => state.follow);
+  const mix = useMixerStore((state) => state.mix);
   const setGaze = useSceneStore((state) => state.setGaze);
 
-  useShortcuts({ g: () => setGaze(!gaze) });
+  const setSoundOn = useSceneStore((state) => state.setSoundOn);
+
+  useShortcuts({ g: () => setGaze(!gaze), m: () => setSoundOn(!soundOn) });
 
   // Persisted stores skip automatic hydration so the first
   // client render matches the server. Restore them here.
@@ -47,6 +52,7 @@ export function SceneController() {
     void useStopwatchStore.persist.rehydrate();
     void useAlarmStore.persist.rehydrate();
     void useWorldClockStore.persist.rehydrate();
+    void useMixerStore.persist.rehydrate();
   }, []);
 
   // The boot script painted the first frame; take over once the
@@ -67,11 +73,11 @@ export function SceneController() {
 
   useEffect(() => {
     if (soundOn) {
-      void startAmbience({ weather, season, time, volume, nature: natureOn });
+      void startAmbience({ weather, season, time, volume, nature: natureOn, mix: follow ? null : mix });
     } else {
       stopAmbience();
     }
-  }, [soundOn, weather, season, time, volume, natureOn]);
+  }, [soundOn, weather, season, time, volume, natureOn, follow, mix]);
 
   // Let the interface fade away when you're not touching anything.
   useEffect(() => {

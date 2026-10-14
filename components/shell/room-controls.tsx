@@ -16,7 +16,6 @@ import {
   Sunset,
   TreePine,
   Trees,
-  Volume2,
   Wand2,
 } from "lucide-react";
 
@@ -128,12 +127,6 @@ export function RoomControls() {
   const weather = useSceneStore((state) => state.weather);
   const setWeather = useSceneStore((state) => state.setWeather);
 
-  const soundOn = useSceneStore((state) => state.soundOn);
-  const setSoundOn = useSceneStore((state) => state.setSoundOn);
-  const volume = useSceneStore((state) => state.volume);
-  const setVolume = useSceneStore((state) => state.setVolume);
-  const natureOn = useSceneStore((state) => state.natureOn);
-  const setNatureOn = useSceneStore((state) => state.setNatureOn);
   const sfxOn = useSceneStore((state) => state.sfxOn);
   const setSfxOn = useSceneStore((state) => state.setSfxOn);
   const lampOn = useSceneStore((state) => state.lampOn);
@@ -166,45 +159,17 @@ export function RoomControls() {
       />
 
       <div className="space-y-3">
-        <label className="flex items-center justify-between gap-3 text-sm font-bold">
+        <label className="flex items-center justify-between gap-3 text-[13px]">
           <span className="flex items-center gap-2">
-            <Volume2 className="size-4 text-primary" />
-            Ambient sounds
-          </span>
-          <Switch checked={soundOn} onCheckedChange={setSoundOn} />
-        </label>
-
-        <input
-          type="range"
-          min={0}
-          max={1}
-          step={0.05}
-          value={volume}
-          aria-label="Ambient volume"
-          onChange={(event) => setVolume(Number(event.target.value))}
-          disabled={!soundOn}
-          className="w-full accent-(--primary) disabled:opacity-40"
-        />
-
-        <label className="flex items-center justify-between gap-3 text-sm font-bold">
-          <span className="flex items-center gap-2">
-            <Trees className="size-4 text-mint" />
-            Birds, cicadas &amp; crickets
-          </span>
-          <Switch checked={natureOn} onCheckedChange={setNatureOn} />
-        </label>
-
-        <label className="flex items-center justify-between gap-3 text-sm font-bold">
-          <span className="flex items-center gap-2">
-            <Sparkles className="size-4 text-lavender" />
+            <Sparkles className="size-4 text-muted-foreground" strokeWidth={1.7} />
             Sound effects
           </span>
           <Switch checked={sfxOn} onCheckedChange={setSfxOn} />
         </label>
 
-        <label className="flex items-center justify-between gap-3 text-sm font-bold">
+        <label className="flex items-center justify-between gap-3 text-[13px]">
           <span className="flex items-center gap-2">
-            <Lamp className="size-4 text-honey" />
+            <Lamp className="size-4 text-muted-foreground" strokeWidth={1.7} />
             Desk lamp
           </span>
           <Switch checked={lampOn} onCheckedChange={toggleLamp} />

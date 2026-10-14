@@ -925,6 +925,69 @@
   opacity: 0.18;
 }
 
+/* A thin, quiet range slider (the sound mixer and volume). */
+.calm-range {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 18px;
+  background: transparent;
+  cursor: var(--cursor-paw);
+}
+
+.calm-range::-webkit-slider-runnable-track {
+  height: 3px;
+  border-radius: 9999px;
+  background: linear-gradient(
+    to right,
+    color-mix(in oklab, var(--foreground) 65%, transparent) var(--fill, 0%),
+    color-mix(in oklab, var(--foreground) 13%, transparent) var(--fill, 0%)
+  );
+}
+
+.calm-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 13px;
+  height: 13px;
+  margin-top: -5px;
+  border-radius: 9999px;
+  background: var(--card);
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.28);
+  transition: transform 0.2s ease;
+}
+
+.calm-range:hover::-webkit-slider-thumb {
+  transform: scale(1.15);
+}
+
+.calm-range::-moz-range-track {
+  height: 3px;
+  border-radius: 9999px;
+  background: color-mix(in oklab, var(--foreground) 13%, transparent);
+}
+
+.calm-range::-moz-range-progress {
+  height: 3px;
+  border-radius: 9999px;
+  background: color-mix(in oklab, var(--foreground) 65%, transparent);
+}
+
+.calm-range::-moz-range-thumb {
+  width: 13px;
+  height: 13px;
+  border: 0;
+  border-radius: 9999px;
+  background: var(--card);
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.28);
+}
+
+.calm-range:focus-visible {
+  outline: none;
+}
+
+.calm-range:focus-visible::-webkit-slider-thumb {
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 45%, transparent);
+}
+
 /* At night the paper is a little dimmer, so it doesn't glare. */
 .dark .memo {
   background-color: #ddd4c1;

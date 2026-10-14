@@ -1,29 +1,20 @@
 "use client";
 
-import { Eye, Volume2, VolumeX } from "lucide-react";
+import { Eye } from "lucide-react";
 
 import { AmbienceMenu } from "@/components/shell/ambience-menu";
+import { SoundMixer } from "@/components/shell/sound-mixer";
 import { Button } from "@/components/ui/button";
 import { useSceneStore } from "@/stores/scene-store";
 
 export function LandingControls() {
-  const soundOn = useSceneStore((state) => state.soundOn);
-  const setSoundOn = useSceneStore((state) => state.setSoundOn);
   const setGaze = useSceneStore((state) => state.setGaze);
 
   return (
     <div className="panel flex items-center gap-0.5 rounded-full p-0.5">
       <AmbienceMenu />
 
-      <Button
-        variant="ghost"
-        size="icon"
-        className="size-8 rounded-full text-foreground/55 hover:text-foreground"
-        aria-label={soundOn ? "Mute the room" : "Play rain & ambient sounds"}
-        onClick={() => setSoundOn(!soundOn)}
-      >
-        {soundOn ? <Volume2 className="size-[17px]" strokeWidth={1.7} /> : <VolumeX className="size-[17px]" strokeWidth={1.7} />}
-      </Button>
+      <SoundMixer />
 
       <Button
         variant="ghost"

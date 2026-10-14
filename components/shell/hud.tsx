@@ -9,8 +9,6 @@ import {
   Settings,
   Timer,
   TimerReset,
-  Volume2,
-  VolumeX,
 } from "lucide-react";
 
 import { formatStopwatch } from "@/components/tools/stopwatch/lap-list";
@@ -28,6 +26,7 @@ import { useStopwatchElapsed, useStopwatchStore } from "@/stores/stopwatch-store
 import { useTimerStore } from "@/stores/timer-store";
 
 import { AmbienceMenu } from "./ambience-menu";
+import { SoundMixer } from "./sound-mixer";
 import { formatClock } from "./digits";
 
 function HudButton({
@@ -205,8 +204,6 @@ export function Logo({ className }: { className?: string }) {
 }
 
 export function Hud() {
-  const soundOn = useSceneStore((state) => state.soundOn);
-  const setSoundOn = useSceneStore((state) => state.setSoundOn);
   const setGaze = useSceneStore((state) => state.setGaze);
 
   return (
@@ -225,12 +222,7 @@ export function Hud() {
 
           <AmbienceMenu />
 
-          <HudButton
-            label={soundOn ? "Mute the room" : "Play rain & ambient sounds"}
-            onClick={() => setSoundOn(!soundOn)}
-          >
-            {soundOn ? <Volume2 className="size-[17px]" strokeWidth={1.7} /> : <VolumeX className="size-[17px]" strokeWidth={1.7} />}
-          </HudButton>
+          <SoundMixer />
 
           <HudButton
             label="Watch the rain (Esc to return)"
