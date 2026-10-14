@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { usePathname } from "next/navigation";
 import { SlidersHorizontal } from "lucide-react";
 
+import { FocusHeatmap } from "@/components/right-panel/focus-heatmap";
 import { FocusJournal } from "@/components/right-panel/focus-journal";
 import { FocusStats } from "@/components/right-panel/focus-stats";
 import { PomodoroControls } from "@/components/right-panel/pomodoro-controls";
@@ -43,6 +44,7 @@ function useToolOptions(): ToolOptionsConfig | null {
         content: (
           <>
             <FocusStats />
+            <FocusHeatmap />
             <FocusJournal />
             <PomodoroControls />
           </>

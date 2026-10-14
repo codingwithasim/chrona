@@ -106,7 +106,7 @@ export function FocusStats() {
           {week.map((day) => (
             <div key={day.date} className="flex flex-1 flex-col items-center gap-1" title={`${day.date}: ${formatMinutes(day.minutes)}`}>
               <div
-                className="w-full rounded-full transition-all duration-500"
+                className="w-full max-w-5 rounded-md transition-all duration-500"
                 style={{
                   height: `${Math.max(4, (day.minutes / peak) * 56)}px`,
                   backgroundColor: day.minutes > 0 ? "var(--ember)" : "color-mix(in oklab, var(--foreground) 10%, transparent)",
