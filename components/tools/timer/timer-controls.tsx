@@ -3,26 +3,17 @@
 import { Pause, Play, RotateCcw } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-
-import type { TimerStatus } from "./use-timer";
-
-type TimerControlsProps = {
-  status: TimerStatus;
-  start: () => void;
-  pause: () => void;
-  reset: () => void;
-  addTime: (seconds: number) => void;
-};
+import { useTimerStore } from "@/stores/timer-store";
 
 const quickAdds = [1, 5, 10, 25];
 
-export function TimerControls({
-  status,
-  start,
-  pause,
-  reset,
-  addTime,
-}: TimerControlsProps) {
+export function TimerControls() {
+  const status = useTimerStore((state) => state.status);
+  const start = useTimerStore((state) => state.start);
+  const pause = useTimerStore((state) => state.pause);
+  const reset = useTimerStore((state) => state.reset);
+  const addTime = useTimerStore((state) => state.addTime);
+
   return (
     <div className="flex flex-col items-center gap-6">
       <div className="flex flex-wrap justify-center gap-2">

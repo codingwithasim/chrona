@@ -2,6 +2,8 @@
 
 import { useSceneStore } from "@/stores/scene-store";
 
+import { getAudioContext } from "./audio-context";
+
 /**
  * Tiny synthesized sound effects for room interactions.
  * Everything is generated with the Web Audio API.
@@ -15,19 +17,10 @@ export type Sfx =
   | "sip"
   | "chime"
   | "rustle"
-  | "sparkle";
+  | "sparkle"
+  | "furin"
+  | "firework";
 
-let context: AudioContext | null = null;
-
-function getContext() {
-  context ??= new AudioContext();
-
-  if (context.state === "suspended") {
-    void context.resume();
-  }
-
-  return context;
-}
 
 function noiseBuffer(ctx: AudioContext, seconds: number, brown = false) {
   const length = Math.round(ctx.sampleRate * seconds);
@@ -176,6 +169,28 @@ const players: Record<Sfx, (ctx: AudioContext) => void> = {
     noise(ctx, 0.45, "highpass", 2200, 0.12, { attack: 0.05 });
   },
 
+  furin: (ctx) => {
+    // A glass wind chime: bright bell partials, slightly random.
+    const scale = [2093, 2349, 2637, 3136, 3520];
+
+    for (let i = 0; i < 3; i++) {
+      const frequency = scale[Math.floor(Math.random() * scale.length)];
+      const delay = i * 0.14 + Math.random() * 0.05;
+
+      tone(ctx, "sine", frequency, frequency, 0.09, 1.6, delay);
+      tone(ctx, "sine", frequency * 2.76, frequency * 2.76, 0.025, 0.8, delay);
+    }
+  },
+
+  firework: (ctx) => {
+    noise(ctx, 0.5, "lowpass", 900, 0.5, { brown: true, attack: 0.005 });
+
+    // Crackle as the sparks burn out.
+    for (let i = 0; i < 10; i++) {
+      tone(ctx, "square", 2400 + Math.random() * 2000, 1800, 0.015, 0.03, 0.3 + Math.random() * 0.8);
+    }
+  },
+
   sparkle: (ctx) => {
     [2093, 2637, 3136].forEach((frequency, index) => {
       tone(ctx, "sine", frequency, frequency * 1.02, 0.07, 0.35, index * 0.07);
@@ -193,7 +208,7 @@ export function playSfx(name: Sfx) {
   }
 
   try {
-    players[name](getContext());
+    players[name](getAudioContext());
   } catch {
     // Audio is a nice-to-have; ignore failures.
   }

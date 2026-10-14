@@ -5,7 +5,7 @@ import { Flag } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
-import type { Lap } from "./use-stopwatch";
+import type { Lap } from "@/stores/stopwatch-store";
 
 export function formatStopwatch(ms: number) {
   const totalSeconds = Math.floor(ms / 1000);

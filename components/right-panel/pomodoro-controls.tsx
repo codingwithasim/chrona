@@ -1,94 +1,177 @@
 "use client";
 
-import { Brain, Coffee, Armchair, RefreshCcw, Sparkles } from "lucide-react";
+import { Minus, Plus, RefreshCcw, Sparkles } from "lucide-react";
 
+import { SoundPicker } from "@/components/shell/sound-picker";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import {
-  POMODORO_CONFIG,
-  type PomodoroMode,
+  type PomodoroSettings,
   pomodoroModes,
-} from "@/components/tools/pomodoro/use-pomodoro";
-import { cn } from "@/lib/utils";
+  todayKey,
+  usePomodoroStore,
+} from "@/stores/pomodoro-store";
+import { useSettingsStore } from "@/stores/settings-store";
 
-import { useUIStore } from "../stores/ui-store";
+type NumberSetting = "focus" | "shortBreak" | "longBreak" | "cyclesBeforeLongBreak";
 
-const modeIcons: Record<PomodoroMode, typeof Brain> = {
-  focus: Brain,
-  shortBreak: Coffee,
-  longBreak: Armchair,
-};
+const steppers: Array<{
+  key: NumberSetting;
+  label: string;
+  jp: string;
+  unit: string;
+  min: number;
+  max: number;
+  step: number;
+}> = [
+  { key: "focus", label: "Focus", jp: pomodoroModes.focus.jp, unit: "min", min: 5, max: 120, step: 5 },
+  { key: "shortBreak", label: "Short break", jp: pomodoroModes.shortBreak.jp, unit: "min", min: 1, max: 30, step: 1 },
+  { key: "longBreak", label: "Long break", jp: pomodoroModes.longBreak.jp, unit: "min", min: 5, max: 60, step: 5 },
+  { key: "cyclesBeforeLongBreak", label: "Sessions per set", jp: "セット", unit: "", min: 2, max: 8, step: 1 },
+];
+
+function Stepper({
+  value,
+  min,
+  max,
+  step,
+  unit,
+  label,
+  onChange,
+}: {
+  value: number;
+  min: number;
+  max: number;
+  step: number;
+  unit: string;
+  label: string;
+  onChange: (value: number) => void;
+}) {
+  return (
+    <div className="flex items-center gap-1.5">
+      <Button
+        variant="outline"
+        size="icon-xs"
+        aria-label={`Decrease ${label}`}
+        disabled={value <= min}
+        onClick={() => onChange(Math.max(min, value - step))}
+      >
+        <Minus />
+      </Button>
+      <span className="w-14 text-center font-display text-sm">
+        {value}
+        {unit && <span className="ml-0.5 font-sans text-[10px] text-muted-foreground">{unit}</span>}
+      </span>
+      <Button
+        variant="outline"
+        size="icon-xs"
+        aria-label={`Increase ${label}`}
+        disabled={value >= max}
+        onClick={() => onChange(Math.min(max, value + step))}
+      >
+        <Plus />
+      </Button>
+    </div>
+  );
+}
 
 export function PomodoroControls() {
-  const pomodoroActions = useUIStore((s) => s.pomodoroActions);
-  const state = useUIStore((s) => s.pomodoroState);
+  const settings = usePomodoroStore((state) => state.settings);
+  const updateSettings = usePomodoroStore((state) => state.updateSettings);
+  const stats = usePomodoroStore((state) => state.stats);
+  const reset = usePomodoroStore((state) => state.reset);
 
-  const completed = Math.max(0, (state?.cycle ?? 1) - 1);
+  const sound = useSettingsStore((state) => state.sounds.pomodoro);
+  const setSound = useSettingsStore((state) => state.setSound);
+
+  const today = stats.date === todayKey() ? stats : { sessions: 0, minutes: 0 };
+
+  function toggle(key: keyof Pick<PomodoroSettings, "autoStartBreaks" | "autoStartFocus">) {
+    updateSettings({ [key]: !settings[key] });
+  }
 
   return (
-    <div className="flex h-full flex-col gap-6">
-      <section className="space-y-2">
-        <p className="text-xs font-bold tracking-wider text-muted-foreground uppercase">
-          Phase
-        </p>
-
-        <div className="grid gap-2">
-          {(Object.keys(pomodoroModes) as PomodoroMode[]).map((mode) => {
-            const Icon = modeIcons[mode];
-            const active = state?.mode === mode;
-
-            return (
-              <button
-                key={mode}
-                type="button"
-                onClick={() => pomodoroActions?.setMode?.(mode)}
-                className={cn(
-                  "flex items-center gap-3 rounded-xl border-2 px-3 py-2.5 text-left transition-all",
-                  active
-                    ? "border-ink text-[#1b1530] shadow-cel-sm"
-                    : "border-border hover:bg-muted"
-                )}
-                style={
-                  active
-                    ? { backgroundColor: pomodoroModes[mode].color }
-                    : undefined
-                }
-              >
-                <Icon className="size-4" />
-                <span className="flex-1 text-sm font-bold">
-                  {pomodoroModes[mode].label}
-                  <span className="ml-2 text-[11px] font-normal opacity-70">
-                    {pomodoroModes[mode].jp}
-                  </span>
-                </span>
-                <span className="font-display text-xs opacity-80">
-                  {POMODORO_CONFIG[mode] / 60}m
-                </span>
-              </button>
-            );
-          })}
+    <div className="flex flex-col gap-6">
+      <section className="grid grid-cols-2 gap-2">
+        <div className="rounded-2xl border-2 border-dashed border-border p-3 text-center">
+          <p className="font-display text-2xl">{today.sessions}</p>
+          <p className="text-[11px] text-muted-foreground">sessions today</p>
+        </div>
+        <div className="rounded-2xl border-2 border-dashed border-border p-3 text-center">
+          <p className="font-display text-2xl">{today.minutes}</p>
+          <p className="text-[11px] text-muted-foreground">focus minutes</p>
         </div>
       </section>
 
-      <section className="rounded-2xl border-2 border-dashed border-border p-4 text-center">
-        <p className="font-display text-3xl">{completed}</p>
-        <p className="text-xs text-muted-foreground">
-          focus {completed === 1 ? "session" : "sessions"} finished
+      <section className="space-y-3">
+        <p className="text-xs font-bold tracking-wider text-muted-foreground uppercase">
+          Lengths
         </p>
+
+        {steppers.map((item) => (
+          <div key={item.key} className="flex items-center justify-between gap-2">
+            <span className="text-sm font-bold">
+              {item.label}
+              <span className="ml-1.5 text-[11px] font-normal text-muted-foreground">
+                {item.jp}
+              </span>
+            </span>
+            <Stepper
+              value={settings[item.key]}
+              min={item.min}
+              max={item.max}
+              step={item.step}
+              unit={item.unit}
+              label={item.label}
+              onChange={(value) => updateSettings({ [item.key]: value })}
+            />
+          </div>
+        ))}
       </section>
 
-      <Button
-        variant="outline"
-        onClick={() => pomodoroActions?.reset?.()}
-      >
+      <section className="space-y-3">
+        <p className="text-xs font-bold tracking-wider text-muted-foreground uppercase">
+          Flow
+        </p>
+
+        <label className="flex items-center justify-between gap-3 text-sm font-bold">
+          Start breaks automatically
+          <Switch
+            checked={settings.autoStartBreaks}
+            onCheckedChange={() => toggle("autoStartBreaks")}
+          />
+        </label>
+
+        <label className="flex items-center justify-between gap-3 text-sm font-bold">
+          Start focus automatically
+          <Switch
+            checked={settings.autoStartFocus}
+            onCheckedChange={() => toggle("autoStartFocus")}
+          />
+        </label>
+      </section>
+
+      <section className="space-y-3">
+        <p className="text-xs font-bold tracking-wider text-muted-foreground uppercase">
+          Sound
+        </p>
+        <SoundPicker
+          compact
+          value={sound}
+          onChange={(value) => setSound("pomodoro", value)}
+        />
+      </section>
+
+      <Button variant="outline" onClick={reset}>
         <RefreshCcw />
-        Reset all sessions
+        Reset sessions
       </Button>
 
-      <div className="mt-auto flex gap-2 rounded-xl bg-muted/70 p-3 text-xs leading-5 text-muted-foreground">
+      <div className="flex gap-2 rounded-xl bg-muted/70 p-3 text-xs leading-5 text-muted-foreground">
         <Sparkles className="mt-0.5 size-4 shrink-0 text-honey" />
         <span>
-          25 min focus → 5 min break. Every fourth session
-          earns a 15 min long break.
+          The pomodoro keeps running while you use other tools — even
+          if you reload the page.
         </span>
       </div>
     </div>

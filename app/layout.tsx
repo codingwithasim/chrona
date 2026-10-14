@@ -3,16 +3,17 @@ import { Mochiy_Pop_One, Zen_Maru_Gothic } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { ThemeProvider } from "@/components/theme-provider";
 import { ClarityAnalytics } from "@/components/analytics/clarity-analytics";
 import { Analytics as VercelAnalytics } from "@vercel/analytics/next"
 import { JsonLd } from "@/components/seo/json-ld";
 import { createRootStructuredData, rootMetadata } from "@/lib/seo";
+import { SCENE_BOOT_SCRIPT } from "@/lib/scene-time";
 import { RoomScene } from "@/components/scene/room-scene";
 import { SceneController } from "@/components/scene/scene-controller";
 import { DialogueBox } from "@/components/shell/dialogue-box";
 import { GazeExit } from "@/components/shell/gaze-exit";
 import { AlarmWatcher } from "@/components/tools/alarms/alarm-watcher";
+import { ToolTicker } from "@/components/tools/tool-ticker";
 
 const zenMaru = Zen_Maru_Gothic({
   subsets: ["latin"],
@@ -57,8 +58,15 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={cn("h-full", "antialiased", zenMaru.variable, mochiy.variable)}
+      data-tod="night"
+      data-season="spring"
+      data-weather="drizzle"
+      className={cn("dark h-full", "antialiased", zenMaru.variable, mochiy.variable)}
     >
+      <head>
+        {/* Paint the right time of day, season and weather before React loads */}
+        <script dangerouslySetInnerHTML={{ __html: SCENE_BOOT_SCRIPT }} />
+      </head>
       <body className="min-h-full flex flex-col font-sans">
         <JsonLd
           id="chrona-structured-data"
@@ -66,24 +74,23 @@ export default function RootLayout({
         />
 
         <TooltipProvider delay={600}>
-          <ThemeProvider>
-            <RoomScene />
-            <SceneController />
-            <AlarmWatcher />
+          <RoomScene />
+          <SceneController />
+          <AlarmWatcher />
+          <ToolTicker />
 
-            <div
-              data-passthrough
-              className="relative z-10 flex min-h-full flex-1 flex-col"
-            >
-              {children}
-            </div>
+          <div
+            data-passthrough
+            className="relative z-10 flex min-h-full flex-1 flex-col"
+          >
+            {children}
+          </div>
 
-            <DialogueBox />
-            <GazeExit />
+          <DialogueBox />
+          <GazeExit />
 
-            <VercelAnalytics/>
-            <ClarityAnalytics/>
-          </ThemeProvider>
+          <VercelAnalytics/>
+          <ClarityAnalytics/>
         </TooltipProvider>
       </body>
     </html>

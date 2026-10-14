@@ -4,6 +4,7 @@ import {
   Hourglass,
   type LucideIcon,
   Mail,
+  Settings,
   Timer,
   TimerReset,
 } from "lucide-react";
@@ -78,6 +79,18 @@ export const navigation: NavItem[] = [
   },
 ];
 
+export const settingsItem: NavItem = {
+  title: "Settings",
+  jp: "せってい",
+  href: "/settings",
+  icon: Settings,
+  color: "var(--lavender)",
+  description: "Sounds, the room, and your clock.",
+  line: "Make yourself at home. Change anything you like~",
+};
+
 export function getNavItem(pathname: string) {
-  return navigation.find((item) => item.href === pathname);
+  return [...navigation, settingsItem].find(
+    (item) => item.href === pathname
+  );
 }

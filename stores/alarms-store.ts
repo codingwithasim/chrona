@@ -3,6 +3,8 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
+import type { SoundId } from "@/lib/sounds";
+
 export type Alarm = {
   id: string;
 
@@ -17,6 +19,9 @@ export type Alarm = {
 
   label: string;
   enabled: boolean;
+
+  /** Tone to ring with; falls back to the default alarm sound. */
+  sound?: SoundId;
 
   createdAt: number;
   updatedAt: number;
@@ -43,10 +48,11 @@ type AddAlarmInput = {
   time: number;
   label: string;
   enabled?: boolean;
+  sound?: SoundId;
 };
 
 type AlarmUpdates = Partial<
-  Pick<Alarm, "time" | "label" | "enabled">
+  Pick<Alarm, "time" | "label" | "enabled" | "sound">
 >;
 
 type AlarmStore = {
@@ -141,6 +147,7 @@ export const useAlarmStore =
           time,
           label,
           enabled = true,
+          sound,
         }) => {
           if (!isValidAlarmTime(time)) {
             return {
@@ -176,6 +183,7 @@ export const useAlarmStore =
             time,
             label: normalizedLabel,
             enabled,
+            sound,
             createdAt: timestamp,
             updatedAt: timestamp,
           };
@@ -262,6 +270,10 @@ export const useAlarmStore =
                     enabled:
                       updates.enabled ??
                       alarm.enabled,
+
+                    sound:
+                      updates.sound ??
+                      alarm.sound,
 
                     /**
                      * An alarm edited to another

@@ -3,35 +3,24 @@
 import { Flag, Pause, Play, RotateCcw } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { useStopwatchStore } from "@/stores/stopwatch-store";
 
-type Props = {
-  status: "idle" | "running" | "paused";
-  start: () => void;
-  pause: () => void;
-  reset: () => void;
-  lap: () => void;
-};
+export function StopwatchControls() {
+  const status = useStopwatchStore((state) => state.status);
+  const toggle = useStopwatchStore((state) => state.toggle);
+  const lap = useStopwatchStore((state) => state.lap);
+  const reset = useStopwatchStore((state) => state.reset);
 
-export function StopwatchControls({
-  status,
-  start,
-  pause,
-  reset,
-  lap,
-}: Props) {
   return (
     <div className="flex flex-wrap justify-center gap-3">
-      {status === "running" ? (
-        <Button size="lg" onClick={pause}>
-          <Pause />
-          Pause
-        </Button>
-      ) : (
-        <Button size="lg" onClick={start}>
-          <Play />
-          {status === "paused" ? "Resume" : "Start"}
-        </Button>
-      )}
+      <Button size="lg" onClick={toggle}>
+        {status === "running" ? <Pause /> : <Play />}
+        {status === "running"
+          ? "Pause"
+          : status === "paused"
+            ? "Resume"
+            : "Start"}
+      </Button>
 
       <Button
         size="lg"

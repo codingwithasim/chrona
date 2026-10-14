@@ -3,16 +3,21 @@
 import { Digits } from "@/components/shell/digits";
 import { ProgressRing } from "@/components/shell/progress-ring";
 import { ToolFrame } from "@/components/shell/tool-frame";
+import {
+  useStopwatchElapsed,
+  useStopwatchStore,
+} from "@/stores/stopwatch-store";
 
 import { formatStopwatch, LapList } from "./lap-list";
 import { StopwatchControls } from "./stopwatch-controls";
-import { useStopwatch } from "./use-stopwatch";
 
 export function StopwatchTool() {
-  const sw = useStopwatch();
+  const elapsed = useStopwatchElapsed();
+  const status = useStopwatchStore((state) => state.status);
+  const laps = useStopwatchStore((state) => state.laps);
 
   // The ring sweeps once per minute, like a second hand.
-  const secondSweep = (sw.elapsed % 60_000) / 60_000;
+  const secondSweep = (elapsed % 60_000) / 60_000;
 
   return (
     <ToolFrame href="/stopwatch">
@@ -24,35 +29,29 @@ export function StopwatchTool() {
         >
           <div className="flex flex-col items-center gap-2">
             <span className="text-[11px] font-bold tracking-[0.2em] text-muted-foreground">
-              {sw.status === "running"
+              {status === "running"
                 ? "RUNNING · けいそく中"
-                : sw.status === "paused"
+                : status === "paused"
                   ? "PAUSED · ストップ"
                   : "READY · じゅんび"}
             </span>
 
             <Digits
-              value={formatStopwatch(sw.elapsed)}
+              value={formatStopwatch(elapsed)}
               className="cel-text text-[clamp(2.1rem,9.5vw,3.3rem)]"
             />
 
             <span className="text-xs text-muted-foreground">
-              {sw.laps.length} {sw.laps.length === 1 ? "lap" : "laps"}
+              {laps.length} {laps.length === 1 ? "lap" : "laps"}
             </span>
           </div>
         </ProgressRing>
 
-        <StopwatchControls
-          status={sw.status}
-          start={sw.start}
-          pause={sw.pause}
-          reset={sw.reset}
-          lap={sw.lap}
-        />
+        <StopwatchControls />
 
         {/* Laps live in the side panel on wide screens */}
         <LapList
-          laps={sw.laps}
+          laps={laps}
           limit={5}
           className="w-full max-w-md xl:hidden"
         />

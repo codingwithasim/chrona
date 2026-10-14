@@ -11,7 +11,7 @@ export default function AppLayout({
     <div
       data-ui
       data-passthrough
-      className="flex h-dvh w-full flex-col overflow-hidden"
+      className="fixed inset-0 flex flex-col overflow-hidden"
     >
       <Hud showPanelTrigger />
 

@@ -3,27 +3,21 @@
 import { Pause, Play, RotateCcw, SkipForward } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { usePomodoroStore } from "@/stores/pomodoro-store";
 
-type Props = {
-  isRunning: boolean;
-  start: () => void;
-  pause: () => void;
-  reset: () => void;
-  skip: () => void;
-};
+export function PomodoroControls() {
+  const status = usePomodoroStore((state) => state.status);
+  const toggle = usePomodoroStore((state) => state.toggle);
+  const skip = usePomodoroStore((state) => state.skip);
+  const reset = usePomodoroStore((state) => state.reset);
 
-export function PomodoroControls({
-  isRunning,
-  start,
-  pause,
-  reset,
-  skip,
-}: Props) {
+  const running = status === "running";
+
   return (
     <div className="flex flex-wrap justify-center gap-3">
-      <Button size="lg" onClick={isRunning ? pause : start}>
-        {isRunning ? <Pause /> : <Play />}
-        {isRunning ? "Pause" : "Start"}
+      <Button size="lg" onClick={toggle}>
+        {running ? <Pause /> : <Play />}
+        {running ? "Pause" : status === "paused" ? "Resume" : "Start"}
       </Button>
 
       <Button size="lg" variant="secondary" onClick={skip}>

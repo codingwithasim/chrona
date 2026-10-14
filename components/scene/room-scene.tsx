@@ -7,12 +7,12 @@ import {
   useRef,
   useState,
 } from "react";
-import { useTheme } from "next-themes";
 
 import { useMounted, useNow } from "@/hooks/use-now";
 import { playSfx } from "@/lib/sfx";
 import { useDialogueStore } from "@/stores/dialogue-store";
-import { type RainLevel, useSceneStore } from "@/stores/scene-store";
+import type { Weather } from "@/lib/scene-time";
+import { useResolvedScene, useSceneStore } from "@/stores/scene-store";
 
 import {
   FAR_CITY,
@@ -22,7 +22,7 @@ import {
   STARS,
   WINDOW_TONES,
 } from "./city";
-import { LIGHTNING_EVENT, RainCanvas } from "./rain-canvas";
+import { RainCanvas, triggerSky } from "./rain-canvas";
 
 /*
  * The room is drawn in a fixed 1600×1000 coordinate space and
@@ -91,6 +91,56 @@ function SpeechBubble({ bubble }: { bubble: Bubble }) {
 /* Back layer: sky + city                                              */
 /* ------------------------------------------------------------------ */
 
+const FOLIAGE = [
+  { x: 1112, y: 162, r: 22 },
+  { x: 1080, y: 150, r: 18 },
+  { x: 1050, y: 186, r: 20 },
+  { x: 1010, y: 150, r: 16 },
+  { x: 1000, y: 132, r: 14 },
+  { x: 975, y: 206, r: 18 },
+  { x: 940, y: 212, r: 16 },
+  { x: 905, y: 200, r: 14 },
+  { x: 872, y: 192, r: 12 },
+  { x: 996, y: 236, r: 14 },
+  { x: 985, y: 262, r: 11 },
+  { x: 1128, y: 210, r: 18 },
+];
+
+/** A tree branch reaching into view; its leaves change with the season. */
+function SeasonalBranch() {
+  return (
+    <g>
+      <g stroke="var(--sc-branch)" fill="none" strokeLinecap="round">
+        <path d="M1140 150 C 1060 168 990 196 930 206 C 905 210 880 200 860 190" strokeWidth="10" />
+        <path d="M1040 178 C 1020 160 1006 146 998 126" strokeWidth="6" />
+        <path d="M1000 198 C 996 220 992 240 984 266" strokeWidth="5" />
+        <path d="M1110 162 C 1124 186 1130 200 1136 218" strokeWidth="6" />
+      </g>
+
+      {/* Snow resting on the branch in winter */}
+      <g
+        stroke="#ffffff"
+        fill="none"
+        strokeLinecap="round"
+        style={{ opacity: "var(--sc-snowcap-opacity)" }}
+      >
+        <path d="M1130 146 C 1060 162 990 190 930 200 C 905 204 884 196 866 186" strokeWidth="5" />
+        <path d="M1036 172 C 1020 156 1008 144 1000 128" strokeWidth="3.5" />
+      </g>
+
+      <g style={{ opacity: "var(--sc-foliage-opacity)" }}>
+        {FOLIAGE.map((leaf, index) => (
+          <g key={index}>
+            <circle cx={leaf.x} cy={leaf.y} r={leaf.r} fill="var(--sc-foliage-2)" />
+            <circle cx={leaf.x - leaf.r * 0.25} cy={leaf.y - leaf.r * 0.25} r={leaf.r * 0.72} fill="var(--sc-foliage-1)" />
+            <circle cx={leaf.x - leaf.r * 0.4} cy={leaf.y - leaf.r * 0.45} r={leaf.r * 0.3} fill="var(--sc-foliage-3)" />
+          </g>
+        ))}
+      </g>
+    </g>
+  );
+}
+
 function SkyLayer({
   glassRef,
 }: {
@@ -109,6 +159,16 @@ function SkyLayer({
         <radialGradient id="sc-moon-halo">
           <stop offset="0" stopColor="#fff4d6" stopOpacity="0.5" />
           <stop offset="1" stopColor="#fff4d6" stopOpacity="0" />
+        </radialGradient>
+
+        <radialGradient id="sc-sun-halo">
+          <stop offset="0" stopColor="#fffbe6" stopOpacity="0.8" />
+          <stop offset="1" stopColor="#fffbe6" stopOpacity="0" />
+        </radialGradient>
+
+        <radialGradient id="sc-sun-halo-warm">
+          <stop offset="0" stopColor="#ffc58a" stopOpacity="0.75" />
+          <stop offset="1" stopColor="#ff9a8a" stopOpacity="0" />
         </radialGradient>
 
         <linearGradient id="sc-haze" x1="0" y1="0" x2="0" y2="1">
@@ -139,6 +199,21 @@ function SkyLayer({
       <g clipPath="url(#sc-glass-clip)">
         <rect x={GLASS.x} y={GLASS.y} width={GLASS.w} height={GLASS.h} fill="url(#sc-sky)" />
 
+        {/* Suns for morning, day and evening */}
+        <g style={{ opacity: "var(--sc-sun-morning)" }}>
+          <circle cx="600" cy="470" r="150" fill="url(#sc-sun-halo-warm)" />
+          <circle cx="600" cy="470" r="30" fill="#ffe0b8" />
+        </g>
+        <g style={{ opacity: "var(--sc-sun-day)" }}>
+          <circle cx="1000" cy="210" r="140" fill="url(#sc-sun-halo)" />
+          <circle cx="1000" cy="210" r="30" fill="#fff8dc" />
+        </g>
+        <g style={{ opacity: "var(--sc-sun-evening)" }}>
+          <circle cx="1050" cy="505" r="210" fill="url(#sc-sun-halo-warm)" />
+          <circle cx="1050" cy="505" r="46" fill="#ffb873" />
+          <circle cx="1050" cy="505" r="38" fill="#ffc98f" />
+        </g>
+
         {/* Stars and moon (night only) */}
         <g style={{ opacity: "var(--sc-moon-opacity)" }}>
           {STARS.map((star) => (
@@ -168,6 +243,16 @@ function SkyLayer({
           <ellipse cx="880" cy="300" rx="150" ry="22" fill="var(--sc-cloud)" />
           <ellipse cx="540" cy="320" rx="110" ry="20" fill="var(--sc-cloud)" />
         </g>
+
+        {/* Overcast sky when it rains or snows */}
+        <rect
+          x={GLASS.x}
+          y={GLASS.y}
+          width={GLASS.w}
+          height={GLASS.h}
+          fill="var(--sc-overcast)"
+          style={{ opacity: "var(--sc-overcast-opacity)", transition: "opacity 1.2s ease" }}
+        />
 
         {/* Far skyline */}
         <g>
@@ -286,6 +371,26 @@ function SkyLayer({
           <rect x="541" y="302" width="7" height="9" rx="2" />
           <rect x="602" y="302" width="7" height="9" rx="2" />
         </g>
+
+        {/* Rainy haze over the city */}
+        <rect
+          x={GLASS.x}
+          y={GLASS.y}
+          width={GLASS.w}
+          height={GLASS.h}
+          fill="var(--sc-overcast)"
+          style={{ opacity: "calc(var(--sc-overcast-opacity) * 0.3)" }}
+        />
+
+        <SeasonalBranch />
+
+        <rect
+          x={GLASS.x}
+          y={GLASS.y}
+          width={GLASS.w}
+          height={GLASS.h}
+          fill="var(--sc-outside-tint)"
+        />
       </g>
 
       <rect ref={glassRef} x={GLASS.x} y={GLASS.y} width={GLASS.w} height={GLASS.h} fill="none" />
@@ -568,25 +673,20 @@ function Corkboard() {
 /* Window                                                              */
 /* ------------------------------------------------------------------ */
 
-const WEATHER_LINES: Record<RainLevel, string> = {
-  off: "Teru teru bōzu worked! The rain stopped… for now.",
-  light: "A gentle drizzle again. Perfect for focusing.",
-  heavy: "Uh oh, a storm! Good thing we're inside~",
-};
-
-const NEXT_RAIN: Record<RainLevel, RainLevel> = {
-  light: "off",
-  off: "heavy",
-  heavy: "light",
+const WEATHER_LINES: Record<Weather, string> = {
+  clear: "Teru teru bōzu worked! The sky cleared up~",
+  drizzle: "A gentle drizzle again. Perfect for focusing.",
+  storm: "Uh oh, a storm! Good thing we're inside~",
+  snow: "Snow?! Everything's going quiet and soft…",
 };
 
 function TeruTeruBozu() {
   const speak = useSpeak();
-  const rain = useSceneStore((state) => state.rain);
-  const setRain = useSceneStore((state) => state.setRain);
+  const weather = useSceneStore((state) => state.weather);
+  const cycleWeather = useSceneStore((state) => state.cycleWeather);
   const [poke, bump] = usePoke();
 
-  const sunny = rain === "off";
+  const sunny = weather === "clear";
 
   return (
     <g
@@ -599,9 +699,8 @@ function TeruTeruBozu() {
         <g
           className="sc-hit"
           onClick={() => {
-            const next = NEXT_RAIN[rain];
+            const next = cycleWeather();
             playSfx("pop");
-            setRain(next);
             bump();
             speak(652, 176, WEATHER_LINES[next]);
           }}
@@ -641,6 +740,152 @@ function TeruTeruBozu() {
   );
 }
 
+/** Summer: a glass wind chime (fūrin) that rings when poked. */
+function Furin() {
+  const speak = useSpeak();
+  const [poke, bump] = usePoke();
+
+  return (
+    <g className="season-summer">
+      <g
+        key={poke}
+        className={poke ? "sc-swing" : undefined}
+        style={{ transformBox: "fill-box", transformOrigin: "50% 0%" }}
+      >
+        <g className="sc-sway" style={{ transformBox: "fill-box", transformOrigin: "50% 0%", animationDelay: "-2s" }}>
+          <line x1="962" y1={GLASS.y} x2="962" y2="176" stroke={LINE} strokeWidth="1.6" />
+          <g
+            className="sc-hit"
+            onClick={() => {
+              playSfx("furin");
+              bump();
+              speak(962, 168, "Chiriin~ 🎐 A cool summer breeze.");
+            }}
+          >
+            <path
+              d="M944 196 Q 944 176 962 176 Q 980 176 980 196 Z"
+              fill="#e7f6ff"
+              fillOpacity="0.75"
+              stroke={LINE}
+              strokeWidth="2"
+            />
+            <path d="M948 190 q 6 -6 12 0 q 6 6 12 0" fill="none" stroke="#ff6f8f" strokeWidth="2" />
+            <circle cx="955" cy="184" r="2.5" fill="#ff6f8f" />
+            <line x1="962" y1="196" x2="962" y2="212" stroke={LINE} strokeWidth="1.4" />
+            <rect x="954" y="212" width="16" height="44" rx="2" fill="#fff4b8" stroke={LINE} strokeWidth="1.6" />
+            <path d="M958 222 h8 M958 230 h6 M958 238 h8" stroke="var(--sakura)" strokeWidth="1.4" />
+          </g>
+        </g>
+      </g>
+    </g>
+  );
+}
+
+/** A little vase on the sill with a seasonal arrangement. */
+function SillVase() {
+  const [poke, bump] = usePoke();
+
+  return (
+    <g
+      className="sc-hit"
+      onClick={() => {
+        playSfx("rustle");
+        bump();
+      }}
+    >
+      <g key={poke} className={poke ? "sc-rustle" : undefined} style={{ transformBox: "fill-box", transformOrigin: "50% 100%" }}>
+        {/* Spring: a sakura branch */}
+        <g className="season-spring">
+          <path d="M906 612 C 900 590 892 572 878 556 M904 596 C 914 580 926 572 940 566" stroke="#6b4b44" strokeWidth="3" fill="none" strokeLinecap="round" />
+          {[[878, 556], [890, 568], [940, 566], [926, 574], [884, 578], [912, 586]].map(([x, y], index) => (
+            <g key={index} fill="#ffc6da" stroke={LINE} strokeWidth="1">
+              <circle cx={x} cy={y} r="6" />
+              <circle cx={x} cy={y} r="2" fill="#ff7fa8" stroke="none" />
+            </g>
+          ))}
+        </g>
+
+        {/* Summer: a sunflower */}
+        <g className="season-summer">
+          <path d="M906 612 C 906 590 908 570 912 552" stroke="#3f9157" strokeWidth="3.5" fill="none" />
+          <ellipse cx="924" cy="586" rx="10" ry="5" fill="#5fae6b" stroke={LINE} strokeWidth="1.2" transform="rotate(-30 924 586)" />
+          <g transform="translate(912 548)">
+            {Array.from({ length: 12 }, (_, index) => (
+              <ellipse key={index} cx="0" cy="-12" rx="4.5" ry="8" fill="#ffd34d" stroke={LINE} strokeWidth="1" transform={`rotate(${index * 30})`} />
+            ))}
+            <circle r="8" fill="#7a4a2a" stroke={LINE} strokeWidth="1.2" />
+          </g>
+        </g>
+
+        {/* Autumn: susuki grass and a maple twig */}
+        <g className="season-autumn">
+          {[[-18, 0], [-6, -10], [8, -4]].map(([dx, dy], index) => (
+            <path
+              key={index}
+              d={`M906 612 C ${906 + dx / 2} 590 ${906 + dx} ${566 + dy} ${906 + dx * 1.4} ${548 + dy}`}
+              stroke="#c9a46a"
+              strokeWidth="2.5"
+              fill="none"
+            />
+          ))}
+          {[[880, 552], [900, 540], [918, 548]].map(([x, y], index) => (
+            <ellipse key={index} cx={x} cy={y} rx="5" ry="12" fill="#f3dcae" stroke={LINE} strokeWidth="1" transform={`rotate(${-20 + index * 20} ${x} ${y})`} />
+          ))}
+          <path d="M934 572 l 6 -10 l 2 8 l 8 -6 l -3 9 l 9 1 l -9 5 l 4 7 l -9 -3 l -2 8 l -4 -8 l -8 3 l 4 -7 Z" fill="#df5d3e" stroke={LINE} strokeWidth="1" />
+        </g>
+
+        {/* Winter: camellia */}
+        <g className="season-winter">
+          <path d="M906 612 C 904 594 900 580 892 566 M904 600 C 914 590 922 584 932 580" stroke="#3f6b4f" strokeWidth="3" fill="none" />
+          <ellipse cx="886" cy="574" rx="8" ry="4.5" fill="#3f8c6c" stroke={LINE} strokeWidth="1" transform="rotate(-40 886 574)" />
+          <ellipse cx="924" cy="590" rx="8" ry="4.5" fill="#3f8c6c" stroke={LINE} strokeWidth="1" transform="rotate(20 924 590)" />
+          <g transform="translate(892 562)">
+            {[0, 72, 144, 216, 288].map((angle) => (
+              <circle key={angle} cx="0" cy="-6" r="6" fill="#e2344f" stroke={LINE} strokeWidth="1" transform={`rotate(${angle})`} />
+            ))}
+            <circle r="3.5" fill="#ffd34d" />
+          </g>
+          <g transform="translate(934 578)">
+            {[0, 72, 144, 216, 288].map((angle) => (
+              <circle key={angle} cx="0" cy="-5" r="5" fill="#ffffff" stroke={LINE} strokeWidth="1" transform={`rotate(${angle})`} />
+            ))}
+            <circle r="3" fill="#ffd34d" />
+          </g>
+        </g>
+      </g>
+
+      <path d="M896 646 C 888 640 888 624 898 618 L 900 610 H 912 L 914 618 C 924 624 924 640 916 646 Z" fill="#9fd3ea" stroke={LINE} strokeWidth="2.5" strokeLinejoin="round" />
+      <path d="M896 630 h20" stroke="#ffffff" strokeWidth="2" opacity="0.6" />
+    </g>
+  );
+}
+
+/** Autumn: persimmons next to the books. */
+function Persimmons() {
+  const [poke, bump] = usePoke();
+
+  return (
+    <g
+      className="season-autumn sc-hit"
+      onClick={() => {
+        playSfx("pop");
+        bump();
+      }}
+    >
+      <ellipse cx="1124" cy="878" rx="44" ry="6" fill="var(--sc-shadow)" />
+      <g key={poke} className={poke ? "sc-hop" : undefined} style={{ transformBox: "fill-box", transformOrigin: "50% 100%" }}>
+        {[[1104, 860], [1140, 862], [1122, 840]].map(([x, y], index) => (
+          <g key={index}>
+            <ellipse cx={x} cy={y} rx="17" ry="14" fill="#f2863a" stroke={LINE} strokeWidth="2" />
+            <ellipse cx={x - 6} cy={y - 5} rx="4" ry="2.5" fill="#ffffff" opacity="0.5" />
+            <path d={`M${x - 7} ${y - 13} l 7 -4 l 7 4 l -7 3 Z`} fill="#4f8a3c" stroke={LINE} strokeWidth="1.2" />
+          </g>
+        ))}
+      </g>
+    </g>
+  );
+}
+
 function WindowFrame({ onKnock }: { onKnock: () => void }) {
   return (
     <g>
@@ -663,6 +908,16 @@ function WindowFrame({ onKnock }: { onKnock: () => void }) {
         <path d={`M${GLASS_RIGHT - 120} ${GLASS_BOTTOM} h80 L${GLASS_RIGHT} ${GLASS_BOTTOM - 140} v60 Z`} />
       </g>
 
+      {/* Frost creeping in from the corners when it snows */}
+      <rect
+        x={GLASS.x}
+        y={GLASS.y}
+        width={GLASS.w}
+        height={GLASS.h}
+        fill="url(#sc-frost)"
+        style={{ opacity: "var(--sc-frost-opacity)", transition: "opacity 2s ease" }}
+      />
+
       <path
         d={`M${WIN.x} ${WIN.y}H${WIN.x + WIN.w}V${WIN.y + WIN.h}H${WIN.x}Z M${GLASS.x} ${GLASS.y}V${GLASS_BOTTOM}H${GLASS_RIGHT}V${GLASS.y}Z`}
         fillRule="evenodd"
@@ -679,6 +934,7 @@ function WindowFrame({ onKnock }: { onKnock: () => void }) {
       <rect x="1086" y="372" width="8" height="18" rx="3" fill="var(--honey)" stroke={LINE} strokeWidth="1.5" />
 
       <TeruTeruBozu />
+      <Furin />
     </g>
   );
 }
@@ -1156,6 +1412,13 @@ function Cat() {
           <path d="M1040 838 Q 1052 852 1046 866" fill="none" stroke={LINE} strokeWidth="2" strokeLinecap="round" opacity="0.6" />
         </g>
 
+        {/* Winter scarf */}
+        <g className="season-winter">
+          <path d="M893 806 Q 926 836 906 878 L 888 872 Q 904 840 878 814 Z" fill="#e2344f" stroke={LINE} strokeWidth="2.5" strokeLinejoin="round" />
+          <path d="M889 818 Q 908 838 898 862" fill="none" stroke="#ffffff" strokeWidth="3" strokeDasharray="5 6" opacity="0.8" />
+          <path d="M900 868 L 914 892 L 928 886 L 914 862 Z" fill="#e2344f" stroke={LINE} strokeWidth="2.5" strokeLinejoin="round" />
+        </g>
+
         {/* Head, which bobs when petted */}
         <g key={poke} className={poke ? "sc-hop" : undefined} style={{ transformBox: "fill-box", transformOrigin: "50% 100%" }}>
           <g className={poke ? "sc-ear" : undefined} style={{ transformBox: "fill-box", transformOrigin: "50% 100%" }}>
@@ -1194,9 +1457,27 @@ function Cat() {
         {/* Zzz */}
         {!eyesOpen && (
           <g fill="var(--lavender)" stroke={LINE} strokeWidth="1" fontWeight="700" style={{ fontFamily: "var(--font-mochiy)" }}>
-            <text x="910" y="790" fontSize="16" className="sc-zzz">z</text>
-            <text x="914" y="786" fontSize="22" className="sc-zzz" style={{ animationDelay: "1.1s" }}>z</text>
-            <text x="918" y="782" fontSize="28" className="sc-zzz" style={{ animationDelay: "2.2s" }}>Z</text>
+            {[
+              { x: 910, y: 790, size: 16, char: "z" },
+              { x: 914, y: 786, size: 22, char: "z" },
+              { x: 918, y: 782, size: 28, char: "Z" },
+            ].map((z, index) => (
+              <text
+                key={index}
+                x={z.x}
+                y={z.y}
+                fontSize={z.size}
+                className="sc-zzz"
+                style={{
+                  animationDelay: `${index * 1.1}s`,
+                  transformBox: "fill-box",
+                  transformOrigin: "50% 50%",
+                  opacity: 0,
+                }}
+              >
+                {z.char}
+              </text>
+            ))}
           </g>
         )}
       </g>
@@ -1278,6 +1559,11 @@ function RoomDefs() {
         <stop offset="1" stopColor="var(--sc-sky-3)" stopOpacity="0" />
       </linearGradient>
 
+      <radialGradient id="sc-frost" cx="0.5" cy="0.5" r="0.75">
+        <stop offset="0.55" stopColor="#ffffff" stopOpacity="0" />
+        <stop offset="1" stopColor="#ffffff" stopOpacity="0.55" />
+      </radialGradient>
+
       {/* Soft halo when hovering something clickable */}
       <filter id="sc-hover-glow" x="-30%" y="-30%" width="160%" height="160%">
         <feMorphology in="SourceAlpha" operator="dilate" radius="2" result="thick" />
@@ -1344,6 +1630,7 @@ function RoomLayer({ onKnock }: { onKnock: () => void }) {
 
         <SillPlant />
         <Candle />
+        <SillVase />
 
         {/* Curtain rod and curtains */}
         <rect x="356" y="88" width="888" height="9" rx="4.5" fill="var(--sc-frame-dark)" stroke={LINE} strokeWidth="2" />
@@ -1383,6 +1670,7 @@ function RoomLayer({ onKnock }: { onKnock: () => void }) {
         <Notebook />
         <Mug />
         <Books />
+        <Persimmons />
         <BigPlant />
         <Lamp />
         <Cat />
@@ -1470,13 +1758,25 @@ export function RoomScene() {
   const glassRef = useRef<SVGRectElement | null>(null);
 
   const mounted = useMounted();
-  const { resolvedTheme } = useTheme();
-  const rain = useSceneStore((state) => state.rain);
+  const scene = useResolvedScene();
 
   const [flashKey, setFlashKey] = useState(0);
 
+  /** Clicking the window does something different in every weather. */
   function knock() {
-    window.dispatchEvent(new Event(LIGHTNING_EVENT));
+    if (scene.weather === "clear") {
+      triggerSky("firework");
+      window.setTimeout(() => playSfx("firework"), 900);
+      return;
+    }
+
+    if (scene.weather === "snow") {
+      triggerSky("gust");
+      playSfx("rustle");
+      return;
+    }
+
+    triggerSky("lightning");
     setFlashKey((value) => value + 1);
 
     // Light travels faster than sound.
@@ -1493,8 +1793,9 @@ export function RoomScene() {
       {mounted && (
         <RainCanvas
           targetRef={glassRef}
-          level={rain}
-          night={resolvedTheme === "dark"}
+          weather={scene.weather}
+          season={scene.season}
+          time={scene.time}
         />
       )}
 

@@ -9,7 +9,8 @@ import { formatClock } from "@/components/shell/digits";
 import { useTimerStore } from "@/stores/timer-store";
 
 export function TimerPresets() {
-  const actions = useTimerStore((state) => state.actions);
+  const setDuration = useTimerStore((state) => state.setDuration);
+  const addTime = useTimerStore((state) => state.addTime);
   const presets = useTimerStore((state) => state.presets);
   const addPreset = useTimerStore((state) => state.addPreset);
   const removePreset = useTimerStore((state) => state.removePreset);
@@ -51,7 +52,7 @@ export function TimerPresets() {
             <div key={preset.id} className="group relative">
               <button
                 type="button"
-                onClick={() => actions?.setDuration?.(preset.duration)}
+                onClick={() => setDuration(preset.duration, preset.label)}
                 className="flex w-full flex-col items-start rounded-xl border-2 border-border bg-card/70 px-3 py-2 text-left transition-all hover:-translate-y-0.5 hover:border-sakura hover:shadow-cel-sm"
               >
                 <span className="truncate text-sm font-bold">
@@ -138,7 +139,7 @@ export function TimerPresets() {
           <Button
             variant="secondary"
             size="sm"
-            onClick={() => actions?.addTime?.(30)}
+            onClick={() => addTime(30)}
           >
             +30 sec
           </Button>
@@ -146,7 +147,7 @@ export function TimerPresets() {
           <Button
             variant="secondary"
             size="sm"
-            onClick={() => actions?.addTime?.(60)}
+            onClick={() => addTime(60)}
           >
             +1 min
           </Button>

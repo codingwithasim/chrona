@@ -2,15 +2,11 @@
 
 import { Button } from "@/components/ui/button";
 import { LapList } from "@/components/tools/stopwatch/lap-list";
-
-import { useUIStore } from "../stores/ui-store";
+import { useStopwatchStore } from "@/stores/stopwatch-store";
 
 export function StopwatchActions() {
-  const laps = useUIStore((s) => s.stopwatchLaps);
-
-  const clearLaps = useUIStore(
-    (s) => s.stopwatchActions?.clearLaps
-  );
+  const laps = useStopwatchStore((state) => state.laps);
+  const clearLaps = useStopwatchStore((state) => state.clearLaps);
 
   return (
     <div className="flex h-full flex-col gap-4">
@@ -20,7 +16,7 @@ export function StopwatchActions() {
         variant="ghost"
         className="w-full shrink-0 border-2 border-dashed border-border"
         disabled={laps.length === 0}
-        onClick={() => clearLaps?.()}
+        onClick={clearLaps}
       >
         Clear laps
       </Button>

@@ -64,7 +64,7 @@
 }
 
 /* ------------------------------------------------------------------
- * Day — a grey, rainy afternoon
+ * Interface — light (morning & day) and dark (evening & night)
  * ------------------------------------------------------------------ */
 :root {
   --background: #ece3dc;
@@ -99,69 +99,8 @@
   --panel-line: #3b2e4a;
   --panel-shadow: 6px 6px 0 0 rgb(59 46 74 / 0.88);
   --panel-glow: rgb(255 255 255 / 0.65);
-
-  /* Scene */
-  --sc-sky-1: #8796b4;
-  --sc-sky-2: #a3b1c9;
-  --sc-sky-3: #c3cad9;
-  --sc-sky-4: #e4dade;
-  --sc-cloud: #eef0f5;
-  --sc-cloud-opacity: 0.55;
-  --sc-moon-opacity: 0;
-  --sc-city-far: #9aa7bf;
-  --sc-city-mid: #8191ad;
-  --sc-city-near: #6a7795;
-  --sc-light-opacity: 0.3;
-  --sc-neon-opacity: 0.35;
-
-  --sc-wall-1: #f1e6dc;
-  --sc-wall-2: #e7d8cd;
-  --sc-wall-low: #dbc6bb;
-  --sc-trim: #f8f1ea;
-  --sc-stripe: rgb(150 110 100 / 0.06);
-  --sc-wall-light: rgb(255 255 255 / 0.35);
-  --sc-shadow: rgb(90 60 70 / 0.22);
-  --sc-line: #4a3a52;
-
-  --sc-frame: #fbf6ef;
-  --sc-frame-light: #ffffff;
-  --sc-frame-dark: #d5c5b8;
-  --sc-curtain-1: #cbbef2;
-  --sc-curtain-2: #ad9de3;
-  --sc-curtain-3: #8d7bcc;
-
-  --sc-desk-1: #c8936f;
-  --sc-desk-2: #d6a582;
-  --sc-desk-edge: #9a6a4f;
-  --sc-desk-front: #7e533f;
-  --sc-paper: #fffaf2;
-  --sc-cork: #d2a172;
-
-  --sc-lamp: #8fd3c0;
-  --sc-lamp-dark: #64ad9a;
-  --sc-lamp-glow-opacity: 0.45;
-  --sc-spill-opacity: 0.55;
-  --sc-dark-room: 0.08;
-  --sc-fairy-opacity: 0.55;
-  --sc-glass-opacity: 0.12;
-
-  --sc-plant: #5fb48d;
-  --sc-plant-dark: #3f8c6c;
-  --sc-pot: #e07a62;
-  --sc-cat: #fff6ee;
-  --sc-cat-shade: #ead8cc;
-  --sc-cat-patch: #f3a65c;
-  --sc-cat-patch-2: #6a4c42;
-  --sc-mug: #f5a8c1;
-  --sc-tea: #9c6046;
-
-  --sc-vignette: rgb(80 60 90 / 0.22);
-  --sc-rain: 255 255 255;
 }
 
-/* ------------------------------------------------------------------
- * Night — city lights, neon, warm lamp
- * ------------------------------------------------------------------ */
 .dark {
   --background: #15122b;
   --foreground: #f4eeff;
@@ -194,19 +133,195 @@
   --panel-line: rgb(205 190 255 / 0.32);
   --panel-shadow: 6px 6px 0 0 rgb(6 4 16 / 0.6), 0 0 48px rgb(150 120 255 / 0.12);
   --panel-glow: rgb(255 255 255 / 0.08);
+}
 
+/* ------------------------------------------------------------------
+ * Scene — day (also the fallback before the boot script runs)
+ * ------------------------------------------------------------------ */
+:root,
+[data-tod="day"] {
+  --sc-sky-1: #5f9fd8;
+  --sc-sky-2: #8fc0e8;
+  --sc-sky-3: #c5e1f2;
+  --sc-sky-4: #f0ece4;
+  --sc-cloud: #ffffff;
+  --sc-cloud-opacity: 0.8;
+  --sc-overcast: #a3acbd;
+  --sc-moon-opacity: 0;
+  --sc-sun-morning: 0;
+  --sc-sun-day: 1;
+  --sc-sun-evening: 0;
+  --sc-city-far: #a7b6cc;
+  --sc-city-mid: #8a9bb7;
+  --sc-city-near: #6d7c9a;
+  --sc-light-opacity: 0.25;
+  --sc-neon-opacity: 0.3;
+  --sc-outside-tint: transparent;
+  --sc-branch: #6b4b44;
+
+  --sc-wall-1: #f1e6dc;
+  --sc-wall-2: #e7d8cd;
+  --sc-wall-low: #dbc6bb;
+  --sc-trim: #f8f1ea;
+  --sc-stripe: rgb(150 110 100 / 0.06);
+  --sc-wall-light: rgb(255 255 255 / 0.35);
+  --sc-shadow: rgb(90 60 70 / 0.22);
+  --sc-line: #4a3a52;
+
+  --sc-frame: #fbf6ef;
+  --sc-frame-light: #ffffff;
+  --sc-frame-dark: #d5c5b8;
+  --sc-curtain-1: #cbbef2;
+  --sc-curtain-2: #ad9de3;
+  --sc-curtain-3: #8d7bcc;
+
+  --sc-desk-1: #c8936f;
+  --sc-desk-2: #d6a582;
+  --sc-desk-edge: #9a6a4f;
+  --sc-desk-front: #7e533f;
+  --sc-paper: #fffaf2;
+  --sc-cork: #d2a172;
+
+  --sc-lamp: #8fd3c0;
+  --sc-lamp-dark: #64ad9a;
+  --sc-lamp-glow-opacity: 0.4;
+  --sc-spill-opacity: 0.55;
+  --sc-dark-room: 0.08;
+  --sc-fairy-opacity: 0.5;
+  --sc-glass-opacity: 0.12;
+
+  --sc-plant: #5fb48d;
+  --sc-plant-dark: #3f8c6c;
+  --sc-pot: #e07a62;
+  --sc-cat: #fff6ee;
+  --sc-cat-shade: #ead8cc;
+  --sc-cat-patch: #f3a65c;
+  --sc-cat-patch-2: #6a4c42;
+  --sc-mug: #f5a8c1;
+  --sc-tea: #9c6046;
+
+  --sc-vignette: rgb(80 60 90 / 0.2);
+  --sc-rain: 255 255 255;
+}
+
+/* Morning — pastel sunrise */
+[data-tod="morning"] {
+  --sc-sky-1: #93abd9;
+  --sc-sky-2: #c2c3e6;
+  --sc-sky-3: #f3c6d0;
+  --sc-sky-4: #ffd8ad;
+  --sc-cloud: #fff0ea;
+  --sc-cloud-opacity: 0.75;
+  --sc-overcast: #b5aec4;
+  --sc-sun-morning: 1;
+  --sc-sun-day: 0;
+  --sc-city-far: #aaa5cb;
+  --sc-city-mid: #8f89b8;
+  --sc-city-near: #716b9a;
+  --sc-light-opacity: 0.2;
+  --sc-neon-opacity: 0.25;
+  --sc-branch: #6e4a4c;
+
+  --sc-wall-1: #f6e4dc;
+  --sc-wall-2: #edd5cc;
+  --sc-wall-low: #e0c3b9;
+  --sc-trim: #fbefe8;
+  --sc-stripe: rgb(160 110 100 / 0.06);
+  --sc-wall-light: rgb(255 214 190 / 0.4);
+  --sc-shadow: rgb(110 70 80 / 0.2);
+
+  --sc-frame: #fdf3ec;
+  --sc-frame-dark: #dcc4b8;
+  --sc-lamp-glow-opacity: 0.3;
+  --sc-spill-opacity: 0.6;
+  --sc-dark-room: 0.06;
+  --sc-vignette: rgb(120 70 90 / 0.18);
+}
+
+/* Evening — golden hour turning to dusk */
+[data-tod="evening"] {
+  --sc-sky-1: #3a3a7c;
+  --sc-sky-2: #7a4f9a;
+  --sc-sky-3: #e07799;
+  --sc-sky-4: #ffb36b;
+  --sc-cloud: #c46e8f;
+  --sc-cloud-opacity: 0.6;
+  --sc-overcast: #6b5a7a;
+  --sc-moon-opacity: 0;
+  --sc-sun-morning: 0;
+  --sc-sun-day: 0;
+  --sc-sun-evening: 1;
+  --sc-city-far: #5b4a86;
+  --sc-city-mid: #40356a;
+  --sc-city-near: #2a2350;
+  --sc-light-opacity: 0.7;
+  --sc-neon-opacity: 0.85;
+  --sc-outside-tint: rgb(80 30 70 / 0.12);
+  --sc-branch: #3a2534;
+
+  --sc-wall-1: #5a4269;
+  --sc-wall-2: #4a3459;
+  --sc-wall-low: #3c2a4a;
+  --sc-trim: #6c5079;
+  --sc-stripe: rgb(255 255 255 / 0.03);
+  --sc-wall-light: rgb(255 170 140 / 0.18);
+  --sc-shadow: rgb(20 8 30 / 0.38);
+  --sc-line: #1a1028;
+
+  --sc-frame: #6e4a68;
+  --sc-frame-light: #93698a;
+  --sc-frame-dark: #4d3249;
+  --sc-curtain-1: #8a6fbf;
+  --sc-curtain-2: #6c56a3;
+  --sc-curtain-3: #523f86;
+
+  --sc-desk-1: #6e4852;
+  --sc-desk-2: #835a62;
+  --sc-desk-edge: #4a2e38;
+  --sc-desk-front: #351f2a;
+  --sc-paper: #f2e3e3;
+  --sc-cork: #7d5650;
+
+  --sc-lamp: #7fc2b2;
+  --sc-lamp-dark: #548f82;
+  --sc-lamp-glow-opacity: 0.8;
+  --sc-spill-opacity: 0.45;
+  --sc-dark-room: 0.2;
+  --sc-fairy-opacity: 0.85;
+  --sc-glass-opacity: 0.08;
+
+  --sc-plant: #4b9a7d;
+  --sc-plant-dark: #336b58;
+  --sc-pot: #c8695f;
+  --sc-cat: #f6e6de;
+  --sc-cat-shade: #d3bdb8;
+  --sc-mug: #f09ab6;
+  --sc-tea: #7a4636;
+
+  --sc-vignette: rgb(30 10 40 / 0.45);
+  --sc-rain: 235 210 235;
+}
+
+/* Night — city lights, neon, warm lamp */
+[data-tod="night"] {
   --sc-sky-1: #0e0f2e;
   --sc-sky-2: #252463;
   --sc-sky-3: #5d4489;
   --sc-sky-4: #d17ea3;
   --sc-cloud: #3c3777;
   --sc-cloud-opacity: 0.6;
+  --sc-overcast: #1d1b45;
   --sc-moon-opacity: 1;
+  --sc-sun-morning: 0;
+  --sc-sun-day: 0;
+  --sc-sun-evening: 0;
   --sc-city-far: #2d2b66;
   --sc-city-mid: #201e4e;
   --sc-city-near: #141238;
   --sc-light-opacity: 1;
   --sc-neon-opacity: 1;
+  --sc-outside-tint: rgb(10 8 40 / 0.4);
+  --sc-branch: #17132f;
 
   --sc-wall-1: #2c2650;
   --sc-wall-2: #221d42;
@@ -251,6 +366,72 @@
 
   --sc-vignette: rgb(6 4 20 / 0.6);
   --sc-rain: 200 212 255;
+}
+
+/* ------------------------------------------------------------------
+ * Weather — how much the clouds cover the sky
+ * ------------------------------------------------------------------ */
+:root,
+[data-weather="clear"] {
+  --sc-overcast-opacity: 0;
+  --sc-frost-opacity: 0;
+}
+
+[data-weather="drizzle"] {
+  --sc-overcast-opacity: 0.55;
+}
+
+[data-weather="storm"] {
+  --sc-overcast-opacity: 0.78;
+  --sc-cloud-opacity: 0.9;
+}
+
+[data-weather="snow"] {
+  --sc-overcast-opacity: 0.5;
+  --sc-frost-opacity: 1;
+}
+
+/* ------------------------------------------------------------------
+ * Seasons — the tree outside and the decorations inside
+ * ------------------------------------------------------------------ */
+:root,
+[data-season="spring"] {
+  --sc-foliage-1: #ffc6da;
+  --sc-foliage-2: #ff9fc0;
+  --sc-foliage-3: #fff2f6;
+  --sc-foliage-opacity: 1;
+  --sc-snowcap-opacity: 0;
+}
+
+[data-season="summer"] {
+  --sc-foliage-1: #74c477;
+  --sc-foliage-2: #3f9157;
+  --sc-foliage-3: #b4e394;
+}
+
+[data-season="autumn"] {
+  --sc-foliage-1: #f39a45;
+  --sc-foliage-2: #df5d3e;
+  --sc-foliage-3: #f7c955;
+}
+
+[data-season="winter"] {
+  --sc-foliage-opacity: 0;
+  --sc-snowcap-opacity: 1;
+}
+
+.season-spring,
+.season-summer,
+.season-autumn,
+.season-winter {
+  display: none;
+}
+
+[data-season="spring"] .season-spring,
+[data-season="summer"] .season-summer,
+[data-season="autumn"] .season-autumn,
+[data-season="winter"] .season-winter {
+  display: inline;
 }
 
 @layer base {

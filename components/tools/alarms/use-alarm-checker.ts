@@ -2,8 +2,10 @@
 
 import { useEffect } from "react";
 
+import { isSoundId, playSound } from "@/lib/sounds";
 import { say } from "@/stores/dialogue-store";
 import { useAlarmStore } from "@/stores/alarms-store";
+import { useSettingsStore } from "@/stores/settings-store";
 
 import {
   getCurrentMinutes,
@@ -11,28 +13,16 @@ import {
   minutesToTime,
 } from "./alarm-utils";
 
-const SOUND_URL = "/sounds/aud_01.wav";
-
 /** Stop ringing on its own after this long. */
-const MAX_RING_MS = 60_000;
+const MAX_RING_MS = 90_000;
 
 export function useAlarmChecker() {
   useEffect(() => {
-    const audio = new Audio(SOUND_URL);
+    let stopRinging: (() => void) | null = null;
 
-    audio.loop = true;
-    audio.preload = "auto";
-
-    let stopTimer: number | null = null;
-
-    function stopRinging() {
-      audio.pause();
-      audio.currentTime = 0;
-
-      if (stopTimer !== null) {
-        window.clearTimeout(stopTimer);
-        stopTimer = null;
-      }
+    function stop() {
+      stopRinging?.();
+      stopRinging = null;
     }
 
     function checkAlarms() {
@@ -62,14 +52,17 @@ export function useAlarmChecker() {
         .map((alarm) => alarm.label.trim() || "Alarm")
         .join(", ");
 
-      stopRinging();
+      const { sounds, toneVolume } = useSettingsStore.getState();
+      const sound = isSoundId(triggered[0].sound)
+        ? triggered[0].sound
+        : sounds.alarm;
 
-      void audio.play().catch(() => {
-        // Playback may be blocked until
-        // the user interacts with the page.
+      stop();
+      stopRinging = playSound(sound, {
+        loop: true,
+        volume: toneVolume,
+        maxDuration: MAX_RING_MS,
       });
-
-      stopTimer = window.setTimeout(stopRinging, MAX_RING_MS);
 
       say({
         text: `Riiing! ${labels} — it's ${minutesToTime(
@@ -78,7 +71,7 @@ export function useAlarmChecker() {
         tone: "alert",
         sticky: true,
         actionLabel: "Stop alarm",
-        onDismiss: stopRinging,
+        onDismiss: stop,
       });
     }
 
@@ -86,8 +79,7 @@ export function useAlarmChecker() {
 
     return () => {
       window.clearInterval(intervalId);
-      stopRinging();
-      audio.src = "";
+      stop();
     };
   }, []);
 }
