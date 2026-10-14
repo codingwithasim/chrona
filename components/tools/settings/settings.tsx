@@ -52,6 +52,9 @@ export function SettingsPanel() {
   const hour24 = useSceneStore((state) => state.hour24);
   const toggleHour24 = useSceneStore((state) => state.toggleHour24);
 
+  const focusFade = useSettingsStore((state) => state.focusFade);
+  const setFocusFade = useSettingsStore((state) => state.setFocusFade);
+
   const notifyOn = useSettingsStore((state) => state.notify);
   const setNotify = useSettingsStore((state) => state.setNotify);
   const [notifyBlocked, setNotifyBlocked] = useState(false);
@@ -76,6 +79,16 @@ export function SettingsPanel() {
             How the timer, pomodoro and stopwatch sit over the room.
           </p>
           <PanelStylePicker />
+
+          <label className="flex items-center justify-between gap-3 pt-2 text-[13px] font-medium">
+            <span>
+              Focus mode
+              <span className="block text-[12px] font-normal text-muted-foreground">
+                While counting, fade the panel to just the time when you&apos;re not using it.
+              </span>
+            </span>
+            <Switch checked={focusFade} onCheckedChange={setFocusFade} />
+          </label>
         </Section>
 
         <Section icon={Music2} title="Sounds" jp="おと">

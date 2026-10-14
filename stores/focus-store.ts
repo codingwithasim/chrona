@@ -5,6 +5,8 @@ import { persist } from "zustand/middleware";
 
 import { todayKey } from "@/lib/day-key";
 
+import { say } from "./dialogue-store";
+
 /**
  * What you're working on, and how much you've focused. Everything stays
  * in this browser.
@@ -17,6 +19,9 @@ type FocusStore = {
   tasks: FocusTask[];
   currentId: string | null;
   days: FocusDay[];
+  /** Minutes of focus to aim for each day. */
+  dailyGoal: number;
+  setDailyGoal: (minutes: number) => void;
 
   addTask: (text: string) => void;
   toggleTask: (id: string) => void;
@@ -34,6 +39,8 @@ export const useFocusStore = create<FocusStore>()(
       tasks: [],
       currentId: null,
       days: [],
+      dailyGoal: 120,
+      setDailyGoal: (minutes) => set({ dailyGoal: Math.min(600, Math.max(15, Math.round(minutes / 15) * 15)) }),
 
       addTask: (text) =>
         set((state) => {
@@ -81,6 +88,14 @@ export const useFocusStore = create<FocusStore>()(
         set((state) => {
           const date = todayKey();
           const existing = state.days.find((day) => day.date === date);
+          const before = existing?.minutes ?? 0;
+
+          // Crossing today's goal deserves a little cheer.
+          if (before < state.dailyGoal && before + minutes >= state.dailyGoal) {
+            window.setTimeout(() => {
+              say({ tone: "alert", text: "You reached today's focus goal! Mochi is very proud of you~ 🎉" });
+            }, 2500);
+          }
           const days = existing
             ? state.days.map((day) =>
                 day.date === date ? { ...day, minutes: day.minutes + minutes, sessions: day.sessions + 1 } : day

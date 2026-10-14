@@ -19,6 +19,8 @@ function formatMinutes(minutes: number) {
 export function FocusStats() {
   const now = useNow();
   const history = useFocusStore((state) => state.days);
+  const dailyGoal = useFocusStore((state) => state.dailyGoal);
+  const setDailyGoal = useFocusStore((state) => state.setDailyGoal);
   // Sessions counted before the history existed still show for today.
   const pomodoroToday = usePomodoroStore((state) => state.stats);
 
@@ -53,6 +55,43 @@ export function FocusStats() {
           </div>
         ))}
       </dl>
+
+      {/* Today's goal */}
+      <div>
+        <div className="flex items-center justify-between text-[11px] text-muted-foreground/80">
+          <span>
+            {today.minutes >= dailyGoal ? "goal reached" : `${formatMinutes(Math.max(0, dailyGoal - today.minutes))} to go`}
+          </span>
+          <span className="flex items-center gap-1">
+            <button
+              type="button"
+              aria-label="Lower the daily goal"
+              onClick={() => setDailyGoal(dailyGoal - 15)}
+              className="grid size-5 place-items-center rounded-full hover:bg-foreground/5 hover:text-foreground"
+            >
+              −
+            </button>
+            <span className="tabular-nums">goal {formatMinutes(dailyGoal)}</span>
+            <button
+              type="button"
+              aria-label="Raise the daily goal"
+              onClick={() => setDailyGoal(dailyGoal + 15)}
+              className="grid size-5 place-items-center rounded-full hover:bg-foreground/5 hover:text-foreground"
+            >
+              +
+            </button>
+          </span>
+        </div>
+        <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-foreground/[0.08]">
+          <div
+            className="h-full rounded-full transition-all duration-700"
+            style={{
+              width: `${Math.min(100, (today.minutes / dailyGoal) * 100)}%`,
+              backgroundColor: today.minutes >= dailyGoal ? "var(--mint)" : "var(--ember)",
+            }}
+          />
+        </div>
+      </div>
 
       <div>
         <div className="flex h-16 items-end justify-between gap-1.5" role="img" aria-label={`Focus over the last 7 days: ${formatMinutes(weekMinutes)} in total`}>

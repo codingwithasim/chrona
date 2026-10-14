@@ -18,6 +18,7 @@ import { useShortcuts } from "@/hooks/use-shortcuts";
 import { toggleFullscreen } from "@/lib/fullscreen";
 import { useFocusStore } from "@/stores/focus-store";
 import { useMixerStore } from "@/stores/mixer-store";
+import { useNotesStore } from "@/stores/notes-store";
 
 import { startAmbience, stopAmbience } from "./ambience-sound";
 
@@ -42,7 +43,12 @@ export function SceneController() {
 
   const setSoundOn = useSceneStore((state) => state.setSoundOn);
 
-  useShortcuts({ g: () => setGaze(!gaze), m: () => setSoundOn(!soundOn), f: toggleFullscreen });
+  useShortcuts({
+    g: () => setGaze(!gaze),
+    m: () => setSoundOn(!soundOn),
+    f: toggleFullscreen,
+    n: () => useNotesStore.getState().setOpen(true),
+  });
 
   // Persisted stores skip automatic hydration so the first
   // client render matches the server. Restore them here.
@@ -56,6 +62,7 @@ export function SceneController() {
     void useWorldClockStore.persist.rehydrate();
     void useMixerStore.persist.rehydrate();
     void useFocusStore.persist.rehydrate();
+    void useNotesStore.persist.rehydrate();
   }, []);
 
   // The boot script painted the first frame; take over once the
@@ -82,7 +89,14 @@ export function SceneController() {
     }
   }, [soundOn, weather, season, time, volume, natureOn, follow, mix]);
 
-  // Let the interface fade away when you're not touching anything.
+  // Focus mode is opt-in: mark the page so its CSS can apply.
+  const focusFade = useSettingsStore((state) => state.focusFade);
+
+  useEffect(() => {
+    document.documentElement.toggleAttribute("data-focus-fade", focusFade);
+  }, [focusFade]);
+
+  // Let the interface soften when you're not touching anything.
   useEffect(() => {
     const root = document.documentElement;
     let timer = window.setTimeout(() => (root.dataset.idle = "true"), IDLE_MS);

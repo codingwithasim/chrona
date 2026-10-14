@@ -24,7 +24,6 @@ export function NavDock({ orientation, className }: DockProps) {
   return (
     <nav
       data-ui
-      data-chrome
       aria-label="Tools"
       className={cn(
         "panel flex gap-0.5 rounded-full p-1",

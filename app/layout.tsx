@@ -12,6 +12,7 @@ import { RoomScene } from "@/components/scene/room-scene";
 import { SceneController } from "@/components/scene/scene-controller";
 import { DialogueBox } from "@/components/shell/dialogue-box";
 import { GazeExit } from "@/components/shell/gaze-exit";
+import { NotesSheet } from "@/components/shell/notes-sheet";
 import { AlarmWatcher } from "@/components/tools/alarms/alarm-watcher";
 import { ToolTicker } from "@/components/tools/tool-ticker";
 
@@ -92,6 +93,7 @@ export default function RootLayout({
 
           <DialogueBox />
           <GazeExit />
+          <NotesSheet />
 
           <VercelAnalytics/>
           <ClarityAnalytics/>

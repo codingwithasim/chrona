@@ -32,6 +32,10 @@ type SettingsStore = {
 
   panelStyle: PanelStyle;
   setPanelStyle: (style: PanelStyle) => void;
+
+  /** Fade the panel to just the time while counting and idle. */
+  focusFade: boolean;
+  setFocusFade: (focusFade: boolean) => void;
 };
 
 export const soundSlots: Record<
@@ -79,6 +83,9 @@ export const useSettingsStore = create<SettingsStore>()(
 
       panelStyle: "float",
       setPanelStyle: (panelStyle) => set({ panelStyle }),
+
+      focusFade: false,
+      setFocusFade: (focusFade) => set({ focusFade }),
     }),
     {
       name: "chrona-settings",

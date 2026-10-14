@@ -16,6 +16,8 @@ import {
   type Vec3,
   VP,
 } from "./projection";
+import { useNotesStore } from "@/stores/notes-store";
+
 import { C } from "./room-palette";
 import {
   mulberry32,
@@ -695,17 +697,7 @@ export function WallClock() {
   );
 }
 
-const TIPS = [
-  "Drink some water! 💧",
-  "Stand up and stretch for a minute.",
-  "One task at a time~",
-  "Rest is part of the work.",
-  "Write down the next tiny step.",
-  "You're doing better than you think.",
-];
-
 export function Corkboard() {
-  const speak = useSpeak();
   const [poke, bump] = usePoke();
   const [fluttering, setFluttering] = useState(0);
 
@@ -730,7 +722,8 @@ export function Corkboard() {
         playSfx("rustle");
         setFluttering(Math.floor(Math.random() * 5));
         bump();
-        speak(x0 + w / 2, y0 - 4, `📌 ${pick(TIPS)}`);
+        // The corkboard holds your notes.
+        useNotesStore.getState().setOpen(true);
       }}
     >
       <rect x={x0 + 3} y={y0 + 5} width={w} height={h} fill={C.shadow} />
