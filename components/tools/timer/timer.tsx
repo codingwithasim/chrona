@@ -108,14 +108,14 @@ function InlinePresets() {
   const setDuration = useTimerStore((state) => state.setDuration);
 
   return (
-    <div data-recede data-compact-hide className="flex max-w-xs flex-wrap justify-center gap-x-1 gap-y-0.5">
+    <div data-recede data-compact-hide className="flex max-w-xs flex-wrap justify-center gap-1.5">
       {presets.map((preset) => (
         <button
           key={preset.id}
           type="button"
           onClick={() => setDuration(preset.duration, preset.label)}
           title={formatClock(preset.duration)}
-          className="rounded-full px-2.5 py-1 text-xs text-muted-foreground/80 transition-colors duration-300 hover:bg-foreground/5 hover:text-foreground"
+          className="chip"
         >
           {preset.label}
         </button>

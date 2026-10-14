@@ -1,11 +1,14 @@
+import type { CSSProperties } from "react";
 import Link from "next/link";
 import {
   ArrowRight,
   AudioLines,
+  BookOpenText,
   ChevronDown,
   CloudSun,
   Hourglass,
   ShieldCheck,
+  Sprout,
 } from "lucide-react";
 
 import { AnalyticsSettingsButton } from "@/components/analytics/analytics-settings-button";
@@ -19,29 +22,48 @@ import { LandingControls, WatchRainButton } from "./landing-controls";
 const features = [
   {
     icon: CloudSun,
+    color: "var(--sky)",
     title: "Seasons & weather",
-    jp: "きせつ",
-    text: "Sakura in spring, fireflies and fireworks in summer, falling leaves in autumn, snow in winter — following your clock.",
+    text: "Sakura in spring, fireflies in summer, snow in winter. The room follows your clock, and can follow the real weather outside.",
   },
   {
     icon: AudioLines,
-    title: "Hand-made sounds",
-    jp: "おと",
-    text: "Rain, birds and cicadas, plus fifteen alarm tones from music boxes to temple bells. All synthesized, nothing to download.",
+    color: "var(--ember)",
+    title: "Sounds & your music",
+    text: "Rain, café, fireplace and more, mixed your way. Or bring your own songs and the desk radio plays them.",
+  },
+  {
+    icon: Sprout,
+    color: "var(--mint)",
+    title: "A room that grows",
+    text: "A pothos that grows with every session, a bell for the cat, stars on the ceiling. Little things, earned by focusing.",
+  },
+  {
+    icon: BookOpenText,
+    color: "var(--honey)",
+    title: "Tasks & a journal",
+    text: "Say what you're working on, guess how long it'll take, and note what you got done. Your week, as a picture.",
   },
   {
     icon: Hourglass,
+    color: "var(--lavender)",
     title: "Keeps on ticking",
-    jp: "つづく",
-    text: "Timers, pomodoros and stopwatches keep running while you wander between tools — even after a reload.",
+    text: "Timers keep running while you wander between tools, even after a reload, and the room opens offline too.",
   },
   {
     icon: ShieldCheck,
+    color: "var(--mint)",
     title: "Free & private",
-    jp: "むりょう",
-    text: "No account, no ads. Your alarms, cities and settings stay in your browser.",
+    text: "No account, no ads. Everything stays on your device, with a backup file whenever you want one.",
   },
 ];
+
+const badge = (color: string) =>
+  ({
+    color,
+    background: `color-mix(in oklab, ${color} 17%, transparent)`,
+    boxShadow: `inset 0 0 0 1px color-mix(in oklab, ${color} 26%, transparent)`,
+  }) as CSSProperties;
 
 export function LandingPage() {
   const tools = navigation.filter((item) => item.href !== "/feedback");
@@ -65,6 +87,16 @@ export function LandingPage() {
             />
 
             <div className="flex flex-col items-center ui-fade">
+
+            <Link
+              href="/settings"
+              className="mb-6 inline-flex items-center gap-2 rounded-full bg-background/40 px-3.5 py-1.5 text-[12px] text-foreground/75 ring-1 ring-foreground/10 backdrop-blur-sm transition-colors hover:text-foreground"
+            >
+              <span className="rounded-full bg-[color-mix(in_oklab,var(--mint)_25%,transparent)] px-2 py-0.5 text-[10px] tracking-wider text-foreground">
+                new
+              </span>
+              Your room now grows as you focus 🌱
+            </Link>
 
             <p className="text-[11px] tracking-[0.6em] text-foreground/50">クロナ</p>
             <h1 className="mt-3 font-display text-6xl font-light leading-none tracking-wide text-foreground/90 sm:text-7xl">
@@ -113,19 +145,25 @@ export function LandingPage() {
                 <Link
                   key={tool.href}
                   href={tool.href}
-                  className="group panel block p-6 transition-all duration-500 hover:-translate-y-0.5"
+                  style={{ "--tool": tool.color } as CSSProperties}
+                  className="group panel block overflow-hidden p-6 transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_24px_50px_-30px_var(--tool)]"
                 >
-                  <span className="flex items-center gap-3">
-                    <Icon className="size-[18px] text-foreground/60" strokeWidth={1.7} />
-                    <span className="text-[15px] font-medium">{tool.title}</span>
-                    <span className="size-1.5 rounded-full opacity-80" style={{ backgroundColor: tool.color }} />
+                  <div aria-hidden="true" className="tool-wash" />
+                  <span className="relative flex items-center gap-3">
+                    <span className="tool-badge grid size-10 place-items-center rounded-2xl">
+                      <Icon className="size-[18px]" strokeWidth={1.8} />
+                    </span>
+                    <span className="flex flex-col leading-tight">
+                      <span className="font-display text-[16px]">{tool.title}</span>
+                      <span className="text-[10.5px] tracking-[0.2em] text-muted-foreground">{tool.jp}</span>
+                    </span>
                   </span>
 
-                  <span className="mt-3 block text-[13px] leading-6 text-muted-foreground">
+                  <span className="relative mt-4 block text-[13px] leading-6 text-muted-foreground">
                     {tool.description}
                   </span>
 
-                  <span className="mt-4 inline-flex items-center gap-1 text-xs text-foreground/50 transition-colors duration-300 group-hover:text-foreground">
+                  <span className="relative mt-4 inline-flex items-center gap-1 text-xs text-foreground/60 transition-colors duration-300 group-hover:text-foreground">
                     Open
                     <ArrowRight className="size-3.5 transition-transform duration-300 group-hover:translate-x-0.5" strokeWidth={1.8} />
                   </span>
@@ -133,23 +171,49 @@ export function LandingPage() {
               );
             })}
 
-            <div className="rounded-[calc(var(--radius)*1.8)] border border-dashed border-foreground/15 p-6">
-              <span className="text-[15px] font-medium text-foreground/70">Planner</span>
-              <p className="mt-3 text-[13px] leading-6 text-muted-foreground">
-                Organize your day, gently. Coming soon.
-              </p>
-            </div>
+            <Link
+              href="/settings"
+              style={{ "--tool": "var(--mint)" } as CSSProperties}
+              className="group panel block overflow-hidden p-6 transition-all duration-500 hover:-translate-y-1"
+            >
+              <div aria-hidden="true" className="tool-wash" />
+              <span className="relative flex items-center gap-3">
+                <span className="tool-badge grid size-10 place-items-center rounded-2xl">
+                  <Sprout className="size-[18px]" strokeWidth={1.8} />
+                </span>
+                <span className="flex flex-col leading-tight">
+                  <span className="font-display text-[16px]">Make it yours</span>
+                  <span className="text-[10.5px] tracking-[0.2em] text-muted-foreground">じぶんの へや</span>
+                </span>
+              </span>
+              <span className="relative mt-4 block text-[13px] leading-6 text-muted-foreground">
+                Name the cat, pick her coat, and watch the room fill up with
+                little things as your focus hours add up.
+              </span>
+              <span className="relative mt-4 inline-flex items-center gap-1 text-xs text-foreground/60 transition-colors duration-300 group-hover:text-foreground">
+                Settings
+                <ArrowRight className="size-3.5 transition-transform duration-300 group-hover:translate-x-0.5" strokeWidth={1.8} />
+              </span>
+            </Link>
           </div>
         </section>
 
         {/* What makes it calm */}
         <section className="mx-auto max-w-5xl px-4 pb-20">
-          <div className="grid gap-x-8 gap-y-6 sm:grid-cols-2 lg:grid-cols-4">
-            {features.map(({ icon: Icon, title, text }) => (
-              <div key={title}>
-                <Icon className="size-[18px] text-foreground/50" strokeWidth={1.7} />
-                <h3 className="mt-3 text-[13px] font-medium">{title}</h3>
-                <p className="mt-1.5 text-[13px] leading-6 text-muted-foreground">{text}</p>
+          <h2 className="mb-6 text-center text-[11px] tracking-[0.4em] text-foreground/50 lowercase">
+            what&apos;s in the room · へや
+          </h2>
+
+          <div className="panel grid gap-x-8 gap-y-7 p-7 sm:grid-cols-2 sm:p-9 lg:grid-cols-3">
+            {features.map(({ icon: Icon, color, title, text }) => (
+              <div key={title} className="flex gap-4">
+                <span className="grid size-10 shrink-0 place-items-center rounded-2xl" style={badge(color)}>
+                  <Icon className="size-[18px]" strokeWidth={1.8} />
+                </span>
+                <div>
+                  <h3 className="font-display text-[15px]">{title}</h3>
+                  <p className="mt-1.5 text-[13px] leading-6 text-muted-foreground">{text}</p>
+                </div>
               </div>
             ))}
           </div>
@@ -157,7 +221,7 @@ export function LandingPage() {
       </main>
 
       <footer className="px-4 pb-8">
-        <div className="mx-auto flex max-w-5xl flex-col items-center justify-between gap-3 border-t border-foreground/[0.06] px-2 pt-6 text-xs text-muted-foreground/80 sm:flex-row">
+        <div className="panel mx-auto flex max-w-5xl flex-col items-center justify-between gap-3 px-6 py-4 text-xs text-muted-foreground sm:flex-row">
           <span>© {year} Chrona · made with rain and tea</span>
           <span className="flex items-center gap-4">
             <Link href="/feedback" className="hover:text-foreground">

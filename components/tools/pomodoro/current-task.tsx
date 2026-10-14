@@ -63,7 +63,7 @@ export function CurrentTask() {
   return (
     <Popover.Root>
       <Popover.Trigger
-        className="max-w-full truncate rounded-full px-3 py-1 text-[12px] text-muted-foreground transition-colors duration-300 hover:bg-foreground/5 hover:text-foreground"
+        className="chip max-w-full truncate"
       >
         {current ? (
           <>

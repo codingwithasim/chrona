@@ -11,6 +11,8 @@ import {
 
 export type NavItem = {
   title: string;
+  /** A short name for the dock. */
+  short: string;
   /** Japanese label shown alongside the English title. */
   jp: string;
   href: string;
@@ -25,6 +27,7 @@ export type NavItem = {
 export const navigation: NavItem[] = [
   {
     title: "Timer",
+    short: "Timer",
     jp: "タイマー",
     href: "/timer",
     icon: Hourglass,
@@ -34,6 +37,7 @@ export const navigation: NavItem[] = [
   },
   {
     title: "Stopwatch",
+    short: "Stopwatch",
     jp: "ストップウォッチ",
     href: "/stopwatch",
     icon: TimerReset,
@@ -43,6 +47,7 @@ export const navigation: NavItem[] = [
   },
   {
     title: "Pomodoro",
+    short: "Focus",
     jp: "ポモドーロ",
     href: "/pomodoro",
     icon: Timer,
@@ -52,6 +57,7 @@ export const navigation: NavItem[] = [
   },
   {
     title: "World Clock",
+    short: "Clocks",
     jp: "世界時計",
     href: "/world-clock",
     icon: Globe2,
@@ -61,6 +67,7 @@ export const navigation: NavItem[] = [
   },
   {
     title: "Alarms",
+    short: "Alarms",
     jp: "アラーム",
     href: "/alarms",
     icon: AlarmClock,
@@ -70,6 +77,7 @@ export const navigation: NavItem[] = [
   },
   {
     title: "Contact",
+    short: "Contact",
     jp: "れんらく",
     href: "/feedback",
     icon: Mail,
@@ -81,6 +89,7 @@ export const navigation: NavItem[] = [
 
 export const settingsItem: NavItem = {
   title: "Settings",
+  short: "Settings",
   jp: "せってい",
   href: "/settings",
   icon: Settings,

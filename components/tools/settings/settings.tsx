@@ -26,20 +26,31 @@ function Section({
   icon: Icon,
   title,
   jp,
+  color,
   children,
 }: {
   icon: typeof Music2;
   title: string;
   jp: string;
+  color: string;
   children: ReactNode;
 }) {
   return (
-    <section className="space-y-4 border-t border-foreground/[0.06] pt-7 first:border-t-0 first:pt-0">
-      <h2 className="flex items-center gap-2 text-sm font-medium text-foreground/80">
-        <Icon className="size-4 text-muted-foreground" strokeWidth={1.7} />
-        {title}
-        <span className="font-sans text-[11px] text-muted-foreground/60">
-          {jp}
+    <section className="space-y-4 rounded-3xl bg-foreground/[0.03] p-5 ring-1 ring-foreground/[0.05]">
+      <h2 className="flex items-center gap-2.5">
+        <span
+          className="grid size-8 shrink-0 place-items-center rounded-xl"
+          style={{
+            color,
+            background: `color-mix(in oklab, ${color} 17%, transparent)`,
+            boxShadow: `inset 0 0 0 1px color-mix(in oklab, ${color} 26%, transparent)`,
+          }}
+        >
+          <Icon className="size-4" strokeWidth={1.8} />
+        </span>
+        <span className="flex flex-col leading-tight">
+          <span className="font-display text-[15px] text-foreground/90">{title}</span>
+          <span className="text-[10.5px] tracking-[0.2em] text-muted-foreground/80">{jp}</span>
         </span>
       </h2>
       {children}
@@ -80,8 +91,8 @@ export function SettingsPanel() {
 
   return (
     <ToolFrame href="/settings">
-      <div className="space-y-8">
-        <Section icon={LayoutPanelLeft} title="Panel style" jp="かたち">
+      <div className="space-y-4">
+        <Section icon={LayoutPanelLeft} title="Panel style" color="var(--sky)" jp="かたち">
           <p className="text-[12px] text-muted-foreground">
             How the timer, pomodoro and stopwatch sit over the room.
           </p>
@@ -98,7 +109,7 @@ export function SettingsPanel() {
           </label>
         </Section>
 
-        <Section icon={Music2} title="Sounds" jp="おと">
+        <Section icon={Music2} title="Sounds" color="var(--ember)" jp="おと">
           <div className="flex flex-wrap items-center gap-3 py-1">
             <span className="text-[13px] text-foreground/80">Volume</span>
             <input
@@ -143,19 +154,19 @@ export function SettingsPanel() {
           ))}
         </Section>
 
-        <Section icon={Sofa} title="The room" jp="へや">
+        <Section icon={Sofa} title="The room" color="var(--honey)" jp="へや">
           <RoomControls />
         </Section>
 
-        <Section icon={Cat} title="Your cat" jp="ねこ">
+        <Section icon={Cat} title="Your cat" color="var(--ember)" jp="ねこ">
           <YourCat />
         </Section>
 
-        <Section icon={Sprout} title="Your room grows" jp="そだつ">
+        <Section icon={Sprout} title="Your room grows" color="var(--mint)" jp="そだつ">
           <RoomGrowth />
         </Section>
 
-        <Section icon={Bell} title="Notifications" jp="おしらせ">
+        <Section icon={Bell} title="Notifications" color="var(--lavender)" jp="おしらせ">
           <label className="flex items-center justify-between gap-3 text-[13px] font-medium">
             <span>
               Notify me in the background
@@ -174,7 +185,7 @@ export function SettingsPanel() {
           )}
         </Section>
 
-        <Section icon={Clock3} title="Clock" jp="とけい">
+        <Section icon={Clock3} title="Clock" color="var(--sky)" jp="とけい">
           <label className="flex items-center justify-between gap-3 text-[13px] font-medium">
             24-hour time
             <Switch checked={hour24} onCheckedChange={toggleHour24} />
@@ -191,11 +202,11 @@ export function SettingsPanel() {
           </label>
         </Section>
 
-        <Section icon={HardDrive} title="Your data" jp="データ">
+        <Section icon={HardDrive} title="Your data" color="var(--mint)" jp="データ">
           <YourData />
         </Section>
 
-        <Section icon={Keyboard} title="Shortcuts" jp="ショートカット">
+        <Section icon={Keyboard} title="Shortcuts" color="var(--lavender)" jp="ショートカット">
           <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
             {SHORTCUTS.map(([key, description]) => (
               <div key={key} className="contents">

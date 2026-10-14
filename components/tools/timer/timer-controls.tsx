@@ -29,13 +29,13 @@ export function TimerControls() {
       </ControlRow>
 
       {counting && (
-        <div data-recede data-compact-hide className="flex gap-1 animate-in fade-in-0 duration-500">
+        <div data-recede data-compact-hide className="flex gap-1.5 animate-in fade-in-0 duration-500">
           {quickAdds.map((minutes) => (
             <button
               key={minutes}
               type="button"
               onClick={() => addTime(minutes * 60)}
-              className="rounded-full px-2.5 py-1 text-xs text-muted-foreground/80 transition-colors duration-300 hover:bg-foreground/5 hover:text-foreground"
+              className="chip"
             >
               +{minutes} min
             </button>

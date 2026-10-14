@@ -44,9 +44,15 @@ export function PomodoroTool() {
   const todaySessions = stats.date === todayKey() ? stats.sessions : 0;
 
   return (
-    <ToolFrame href="/pomodoro" placement="side">
+    <ToolFrame href="/pomodoro" placement="side" accent={current.color}>
       <div data-tool-body className="flex flex-col items-center gap-7">
-        <div data-recede data-compact-hide role="tablist" aria-label="Pomodoro phase" className="flex gap-1">
+        <div
+          data-recede
+          data-compact-hide
+          role="tablist"
+          aria-label="Pomodoro phase"
+          className="flex gap-1 rounded-full bg-foreground/[0.05] p-1 ring-1 ring-foreground/[0.05]"
+        >
           {(Object.keys(pomodoroModes) as PomodoroMode[]).map((item) => {
             const active = item === mode;
 
@@ -59,21 +65,23 @@ export function PomodoroTool() {
                 onClick={() => setMode(item)}
                 title={`${pomodoroModes[item].jp} · ${settings[item]} min`}
                 className={cn(
-                  "relative rounded-full px-3 py-1.5 text-xs transition-colors duration-300",
+                  "flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs transition-all duration-300",
                   active
-                    ? "text-foreground"
-                    : "text-muted-foreground/70 hover:text-foreground"
+                    ? "text-foreground shadow-[0_1px_3px_rgb(0_0_0/0.08)]"
+                    : "text-muted-foreground hover:text-foreground"
                 )}
+                style={
+                  active
+                    ? { backgroundColor: `color-mix(in oklab, ${pomodoroModes[item].color} 24%, transparent)` }
+                    : undefined
+                }
               >
-                {pomodoroModes[item].label}
                 <span
                   aria-hidden="true"
-                  className={cn(
-                    "absolute inset-x-0 -bottom-0.5 mx-auto size-1 rounded-full transition-opacity duration-300",
-                    active ? "opacity-100" : "opacity-0"
-                  )}
-                  style={{ backgroundColor: pomodoroModes[item].color }}
+                  className="size-1.5 rounded-full"
+                  style={{ backgroundColor: pomodoroModes[item].color, opacity: active ? 1 : 0.5 }}
                 />
+                {pomodoroModes[item].label}
               </button>
             );
           })}
@@ -116,8 +124,8 @@ export function PomodoroTool() {
               <span
                 key={index}
                 className={cn(
-                  "size-1.5 rounded-full transition-colors duration-500",
-                  index < doneInSet ? "" : "bg-foreground/15"
+                  "size-2 rounded-full transition-colors duration-500",
+                  index < doneInSet ? "shadow-[0_0_6px_var(--ember)]" : "bg-foreground/10 ring-1 ring-foreground/15"
                 )}
                 style={index < doneInSet ? { backgroundColor: "var(--ember)" } : undefined}
               />

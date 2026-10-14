@@ -44,7 +44,7 @@ export function PlayButton({
             onClick={onClick}
             aria-label={text}
             data-play
-            className="grid size-16 place-items-center rounded-full bg-primary text-primary-foreground shadow-[0_12px_30px_-14px_rgb(30_40_60/0.6)] transition-all duration-300 outline-none hover:scale-[1.04] hover:opacity-95 focus-visible:ring-3 focus-visible:ring-ring/40 active:scale-[0.97]"
+            className="play-accent grid size-16 place-items-center rounded-full transition-all duration-300 outline-none hover:scale-[1.05] hover:brightness-105 focus-visible:ring-3 focus-visible:ring-ring/40 active:scale-[0.97]"
           >
             {running ? (
               <Pause className="size-6" strokeWidth={1.8} fill="currentColor" />
@@ -88,7 +88,7 @@ export function QuietAction({
             aria-label={label}
             data-quiet
             className={cn(
-              "grid size-11 place-items-center rounded-full text-foreground/60 transition-all duration-300 outline-none hover:bg-foreground/6 hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/40 active:scale-[0.95] disabled:pointer-events-none disabled:opacity-30",
+              "grid size-11 place-items-center rounded-full bg-foreground/[0.05] text-foreground/65 ring-1 ring-foreground/[0.06] transition-all duration-300 outline-none hover:bg-[color-mix(in_oklab,var(--tool)_16%,transparent)] hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/40 active:scale-[0.95] disabled:pointer-events-none disabled:opacity-30",
               className
             )}
           >
@@ -112,10 +112,10 @@ export function ControlRow({ children }: { children: React.ReactNode }) {
   );
 }
 
-/** A small, lowercase status line, e.g. "ready". */
+/** A small, lowercase status chip in the tool's colour, e.g. "ready". */
 export function StatusLine({ children }: { children: React.ReactNode }) {
   return (
-    <span data-compact-hide className="text-[10px] font-medium tracking-[0.32em] text-muted-foreground/80 lowercase">
+    <span data-compact-hide className="tool-chip rounded-full px-2.5 py-0.5 text-[10px] font-medium tracking-[0.28em] lowercase">
       {children}
     </span>
   );

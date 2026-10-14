@@ -34,6 +34,26 @@ const phases: Record<DayPhase, { icon: typeof Sun; color: string; label: string 
   dusk: { icon: Sunset, color: "#f59e5b", label: "Sunset" },
 };
 
+/** Each card wears its city's sky right now, with the sun or moon in a corner. */
+const SKIES: Record<DayPhase, { sky: string; orb: string }> = {
+  night: {
+    sky: "linear-gradient(160deg, rgb(52 60 112 / 0.5), rgb(28 32 62 / 0.32))",
+    orb: "radial-gradient(circle, rgb(246 240 220 / 0.9) 0 28%, rgb(246 240 220 / 0.18) 30%, transparent 62%)",
+  },
+  dawn: {
+    sky: "linear-gradient(160deg, rgb(250 186 160 / 0.42), rgb(176 168 222 / 0.26))",
+    orb: "radial-gradient(circle, rgb(255 214 170 / 0.95) 0 26%, rgb(255 190 150 / 0.25) 30%, transparent 64%)",
+  },
+  day: {
+    sky: "linear-gradient(160deg, rgb(140 196 240 / 0.42), rgb(226 240 250 / 0.2))",
+    orb: "radial-gradient(circle, rgb(255 226 140 / 0.95) 0 26%, rgb(255 216 120 / 0.25) 30%, transparent 64%)",
+  },
+  dusk: {
+    sky: "linear-gradient(160deg, rgb(246 160 110 / 0.42), rgb(120 98 170 / 0.32))",
+    orb: "radial-gradient(circle, rgb(255 190 120 / 0.95) 0 26%, rgb(250 150 100 / 0.25) 30%, transparent 64%)",
+  },
+};
+
 const SKY_GRADIENT =
   "linear-gradient(to right, #4a4d72 0%, #4a4d72 19%, #e9bcb6 26%, #c6e0ee 33%, #cfe5f0 69%, #efcb9f 76%, #9a8db5 82%, #4a4d72 88%, #4a4d72 100%)";
 
@@ -62,7 +82,8 @@ export function TimezoneCard({
   const dragging = useRef(false);
 
   const minutes = minutesOfDay(preview, city.timezone);
-  const phase = phases[dayPhase(minutes)];
+  const phaseKey = dayPhase(minutes);
+  const phase = phases[phaseKey];
   const PhaseIcon = phase.icon;
 
   const { time, meridiem } = formatZonedTime(preview, city.timezone, hour24);
@@ -125,10 +146,23 @@ export function TimezoneCard({
   }
 
   return (
-    <article className="group flex flex-col gap-3 rounded-3xl border border-foreground/[0.06] bg-foreground/[0.025] p-5 transition-colors duration-300 hover:bg-foreground/[0.04]">
+    <article
+      className="group relative isolate flex flex-col gap-3 overflow-hidden rounded-3xl border border-foreground/[0.07] p-5 shadow-[0_10px_30px_-22px_rgb(0_0_0/0.5)] transition-[background] duration-1000 hover:border-foreground/[0.12]"
+      style={{ background: SKIES[phaseKey].sky }}
+    >
+      {/* The sun or moon, low in the corner */}
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute -top-10 -right-8 -z-10 size-32 opacity-75"
+        style={{ background: SKIES[phaseKey].orb }}
+      />
+      {phaseKey === "night" && (
+        <span aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 opacity-60 [background-image:radial-gradient(circle_at_20%_30%,#fff8_0.6px,transparent_1.2px),radial-gradient(circle_at_70%_20%,#fff8_0.6px,transparent_1.2px),radial-gradient(circle_at_45%_60%,#fff6_0.5px,transparent_1px),radial-gradient(circle_at_85%_55%,#fff6_0.5px,transparent_1px)]" />
+      )}
+
       <header className="flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <h2 className="truncate text-sm font-medium">{city.name}</h2>
+          <h2 className="truncate font-display text-[15px]">{city.name}</h2>
           <p className="truncate text-[11px] text-muted-foreground/80">
             {city.country} · {gmtLabel(preview, city.timezone)}
           </p>
@@ -145,8 +179,11 @@ export function TimezoneCard({
       </header>
 
       <div className="flex items-center gap-3">
-        <span title={phase.label} className="shrink-0">
-          <PhaseIcon className="size-[18px]" strokeWidth={1.7} style={{ color: phase.color }} />
+        <span
+          title={phase.label}
+          className="grid size-9 shrink-0 place-items-center rounded-full bg-background/40 ring-1 ring-foreground/[0.06] backdrop-blur-sm"
+        >
+          <PhaseIcon className="size-[18px]" strokeWidth={1.8} style={{ color: phase.color }} />
         </span>
 
         <div className="flex items-baseline gap-1.5">

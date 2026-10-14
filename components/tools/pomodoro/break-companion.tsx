@@ -128,7 +128,7 @@ export function BreakCompanion({ cycle }: { cycle: number }) {
       <button
         type="button"
         onClick={() => setBreathing(true)}
-        className="flex items-center gap-1.5 rounded-full px-3 py-1 text-[12px] text-foreground/70 transition-colors duration-300 hover:bg-foreground/5 hover:text-foreground"
+        className="chip"
       >
         <Wind className="size-3.5" strokeWidth={1.7} />
         Breathe with me

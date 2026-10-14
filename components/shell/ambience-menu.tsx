@@ -1,13 +1,41 @@
 "use client";
 
 import { Popover } from "@base-ui/react/popover";
-import { CloudMoonRain } from "lucide-react";
+import {
+  CloudDrizzle,
+  CloudLightning,
+  CloudMoonRain,
+  CloudSun,
+  type LucideIcon,
+  Moon,
+  Snowflake,
+  Sun,
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { useMounted } from "@/hooks/use-now";
+import { useResolvedScene } from "@/stores/scene-store";
 
 import { RoomControls } from "./room-controls";
 
+/** The room's weather and time, as one little icon. */
+function useWeatherIcon(): LucideIcon {
+  const mounted = useMounted();
+  const { weather, dark } = useResolvedScene();
+
+  if (!mounted) {
+    return CloudMoonRain;
+  }
+
+  if (weather === "drizzle") return CloudDrizzle;
+  if (weather === "storm") return CloudLightning;
+  if (weather === "snow") return Snowflake;
+  return dark ? Moon : weather === "clear" ? Sun : CloudSun;
+}
+
 export function AmbienceMenu() {
+  const Icon = useWeatherIcon();
+
   return (
     <Popover.Root>
       <Popover.Trigger
@@ -19,7 +47,7 @@ export function AmbienceMenu() {
             className="size-8 rounded-full text-foreground/55 hover:text-foreground"
             aria-label="Room settings: time, season, weather and sound"
           >
-            <CloudMoonRain className="size-[17px]" strokeWidth={1.7} />
+            <Icon className="size-[17px]" strokeWidth={1.7} />
           </Button>
         }
       />

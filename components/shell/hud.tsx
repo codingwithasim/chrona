@@ -72,16 +72,43 @@ function Clock() {
         hour12: !hour24,
       })
     : "--:--";
+  const date = now ? `${now.toLocaleDateString([], { weekday: "short" })} ${now.getDate()}` : "";
 
   return (
     <button
       type="button"
       onClick={toggleHour24}
       aria-label={hour24 ? "Switch to 12-hour time" : "Switch to 24-hour time"}
-      className="hidden h-8 items-center px-3 font-display text-[13px] tabular-nums text-foreground/65 transition-colors duration-300 hover:text-foreground sm:flex"
+      className="hidden h-8 items-center gap-2 px-3 font-display text-[13px] tabular-nums text-foreground/70 transition-colors duration-300 hover:text-foreground sm:flex"
     >
+      <span className="text-[11px] text-muted-foreground">{date}</span>
       {time}
     </button>
+  );
+}
+
+const GREETINGS = [
+  { from: 5, text: "good morning", jp: "おはよう" },
+  { from: 11, text: "good afternoon", jp: "こんにちは" },
+  { from: 17, text: "good evening", jp: "こんばんは" },
+  { from: 22, text: "good night", jp: "おやすみ" },
+];
+
+/** A small greeting under the name, by the hour. */
+function Greeting() {
+  const now = useNow();
+
+  if (!now) {
+    return null;
+  }
+
+  const hour = now.getHours();
+  const greeting = [...GREETINGS].reverse().find((item) => hour >= item.from) ?? GREETINGS[3];
+
+  return (
+    <span className="hidden text-[10.5px] tracking-[0.14em] text-foreground/60 sm:block">
+      {greeting.text} · {greeting.jp}
+    </span>
   );
 }
 
@@ -187,7 +214,15 @@ function ActiveTools() {
   );
 }
 
-export function Logo({ className, ...props }: { className?: string; "data-chrome"?: boolean }) {
+export function Logo({
+  className,
+  greeting = false,
+  ...props
+}: {
+  className?: string;
+  greeting?: boolean;
+  "data-chrome"?: boolean;
+}) {
   return (
     <Link
       {...props}
@@ -197,8 +232,13 @@ export function Logo({ className, ...props }: { className?: string; "data-chrome
         className
       )}
     >
-      <LogoMark className="size-[19px] transition-transform duration-500 group-hover:-rotate-6" />
-      <span className="font-display text-[15px] tracking-[0.12em]">Chrona</span>
+      <span className="grid size-9 place-items-center rounded-2xl bg-foreground/[0.06] ring-1 ring-foreground/[0.07] backdrop-blur-sm">
+        <LogoMark className="size-[19px] transition-transform duration-500 group-hover:-rotate-6" />
+      </span>
+      <span className="flex flex-col leading-tight dark:[text-shadow:0_1px_3px_rgb(0_0_0/0.35)]">
+        <span className="font-display text-[15px] tracking-[0.12em]">Chrona</span>
+        {greeting && <Greeting />}
+      </span>
     </Link>
   );
 }
@@ -211,7 +251,7 @@ export function Hud() {
       data-ui
       className="relative z-20 flex h-16 shrink-0 items-center justify-between gap-2 px-4 sm:px-6"
     >
-      <Logo data-chrome />
+      <Logo data-chrome greeting />
 
       <div className="flex items-center gap-2">
         <ActiveTools />

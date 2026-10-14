@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 
 import { getNavItem } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
@@ -19,6 +19,8 @@ type ToolFrameProps = {
    * Other pages always use a card, which their lists need.
    */
   placement?: "center" | "side";
+  /** Overrides the tool's colour, e.g. the pomodoro's current phase. */
+  accent?: string;
   className?: string;
   children: ReactNode;
 };
@@ -44,30 +46,33 @@ export function ToolFrame({
   href,
   actions,
   placement = "center",
+  accent,
   className,
   children,
 }: ToolFrameProps) {
   const item = getNavItem(href);
+  const Icon = item?.icon;
   const chosen = useSettingsStore((state) => state.panelStyle);
   const style: PanelStyle =
     placement === "side" ? chosen : chosen === "memo" ? "memo" : "card";
   const compact = style === "bar" || style === "corner";
 
   const title = item && (
-    <div className="flex min-w-0 items-center gap-2">
-      <span
-        aria-hidden="true"
-        className="size-1.5 shrink-0 rounded-full opacity-80"
-        style={{ backgroundColor: item.color }}
-      />
-      <h1 className="truncate text-[13px] font-medium tracking-wide text-foreground/70">
-        {item.title}
-      </h1>
-      {!compact && (
-        <span className="hidden text-[11px] text-muted-foreground/60 sm:inline">
-          {item.jp}
+    <div className="flex min-w-0 items-center gap-2.5">
+      {Icon && (
+        <span
+          aria-hidden="true"
+          className={cn("tool-badge grid shrink-0 place-items-center rounded-xl", compact ? "size-7" : "size-8")}
+        >
+          <Icon className={compact ? "size-3.5" : "size-4"} strokeWidth={1.8} />
         </span>
       )}
+      <div className="min-w-0 leading-tight">
+        <h1 className="truncate font-display text-[15px] text-foreground/90">{item.title}</h1>
+        {!compact && (
+          <p className="truncate text-[10.5px] tracking-[0.2em] text-muted-foreground/80">{item.jp}</p>
+        )}
+      </div>
     </div>
   );
 
@@ -83,6 +88,7 @@ export function ToolFrame({
     <PanelStyleContext.Provider value={style}>
       <section
         data-panel={style}
+        style={{ "--tool": accent ?? item?.color ?? "var(--primary)" } as CSSProperties}
         className={cn(
           // Only a slide here: fading (or filtering) a parent would stop
           // the glass inside from blurring until the animation finished.
@@ -95,6 +101,10 @@ export function ToolFrame({
           data-focus-panel
           className={cn(INNER[style], style !== "float" && "ui-fade")}
         >
+          {/* A wash of the tool's colour, and a strip of washi tape */}
+          {(style === "card" || style === "corner") && <div aria-hidden="true" className="tool-wash" />}
+          {style === "card" && <span aria-hidden="true" className="tool-tape" />}
+
           {style === "float" && (
             // A soft frosted glow behind the time, with no edges.
             <div
@@ -113,12 +123,12 @@ export function ToolFrame({
               <div data-recede>{tools}</div>
             </>
           ) : (
-            <div className={cn(style === "float" && "ui-fade")}>
+            <div className={cn("relative", style === "float" && "ui-fade")}>
               <header
                 data-recede
                 className={cn(
                   "flex items-center justify-between gap-3",
-                  compact ? "mb-1 min-h-8" : "mb-2 min-h-9"
+                  compact ? "mb-1 min-h-8" : "mb-4 min-h-10"
                 )}
               >
                 {title}

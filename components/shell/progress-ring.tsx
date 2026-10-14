@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { type ReactNode, useId } from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -17,6 +17,23 @@ type ProgressRingProps = {
 const RADIUS = 46;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 
+/** Sixty little marks around the face, longer every five. */
+const TICKS = Array.from({ length: 60 }, (_, index) => {
+  const angle = (index / 60) * Math.PI * 2;
+  const major = index % 5 === 0;
+  const inner = major ? 39.2 : 40.6;
+  const outer = 42.2;
+  const round = (value: number) => Math.round(value * 100) / 100;
+
+  return {
+    major,
+    x1: round(50 + inner * Math.cos(angle)),
+    y1: round(50 + inner * Math.sin(angle)),
+    x2: round(50 + outer * Math.cos(angle)),
+    y2: round(50 + outer * Math.sin(angle)),
+  };
+});
+
 export function ProgressRing({
   value,
   color = "var(--primary)",
@@ -24,6 +41,7 @@ export function ProgressRing({
   children,
 }: ProgressRingProps) {
   const style = usePanelStyle();
+  const id = useId().replace(/:/g, "");
   const progress = Math.min(1, Math.max(0, value));
   const angle = progress * Math.PI * 2;
 
@@ -52,22 +70,48 @@ export function ProgressRing({
         className="absolute inset-0 size-full -rotate-90 overflow-visible"
         aria-hidden="true"
       >
+        <defs>
+          <radialGradient id={`${id}-face`}>
+            <stop offset="0" style={{ stopColor: color, stopOpacity: 0.1 }} />
+            <stop offset="0.75" style={{ stopColor: color, stopOpacity: 0.03 }} />
+            <stop offset="1" style={{ stopColor: color, stopOpacity: 0 }} />
+          </radialGradient>
+          <linearGradient id={`${id}-arc`} x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" style={{ stopColor: color, stopOpacity: 0.55 }} />
+            <stop offset="1" style={{ stopColor: color }} />
+          </linearGradient>
+        </defs>
+
+        {/* A soft face, tinted with the tool's colour */}
+        <circle cx="50" cy="50" r="43.5" fill={`url(#${id}-face)`} />
+
+        <g stroke="currentColor" strokeLinecap="round" className="text-foreground/25">
+          {TICKS.map((tick, index) => (
+            <line
+              key={index}
+              {...{ x1: tick.x1, y1: tick.y1, x2: tick.x2, y2: tick.y2 }}
+              strokeWidth={tick.major ? 0.7 : 0.35}
+              opacity={tick.major ? 0.9 : 0.55}
+            />
+          ))}
+        </g>
+
         <circle
           cx="50"
           cy="50"
           r={RADIUS}
           fill="none"
           stroke="currentColor"
-          strokeWidth="0.6"
-          className="text-foreground/15"
+          strokeWidth="1.4"
+          className="text-foreground/10"
         />
         <circle
           cx="50"
           cy="50"
           r={RADIUS}
           fill="none"
-          stroke={color}
-          strokeWidth="1.3"
+          stroke={`url(#${id}-arc)`}
+          strokeWidth="2.2"
           strokeLinecap="round"
           strokeDasharray={CIRCUMFERENCE}
           strokeDashoffset={CIRCUMFERENCE * (1 - progress)}
@@ -75,8 +119,8 @@ export function ProgressRing({
         />
         {progress > 0 && progress < 1 && (
           <>
-            <circle cx={dotX} cy={dotY} r="3.4" fill={color} opacity="0.18" />
-            <circle cx={dotX} cy={dotY} r="1.5" fill={color} />
+            <circle cx={dotX} cy={dotY} r="4.6" fill={color} opacity="0.2" />
+            <circle cx={dotX} cy={dotY} r="2.3" fill="#ffffff" stroke={color} strokeWidth="1.3" />
           </>
         )}
       </svg>
