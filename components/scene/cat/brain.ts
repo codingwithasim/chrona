@@ -17,7 +17,7 @@ import { blendPose, clonePose, type Pose, type PoseName, POSES } from "./poses";
 import { type Frame, TAIL_SEGMENTS } from "./rig";
 
 export const FLOOR_Y = 880;
-export const SCALE = 0.86;
+export const SCALE = 1.02;
 
 /** Where she can wander along the rug (scene x). */
 const RANGE: Pt = [470, 1060];
@@ -109,8 +109,8 @@ const rand = (min: number, max: number) => min + Math.random() * (max - min);
 
 /* Gaits: stride length, share of the cycle each foot is down, and when each foot lifts. */
 const GAITS = {
-  walk: { stride: 62, duty: 0.62, lift: 7, offsets: { nearHind: 0, nearFront: 0.25, farHind: 0.5, farFront: 0.75 } },
-  trot: { stride: 100, duty: 0.45, lift: 11, offsets: { nearHind: 0, farFront: 0, farHind: 0.5, nearFront: 0.5 } },
+  walk: { stride: 50, duty: 0.62, lift: 6, offsets: { nearHind: 0, nearFront: 0.25, farHind: 0.5, farFront: 0.75 } },
+  trot: { stride: 82, duty: 0.45, lift: 9, offsets: { nearHind: 0, farFront: 0, farHind: 0.5, nearFront: 0.5 } },
 };
 
 type Foot = "nearFront" | "farFront" | "nearHind" | "farHind";
@@ -282,7 +282,7 @@ export class CatBrain {
     // Batting needs the yarn in reach: walk over first.
     if (next === "bat") {
       const side = this.x < this.yarnX ? -1 : 1;
-      const spot = this.yarnX + side * 92;
+      const spot = this.yarnX + side * 84;
 
       if (Math.abs(spot - this.x) > 14) {
         this.queue = [{ activity: "bat" }];
@@ -569,7 +569,7 @@ export class CatBrain {
     if (this.activity === "groom") {
       // Paw up to the mouth, licking.
       const lick = Math.sin(t * 9);
-      pose.nearFront = [pose.head[0] + 5, pose.head[1] + 24 + lick * 2.5];
+      pose.nearFront = [pose.head[0] + 4, pose.head[1] + 21 + lick * 2.5];
       pose.tilt += 10 + lick * 2;
       pose.eyes = 0.05;
       pose.yaw = -0.35;
@@ -578,8 +578,8 @@ export class CatBrain {
     if (this.activity === "bat") {
       const cycle = (t % 1.2) / 1.2;
       const swipe = cycle < 0.3 ? smoothstep(cycle / 0.3) : cycle < 0.55 ? 1 - smoothstep((cycle - 0.3) / 0.25) * 0.4 : 0.6 - smoothstep((cycle - 0.55) / 0.45) * 0.6;
-      const raised: Pt = [-58, -26];
-      const strike: Pt = [-74, -6];
+      const raised: Pt = [-44, -24];
+      const strike: Pt = [-62, -6];
       const reach = cycle < 0.3 ? lerpPt(pose.nearFront, raised, swipe) : lerpPt(strike, raised, 1 - swipe);
       pose.nearFront = cycle < 0.3 ? reach : lerpPt(pose.nearFront, reach, clamp(swipe * 1.6, 0, 1));
     }
