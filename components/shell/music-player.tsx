@@ -2,11 +2,12 @@
 
 import { useRef, useState } from "react";
 import { Popover } from "@base-ui/react/popover";
-import { Music2, Pause, Play, Plus, Shuffle, SkipBack, SkipForward, Volume2, X } from "lucide-react";
+import { Music2, Pause, Play, Plus, Radio, Shuffle, SkipBack, SkipForward, Sparkles, Volume2, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useMusicStore } from "@/stores/music-store";
+import { useRadioStore } from "@/stores/radio-store";
 
 import { CalmRange } from "./sound-mixer";
 
@@ -25,6 +26,53 @@ function PlayingBars() {
   );
 }
 
+/** The generated station, at the top of the music popover. */
+function LofiRadio() {
+  const on = useRadioStore((state) => state.on);
+  const volume = useRadioStore((state) => state.volume);
+  const { toggle, setVolume, changeMood } = useRadioStore.getState();
+
+  return (
+    <div className="mt-3 rounded-2xl bg-[color-mix(in_oklab,var(--honey)_12%,transparent)] p-3 ring-1 ring-[color-mix(in_oklab,var(--honey)_22%,transparent)]">
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={toggle}
+          aria-label={on ? "Stop the lo-fi radio" : "Play the lo-fi radio"}
+          className="grid size-10 shrink-0 place-items-center rounded-full bg-[var(--honey)] text-[var(--tool-ink)] shadow-[0_8px_20px_-10px_var(--honey)] transition-transform active:scale-95"
+        >
+          {on ? <Pause className="size-4" fill="currentColor" strokeWidth={1.8} /> : <Play className="size-4 translate-x-px" fill="currentColor" strokeWidth={1.8} />}
+        </button>
+        <div className="min-w-0 flex-1">
+          <p className="flex items-center gap-1.5 text-[13px] text-foreground/90">
+            <Radio className="size-3.5" strokeWidth={1.8} />
+            Lo-fi radio
+            {on && <PlayingBars />}
+          </p>
+          <p className="text-[11px] leading-4 text-muted-foreground">
+            Soft keys and a lazy beat, made live in your browser.
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-3 flex items-center gap-3">
+        <Volume2 className="size-3.5 shrink-0 text-muted-foreground" strokeWidth={1.7} />
+        <CalmRange label="Radio volume" value={volume} onChange={setVolume} />
+        <button
+          type="button"
+          onClick={changeMood}
+          disabled={!on}
+          title="Change the chords"
+          aria-label="Change the chords"
+          className="grid size-7 shrink-0 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-foreground/5 hover:text-foreground disabled:opacity-30"
+        >
+          <Sparkles className="size-3.5" strokeWidth={1.7} />
+        </button>
+      </div>
+    </div>
+  );
+}
+
 const round =
   "grid size-8 place-items-center rounded-full text-foreground/70 transition-colors duration-300 hover:bg-foreground/5 hover:text-foreground disabled:opacity-30";
 
@@ -37,6 +85,7 @@ export function MusicPlayer() {
   const volume = useMusicStore((state) => state.volume);
   const shuffle = useMusicStore((state) => state.shuffle);
   const failedId = useMusicStore((state) => state.failedId);
+  const radioOn = useRadioStore((state) => state.on);
   const { load, add, remove, play, toggle, next, previous, setVolume, toggleShuffle } = useMusicStore.getState();
 
   const input = useRef<HTMLInputElement>(null);
@@ -62,10 +111,10 @@ export function MusicPlayer() {
             type="button"
             variant="ghost"
             size="icon"
-            className={cn("size-8 rounded-full hover:text-foreground", playing ? "text-foreground/80" : "text-foreground/55")}
-            aria-label={playing && current ? `Your music: playing ${current.name}` : "Your music"}
+            className={cn("size-8 rounded-full hover:text-foreground", playing || radioOn ? "text-foreground/80" : "text-foreground/55")}
+            aria-label={playing && current ? `Music: playing ${current.name}` : radioOn ? "Music: lo-fi radio playing" : "Music"}
           >
-            {playing ? <PlayingBars /> : <Music2 className="size-[17px]" strokeWidth={1.7} />}
+            {playing || radioOn ? <PlayingBars /> : <Music2 className="size-[17px]" strokeWidth={1.7} />}
           </Button>
         }
       />
@@ -74,9 +123,13 @@ export function MusicPlayer() {
         <Popover.Positioner side="bottom" align="end" sideOffset={10} collisionPadding={12} className="isolate z-50">
           <Popover.Popup className="panel max-h-[min(82dvh,40rem)] w-[min(20rem,calc(100vw-1.5rem))] origin-(--transform-origin) overflow-y-auto p-4 text-sm outline-none data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95">
             <Popover.Title className="text-[13px] font-medium">
-              Your music
+              Music
               <span className="ml-2 text-[11px] font-normal text-muted-foreground/70">おんがく</span>
             </Popover.Title>
+
+            <LofiRadio />
+
+            <p className="mt-4 text-[11px] tracking-[0.25em] text-muted-foreground/80 lowercase">your music</p>
 
             <input
               ref={input}
@@ -91,7 +144,7 @@ export function MusicPlayer() {
             />
 
             {tracks.length === 0 ? (
-              <div className="mt-3 space-y-3">
+              <div className="mt-2 space-y-3">
                 <p className="text-[12px] leading-5 text-muted-foreground">
                   Bring your own songs: pick music files from your computer
                   and they&apos;ll play in the room, from the radio on the desk
@@ -110,7 +163,7 @@ export function MusicPlayer() {
             ) : (
               <>
                 {/* Now playing */}
-                <p className="mt-3 truncate text-[13px] text-foreground/85" title={current?.name}>
+                <p className="mt-2 truncate text-[13px] text-foreground/85" title={current?.name}>
                   {current?.name ?? "Nothing playing yet"}
                 </p>
                 {failedId && failedId === currentId && (

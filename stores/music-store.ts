@@ -137,6 +137,10 @@ export const useMusicStore = create<MusicStore>()(
 
           const player = element();
 
+          // One thing playing at a time: the lo-fi radio steps aside.
+          const { useRadioStore } = await import("./radio-store");
+          useRadioStore.getState().stop();
+
           // Same track: just carry on.
           if (target === currentId && player.src) {
             await player.play().catch(() => {});

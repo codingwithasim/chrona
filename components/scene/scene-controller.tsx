@@ -20,6 +20,7 @@ import { fetchWeather } from "@/lib/live-weather";
 import { useFocusStore } from "@/stores/focus-store";
 import { useMixerStore } from "@/stores/mixer-store";
 import { useMusicStore } from "@/stores/music-store";
+import { useRadioStore } from "@/stores/radio-store";
 import { useNotesStore } from "@/stores/notes-store";
 import { useRoomStore } from "@/stores/room-store";
 
@@ -97,6 +98,7 @@ export function SceneController() {
     void useStopwatchStore.persist.rehydrate();
     void useRoomStore.persist.rehydrate();
     void useMusicStore.persist.rehydrate();
+    void useRadioStore.persist.rehydrate();
     void useMusicStore.getState().load();
     void useAlarmStore.persist.rehydrate();
     void useWorldClockStore.persist.rehydrate();

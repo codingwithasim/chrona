@@ -43,6 +43,7 @@ import { navigation, settingsItem } from "@/lib/navigation";
 import { useFocusStore } from "@/stores/focus-store";
 import { BUILT_IN_PRESETS, useMixerStore } from "@/stores/mixer-store";
 import { useMusicStore } from "@/stores/music-store";
+import { useRadioStore } from "@/stores/radio-store";
 import { useNotesStore } from "@/stores/notes-store";
 import { usePomodoroStore } from "@/stores/pomodoro-store";
 import { useRoomStore } from "@/stores/room-store";
@@ -158,6 +159,7 @@ export function CommandMenu() {
   const duration = parseDuration(query);
   const task = /^(task|todo|add)\s*:?\s+(.+)$/i.exec(query.trim())?.[2];
   const playing = useMusicStore((state) => state.playing);
+  const radioOn = useRadioStore((state) => state.on);
   const hasMusic = useMusicStore((state) => state.tracks.length > 0);
   const soundOn = useSceneStore((state) => state.soundOn);
   const catName = useRoomStore((state) => state.catName.trim() || "Mochi");
@@ -338,8 +340,11 @@ export function CommandMenu() {
               Sounds: {preset.name}
             </Item>
           ))}
+          <Item icon={Music2} color="var(--honey)" onSelect={run(() => useRadioStore.getState().toggle())} keywords={["lofi", "lo-fi", "radio", "music", "beats"]}>
+            {radioOn ? "Stop the lo-fi radio" : "Play the lo-fi radio"}
+          </Item>
           {hasMusic && (
-            <Item icon={Music2} color="var(--honey)" onSelect={run(() => useMusicStore.getState().toggle())} keywords={["music", "song", "radio"]}>
+            <Item icon={Music2} color="var(--honey)" onSelect={run(() => useMusicStore.getState().toggle())} keywords={["music", "song"]}>
               {playing ? "Pause your music" : "Play your music"}
             </Item>
           )}

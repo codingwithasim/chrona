@@ -4,11 +4,10 @@ import { useEffect, useRef, useState } from "react";
 
 import { useNow } from "@/hooks/use-now";
 import { playSfx } from "@/lib/sfx";
-import { playSound } from "@/lib/sounds";
 import type { Weather } from "@/lib/scene-time";
 import { useMusicStore } from "@/stores/music-store";
+import { useRadioStore } from "@/stores/radio-store";
 import { useSceneStore } from "@/stores/scene-store";
-import { useSettingsStore } from "@/stores/settings-store";
 
 import { box, DESK, poly, project, scaleAt, type Vec3, WINDOW } from "./projection";
 import { C } from "./room-palette";
@@ -274,17 +273,15 @@ export function FlipClock() {
   );
 }
 
-const RADIO_TUNES = ["kalimba", "music-box", "marimba", "koto"] as const;
-
-/** A little radio that plays a tune when poked. */
+/** The desk radio: your music, or the lo-fi station. */
 export function Radio() {
-  const toneVolume = useSettingsStore((state) => state.toneVolume);
-  const [jingle, setJingle] = useState(false);
   const [notes, burst] = useParticles(2200);
-  // With your own music added, the radio plays it.
+  // Your own music if you've added some, otherwise the lo-fi station.
   const hasMusic = useMusicStore((state) => state.tracks.length > 0);
-  const music = useMusicStore((state) => state.playing);
-  const playing = jingle || music;
+  const musicPlaying = useMusicStore((state) => state.playing);
+  const radioOn = useRadioStore((state) => state.on);
+  const music = musicPlaying || radioOn;
+  const playing = music;
 
   const body = box(0.98, 1.56, DESK.top, DESK.top + 0.32, 9.55, 9.82);
   const [gx, gy] = project([1.2, DESK.top + 0.16, 9.55]);
@@ -309,26 +306,22 @@ export function Radio() {
     <g
       className="sc-hit"
       onClick={() => {
-        if (hasMusic) {
-          playSfx("click");
-          if (!music) {
-            burst(gx, gy - 30, 4, 50);
-          }
+        playSfx("click");
+
+        if (!music) {
+          burst(gx, gy - 30, 4, 50);
+        }
+
+        if (radioOn) {
+          useRadioStore.getState().stop();
+        } else if (hasMusic) {
           useMusicStore.getState().toggle();
-          return;
+        } else {
+          useRadioStore.getState().start();
         }
-
-        if (jingle) {
-          return;
-        }
-
-        setJingle(true);
-        playSound(pick(RADIO_TUNES), { volume: toneVolume * 0.6 });
-        burst(gx, gy - 30, 4, 50);
-        window.setTimeout(() => setJingle(false), 2600);
       }}
     >
-      <title>{hasMusic ? (music ? "Pause your music" : "Play your music") : "Radio"}</title>
+      <title>{music ? "Turn the radio off" : hasMusic ? "Play your music" : "Turn on the lo-fi radio"}</title>
       <line x1={ax} y1={ay} x2={ax + 26} y2={ay - 34} stroke="#9aa4ad" strokeWidth="1.2" />
       <path d={body.top} fill="#e9dfc9" />
       <path d={body.left} fill="#b9ad94" />
