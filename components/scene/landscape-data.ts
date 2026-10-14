@@ -36,7 +36,14 @@ function hillPath(hill: Hill) {
   return `M${hill.x0} ${hill.base} L${points.join(" L")} L${hill.x1} ${hill.base} Z`;
 }
 
-export type Tree = { x: number; y: number; r: number; tone: 1 | 2 | 3 };
+export type Tree = {
+  x: number;
+  y: number;
+  r: number;
+  tone: 1 | 2 | 3;
+  /** Round broadleaf crowns, or a narrow Japanese cedar. */
+  kind: "broad" | "cedar";
+};
 
 function forest(hill: Hill, seed: number): Tree[] {
   const random = mulberry32(seed);
@@ -47,8 +54,8 @@ function forest(hill: Hill, seed: number): Tree[] {
     return (roll < 0.5 ? 1 : roll < 0.85 ? 2 : 3) as 1 | 2 | 3;
   };
 
-  // A bumpy canopy along the ridge.
-  for (let x = hill.x0 + 18; x < hill.x1 - 14; x += 8 + random() * 6) {
+  // A bumpy canopy along the ridge, with the odd cedar poking through.
+  for (let x = hill.x0 + 18; x < hill.x1 - 14; x += 7 + random() * 6) {
     const top = hillTop(hill, x);
     const height = hill.base - top;
 
@@ -56,21 +63,38 @@ function forest(hill: Hill, seed: number): Tree[] {
       continue;
     }
 
-    trees.push({ x: round(x), y: round(top + 4), r: round(5 + random() * 4 + height * 0.035), tone: tone() });
+    const cedar = random() < 0.22;
+    const r = 5 + random() * 4 + height * 0.035;
+
+    trees.push({
+      x: round(x),
+      y: round(top + (cedar ? 6 : 4)),
+      r: round(cedar ? r * 0.8 : r),
+      tone: tone(),
+      kind: cedar ? "cedar" : "broad",
+    });
   }
 
-  // A few woods on the slopes.
-  for (let cluster = 0; cluster < 4; cluster++) {
+  // Woods on the slopes: dark stands of cedar, or round broadleaf groves.
+  for (let cluster = 0; cluster < 5; cluster++) {
     const cx = hill.x0 + 40 + random() * (hill.x1 - hill.x0 - 80);
     const top = hillTop(hill, cx);
     const cy = top + 14 + random() * Math.max(6, hill.base - top - 30);
+    const cedar = random() < 0.5;
+    const count = cedar ? 11 : 7;
 
-    for (let i = 0; i < 7; i++) {
-      const x = cx + (random() - 0.5) * 46;
+    for (let i = 0; i < count; i++) {
+      const x = cx + (random() - 0.5) * (cedar ? 38 : 46);
       const y = Math.max(hillTop(hill, x) + 10, cy + (random() - 0.5) * 18);
 
       if (y < hill.base - 6) {
-        trees.push({ x: round(x), y: round(y), r: round(3.5 + random() * 3.5), tone: tone() });
+        trees.push({
+          x: round(x),
+          y: round(y),
+          r: round(cedar ? 2.6 + random() * 2 : 3.5 + random() * 3.5),
+          tone: tone(),
+          kind: cedar ? "cedar" : "broad",
+        });
       }
     }
   }
@@ -87,6 +111,91 @@ export const HILLS = [
   { id: "left", path: hillPath(HILL_LEFT), trees: forest(HILL_LEFT, 23) },
   { id: "right", path: hillPath(HILL_RIGHT), trees: forest(HILL_RIGHT, 37) },
 ];
+
+/* ------------------------------------------------------------------ */
+/* Forest texture on the mountains                                     */
+/* ------------------------------------------------------------------ */
+
+type P = [number, number];
+
+/** The mid mountain ridge, as cubic segments (matches its path). */
+const MID_RIDGE: P[][] = [
+  [[440, 490], [490, 470], [520, 452], [560, 448]],
+  [[560, 448], [600, 444], [622, 430], [660, 432]],
+  [[660, 432], [700, 434], [722, 452], [760, 452]],
+  [[760, 452], [800, 452], [822, 430], [860, 426]],
+  [[860, 426], [900, 422], [930, 440], [970, 446]],
+  [[970, 446], [1010, 452], [1040, 440], [1080, 436]],
+  [[1080, 436], [1110, 434], [1130, 440], [1160, 446]],
+];
+
+function ridgeLine(segments: P[][]) {
+  const points = segments.flatMap(([a, b, c, d]) =>
+    Array.from({ length: 33 }, (_, index): P => {
+      const t = index / 32;
+      const u = 1 - t;
+      const mix = (i: 0 | 1) =>
+        u * u * u * a[i] + 3 * u * u * t * b[i] + 3 * u * t * t * c[i] + t * t * t * d[i];
+      return [mix(0), mix(1)];
+    })
+  );
+
+  return (x: number) => {
+    const index = points.findIndex(([px]) => px >= x);
+
+    if (index <= 0) {
+      return points[Math.max(0, index)][1];
+    }
+
+    const [x0, y0] = points[index - 1];
+    const [x1, y1] = points[index];
+    return y0 + ((y1 - y0) * (x - x0)) / Math.max(1e-6, x1 - x0);
+  };
+}
+
+/**
+ * A band of tiny conifers following a line, as one path. With `taper`,
+ * the band swells in the middle and thins at the ends, like a grove.
+ */
+function treeline(
+  lineY: (x: number) => number,
+  x0: number,
+  x1: number,
+  random: () => number,
+  { offset, height, depth, taper = false }: { offset: number; height: number; depth: number; taper?: boolean }
+) {
+  const tops: string[] = [];
+  const bottom: string[] = [];
+
+  for (let x = x0; x <= x1; x += 2.6 + random() * 2.6) {
+    const swell = taper ? Math.sin((Math.PI * (x - x0)) / (x1 - x0)) : 1;
+    const base = lineY(x) + offset;
+    const h = height * (0.45 + random() * 0.75) * (0.4 + 0.6 * swell);
+    tops.push(`${round(x - 1.4)} ${round(base)} L${round(x)} ${round(base - h)} L${round(x + 1.4)} ${round(base)}`);
+    bottom.push(`${round(x)} ${round(base + depth * swell)}`);
+  }
+
+  return `M${tops.join(" L")} L${bottom.reverse().join(" L")} Z`;
+}
+
+const midRidge = ridgeLine(MID_RIDGE);
+const ridgeRandom = mulberry32(57);
+
+/** Conifers along the mountain ridge, and patches of woods on its face. */
+export const MOUNTAIN_FOREST = {
+  ridge: treeline(midRidge, 444, 1158, ridgeRandom, { offset: 2.5, height: 7, depth: 7 }),
+  patches: Array.from({ length: 16 }, () => {
+    const x0 = 450 + ridgeRandom() * 660;
+    const length = 18 + ridgeRandom() * 46;
+    const drop = 9 + ridgeRandom() * 30;
+    return treeline((x) => midRidge(x) + drop, x0, x0 + length, ridgeRandom, {
+      offset: 0,
+      height: 3.6,
+      depth: 3 + ridgeRandom() * 6,
+      taper: true,
+    });
+  }).join(" "),
+};
 
 /** Where the little torii gate stands, on the right hill. */
 export const TORII = { x: 1004, y: hillTop(HILL_RIGHT, 1004) + 2 };

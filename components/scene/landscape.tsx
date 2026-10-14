@@ -9,8 +9,10 @@ import {
   CLOUDS,
   HILLS,
   HOUSES,
+  MOUNTAIN_FOREST,
   STARS,
   TORII,
+  type Tree,
 } from "./landscape-data";
 import {
   GLASS,
@@ -94,16 +96,126 @@ function SunRays({ cx, cy, length }: { cx: number; cy: number; length: number })
   );
 }
 
-function Tree({ x, y, r, tone }: { x: number; y: number; r: number; tone: number }) {
+/* ------------------------------------------------------------------ */
+/* Trees on the hills                                                  */
+/* ------------------------------------------------------------------ */
+
+const r2 = (value: number) => Math.round(value * 100) / 100;
+
+const shadeOf = (color: string, amount = 32) =>
+  `color-mix(in oklab, ${color} ${100 - amount}%, #0c1430)`;
+const lightOf = (color: string, amount = 38) =>
+  `color-mix(in oklab, ${color} ${100 - amount}%, #fff4d6)`;
+
+/** A broadleaf crown: a cluster of puffs around the centre. */
+const PUFFS = [
+  [0, 0, 1],
+  [-0.62, 0.3, 0.7],
+  [0.62, 0.26, 0.74],
+  [-0.2, -0.56, 0.66],
+  [0.32, -0.44, 0.6],
+] as const;
+
+function Puffs({ x, y, r, scale, dx, dy }: { x: number; y: number; r: number; scale: number; dx: number; dy: number }) {
+  return PUFFS.map(([px, py, pr], index) => (
+    <circle
+      key={index}
+      cx={r2(x + (px * scale + dx) * r)}
+      cy={r2(y + (py * scale + dy) * r)}
+      r={r2(pr * scale * r)}
+    />
+  ));
+}
+
+/** Lit from above: a shadowed rim, the body, then a sunlit cap. */
+function BroadTree({ x, y, r, tone }: Tree) {
+  const color = `var(--sc-tree-${tone})`;
+
   return (
     <g>
-      <circle cx={x} cy={y} r={r} fill={`var(--sc-tree-${tone})`} />
       <path
-        d={`M${x - r} ${y} A ${r} ${r} 0 0 0 ${x + r} ${y} A ${r * 1.1} ${r * 0.7} 0 0 1 ${x - r} ${y} Z`}
-        fill="#1a1030"
-        opacity="0.12"
+        d={`M${x} ${r2(y + r * 0.5)} V${r2(y + r * 1.3)}`}
+        stroke="#3a2b25"
+        strokeWidth={r2(Math.max(0.8, r * 0.16))}
+        opacity="0.7"
+      />
+      <g style={{ fill: shadeOf(color) }}>
+        <Puffs x={x} y={y} r={r} scale={1} dx={0} dy={0} />
+      </g>
+      <g style={{ fill: color }}>
+        <Puffs x={x} y={y} r={r} scale={0.88} dx={-0.1} dy={-0.14} />
+      </g>
+      <g style={{ fill: lightOf(color) }} opacity="0.8">
+        <Puffs x={x} y={y} r={r} scale={0.46} dx={-0.32} dy={-0.44} />
+      </g>
+    </g>
+  );
+}
+
+/** A narrow cedar: stacked tiers, shaded on the right. */
+function Cedar({ x, y, r }: Tree) {
+  const h = r * 3.4;
+  const top = y - r * 2.3;
+  const w = r * 0.95;
+  const tiers = 5;
+
+  const right: [number, number][] = [[x, top]];
+
+  for (let i = 1; i <= tiers; i++) {
+    const ty = top + (h * i) / tiers;
+    const half = w * (0.28 + (0.72 * i) / tiers);
+    right.push([x + half, ty]);
+
+    if (i < tiers) {
+      right.push([x + half * 0.42, ty - h * 0.035]);
+    }
+  }
+
+  const left = right
+    .slice(1)
+    .map(([px, py]): [number, number] => [2 * x - px, py])
+    .reverse();
+  const path = (points: [number, number][]) =>
+    "M" + points.map(([px, py]) => `${r2(px)} ${r2(py)}`).join(" L") + " Z";
+
+  const bottom: [number, number] = [x, top + h * 0.97];
+
+  return (
+    <g>
+      <path
+        d={`M${x} ${r2(top + h * 0.9)} V${r2(top + h + r * 0.5)}`}
+        stroke="#33261f"
+        strokeWidth={r2(Math.max(0.7, r * 0.2))}
+        opacity="0.8"
+      />
+      <path d={path([...right, ...left])} style={{ fill: "var(--sc-cedar)" }} />
+      <path d={path([...right, bottom])} style={{ fill: shadeOf("var(--sc-cedar)", 40) }} />
+      <path
+        d={path([bottom, ...left, [x, top]])}
+        style={{ fill: lightOf("var(--sc-cedar)", 18), opacity: 0.7 }}
+      />
+      <path
+        d={path([bottom, ...left, [x, top]])}
+        fill="var(--sc-snow)"
+        style={{ opacity: "var(--sc-cedar-snow)" }}
       />
     </g>
+  );
+}
+
+function HillForest({ trees }: { trees: Tree[] }) {
+  return trees.map((tree, index) =>
+    tree.kind === "cedar" ? <Cedar key={index} {...tree} /> : <BroadTree key={index} {...tree} />
+  );
+}
+
+/** The hills are lit from above and fade into shadow at their feet. */
+function Hill({ path }: { path: string }) {
+  return (
+    <>
+      <path d={path} fill="var(--sc-hill)" />
+      <path d={path} fill="url(#sc-hill-shade)" />
+    </>
   );
 }
 
@@ -286,6 +398,12 @@ export function Landscape({
           <stop offset="1" stopColor="var(--sc-mist-color)" stopOpacity="0" />
         </linearGradient>
 
+        <linearGradient id="sc-hill-shade" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#fff6dc" stopOpacity="0.2" />
+          <stop offset="0.4" stopColor="#fff6dc" stopOpacity="0" />
+          <stop offset="1" stopColor="#0c1430" stopOpacity="0.22" />
+        </linearGradient>
+
         <linearGradient id="sc-star-trail" x1="0" y1="0" x2="1" y2="0">
           <stop offset="0" stopColor="#ffffff" stopOpacity="0" />
           <stop offset="1" stopColor="#ffffff" stopOpacity="1" />
@@ -387,6 +505,8 @@ export function Landscape({
           strokeWidth="1.2"
           opacity="0.6"
         />
+        <path d={MOUNTAIN_FOREST.patches} style={{ fill: shadeOf("var(--sc-mtn-mid)", 14), opacity: 0.55 }} />
+        <path d={MOUNTAIN_FOREST.ridge} style={{ fill: shadeOf("var(--sc-mtn-mid)", 14) }} />
 
         {/* Valley mist */}
         <rect
@@ -399,25 +519,19 @@ export function Landscape({
         />
 
         {/* Hills, forests and the village */}
-        <path d={HILLS[0].path} fill="var(--sc-hill)" />
-        {HILLS[0].trees.map((tree, index) => (
-          <Tree key={`b${index}`} {...tree} />
-        ))}
+        <Hill path={HILLS[0].path} />
+        <HillForest trees={HILLS[0].trees} />
         <rect x={GLASS.x} y="440" width={GLASS.w} height="110" fill="var(--sc-mist-color)" opacity="0.18" />
 
         {HOUSES.slice(0, 2).map((house) => (
           <House key={house.x} house={house} />
         ))}
 
-        <path d={HILLS[1].path} fill="var(--sc-hill)" />
-        {HILLS[1].trees.map((tree, index) => (
-          <Tree key={`l${index}`} {...tree} />
-        ))}
+        <Hill path={HILLS[1].path} />
+        <HillForest trees={HILLS[1].trees} />
 
-        <path d={HILLS[2].path} fill="var(--sc-hill)" />
-        {HILLS[2].trees.map((tree, index) => (
-          <Tree key={`r${index}`} {...tree} />
-        ))}
+        <Hill path={HILLS[2].path} />
+        <HillForest trees={HILLS[2].trees} />
         <Torii />
 
         {HOUSES.slice(2).map((house) => (
