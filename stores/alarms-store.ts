@@ -23,6 +23,12 @@ export type Alarm = {
   /** Tone to ring with; falls back to the default alarm sound. */
   sound?: SoundId;
 
+  /**
+   * Days of the week to repeat on (0 = Sunday). Empty or missing
+   * means the alarm rings once and then switches itself off.
+   */
+  repeat?: number[];
+
   createdAt: number;
   updatedAt: number;
 
@@ -49,10 +55,11 @@ type AddAlarmInput = {
   label: string;
   enabled?: boolean;
   sound?: SoundId;
+  repeat?: number[];
 };
 
 type AlarmUpdates = Partial<
-  Pick<Alarm, "time" | "label" | "enabled" | "sound">
+  Pick<Alarm, "time" | "label" | "enabled" | "sound" | "repeat">
 >;
 
 type AlarmStore = {
@@ -148,6 +155,7 @@ export const useAlarmStore =
           label,
           enabled = true,
           sound,
+          repeat = [],
         }) => {
           if (!isValidAlarmTime(time)) {
             return {
@@ -184,6 +192,7 @@ export const useAlarmStore =
             label: normalizedLabel,
             enabled,
             sound,
+            repeat,
             createdAt: timestamp,
             updatedAt: timestamp,
           };
@@ -275,6 +284,10 @@ export const useAlarmStore =
                       updates.sound ??
                       alarm.sound,
 
+                    repeat:
+                      updates.repeat ??
+                      alarm.repeat,
+
                     /**
                      * An alarm edited to another
                      * time must be allowed to
@@ -355,8 +368,8 @@ export const useAlarmStore =
           }),
 
         /**
-         * Marks and disables the alarm
-         * atomically in one store update.
+         * Marks the alarm as rung today in one store update.
+         * One-off alarms also switch themselves off.
          */
         triggerAlarm: (id, date) => {
           const alarm = get().alarms.find(
@@ -377,7 +390,7 @@ export const useAlarmStore =
                 item.id === id
                   ? {
                     ...item,
-                    enabled: false,
+                    enabled: Boolean(item.repeat?.length),
                     lastTriggeredDate: date,
                     updatedAt: Date.now(),
                   }

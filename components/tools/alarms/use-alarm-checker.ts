@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import { isSoundId, playSound } from "@/lib/sounds";
 import { say } from "@/stores/dialogue-store";
 import { useAlarmStore } from "@/stores/alarms-store";
+import { useSceneStore } from "@/stores/scene-store";
 import { useSettingsStore } from "@/stores/settings-store";
 
 import {
@@ -33,11 +34,14 @@ export function useAlarmChecker() {
 
       const store = useAlarmStore.getState();
 
+      const weekday = date.getDay();
+
       const dueAlarms = store.alarms.filter(
         (alarm) =>
           alarm.enabled &&
           alarm.time === currentMinutes &&
-          alarm.lastTriggeredDate !== today
+          alarm.lastTriggeredDate !== today &&
+          (!alarm.repeat?.length || alarm.repeat.includes(weekday))
       );
 
       const triggered = dueAlarms.filter((alarm) =>
@@ -66,7 +70,8 @@ export function useAlarmChecker() {
 
       say({
         text: `Riiing! ${labels} — it's ${minutesToTime(
-          triggered[0].time
+          triggered[0].time,
+          useSceneStore.getState().hour24
         )}. Time to get up~`,
         tone: "alert",
         sticky: true,

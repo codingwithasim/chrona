@@ -1,27 +1,26 @@
 "use client";
 
+import { BellRing, Pencil, Repeat, Trash2 } from "lucide-react";
+
+import { Digits } from "@/components/shell/digits";
+import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { SOUNDS } from "@/lib/sounds";
+import { cn } from "@/lib/utils";
 import type { Alarm } from "@/stores/alarms-store";
 
-import { Button } from "@/components/ui/button";
 import {
-  Card,
-  CardContent,
-} from "@/components/ui/card";
-import { Switch } from "@/components/ui/switch";
-
-import {
-  LucidePen,
-  LucideTrash,
-} from "lucide-react";
-
-import {
+  describeRepeat,
   formatTimeUntilAlarm,
   minutesToTimeParts,
+  WEEKDAYS,
 } from "./alarm-utils";
 
 type Props = {
   alarm: Alarm;
   now: Date | null;
+  hour24: boolean;
+  defaultSound: keyof typeof SOUNDS;
 
   onEdit: () => void;
   onDelete: () => void;
@@ -31,97 +30,91 @@ type Props = {
 export function AlarmCard({
   alarm,
   now,
+  hour24,
+  defaultSound,
   onEdit,
   onDelete,
   onToggle,
 }: Props) {
-  const displayTime =
-    minutesToTimeParts(
-      alarm.time
-    );
+  const { hour, minute, meridiem } = minutesToTimeParts(alarm.time, hour24);
+  const alarmLabel = alarm.label.trim() || "Alarm";
+  const repeat = alarm.repeat ?? [];
+  const sound = SOUNDS[alarm.sound ?? defaultSound];
 
-  const alarmLabel =
-    alarm.label.trim() ||
-    "Alarm";
-
-  const remainingTime =
+  const remaining =
     alarm.enabled && now
-      ? formatTimeUntilAlarm(
-          alarm.time,
-          now
-        )
-      : "Disabled";
+      ? formatTimeUntilAlarm(alarm.time, now, repeat)
+      : "Sleeping";
 
   return (
-    <Card
-      className={[
-        "relative w-full max-w-2xl overflow-hidden rounded-xl border bg-background text-foreground",
-        !alarm.enabled
-          ? "opacity-60"
-          : "",
-      ].join(" ")}
+    <article
+      className={cn(
+        "panel flex flex-col gap-3 p-4 transition-opacity",
+        !alarm.enabled && "opacity-60"
+      )}
       data-clarity-mask="true"
     >
-      <CardContent className="space-y-3 p-4 sm:p-3">
-        {/* Header */}
-        <div className="flex items-center justify-between gap-3">
-          <p className="truncate text-base text-muted-foreground">
-            {alarmLabel}
-          </p>
-
-          <div className="flex items-center gap-2">
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon-sm"
-              onClick={onEdit}
-              aria-label={`Edit ${alarmLabel}`}
-            >
-              <LucidePen />
-            </Button>
-
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon-sm"
-              onClick={onDelete}
-              aria-label={`Delete ${alarmLabel}`}
-            >
-              <LucideTrash />
-            </Button>
-          </div>
-        </div>
-
-        {/* Time */}
-        <div className="flex items-end gap-2">
-          <p className="font-mono text-2xl">
-            {displayTime.hour}:
-            {displayTime.minute}{" "}
-            <span className="text-sm text-muted-foreground">
-              {displayTime.meridiem}
-            </span>
+      <header className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <h2 className="truncate font-bold">{alarmLabel}</h2>
+          <p className="flex items-center gap-1 text-xs text-muted-foreground">
+            <BellRing className="size-3" />
+            {sound?.name ?? "Default"}
           </p>
         </div>
 
-        {/* Remaining time */}
-        <div className="flex items-center justify-between gap-3">
-          <p className="text-sm text-muted-foreground">
-            {remainingTime}
-          </p>
-
-          <Switch
-            checked={alarm.enabled}
-            onCheckedChange={
-              onToggle
-            }
-            aria-label={
-              alarm.enabled
-                ? `Disable ${alarmLabel}`
-                : `Enable ${alarmLabel}`
-            }
-          />
+        <div className="-mt-1 -mr-1 flex shrink-0 items-center">
+          <Button variant="ghost" size="icon-sm" onClick={onEdit} aria-label={`Edit ${alarmLabel}`}>
+            <Pencil />
+          </Button>
+          <Button variant="ghost" size="icon-sm" onClick={onDelete} aria-label={`Delete ${alarmLabel}`}>
+            <Trash2 />
+          </Button>
         </div>
-      </CardContent>
-    </Card>
+      </header>
+
+      <div className="flex items-end justify-between gap-3">
+        <div className="flex items-baseline gap-1.5">
+          <Digits value={`${hour}:${minute}`} className="cel-text text-[2.6rem]" />
+          {meridiem && (
+            <span className="text-sm font-bold text-muted-foreground">{meridiem}</span>
+          )}
+        </div>
+
+        <Switch
+          checked={alarm.enabled}
+          onCheckedChange={onToggle}
+          aria-label={alarm.enabled ? `Turn off ${alarmLabel}` : `Turn on ${alarmLabel}`}
+        />
+      </div>
+
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex gap-1" aria-label={describeRepeat(repeat)}>
+          {WEEKDAYS.map((day) => {
+            const active = repeat.includes(day.day);
+
+            return (
+              <span
+                key={day.day}
+                aria-hidden="true"
+                className={cn(
+                  "grid size-6 place-items-center rounded-full text-[10px] font-bold",
+                  active
+                    ? "border-2 border-ink bg-lavender text-[#1b1530]"
+                    : "border border-border text-muted-foreground"
+                )}
+              >
+                {day.jp}
+              </span>
+            );
+          })}
+        </div>
+
+        <span className="flex items-center gap-1 text-xs font-bold text-muted-foreground">
+          {repeat.length > 0 && <Repeat className="size-3" />}
+          {remaining}
+        </span>
+      </div>
+    </article>
   );
 }
