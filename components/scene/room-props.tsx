@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { useNow } from "@/hooks/use-now";
 import { playSfx } from "@/lib/sfx";
@@ -11,7 +11,7 @@ import { useSettingsStore } from "@/stores/settings-store";
 
 import { box, DESK, poly, project, scaleAt, type Vec3, WINDOW } from "./projection";
 import { C } from "./room-palette";
-import { floatStyle, pick, pivot, useParticles, usePoke, useSpeak } from "./scene-shared";
+import { floatStyle, pick, pivot, useParticles, usePoke, useSpeak, useTween } from "./scene-shared";
 
 /** Draw in local units (100 = one world unit) standing at a world point. */
 function At({ at, children }: { at: Vec3; children: React.ReactNode }) {
@@ -74,9 +74,20 @@ const FORTUNES = [
   "凶 Bad luck… but cats cancel bad luck. You're safe.",
 ];
 
+/** A page lifted off the right side and laid over to the left. */
+function turningPage(t: number, y: number) {
+  const angle = Math.PI * t;
+  // The free edge curls a little as it travels.
+  const reach = 0.5 * (1 - Math.sin(angle) * 0.12);
+  const x = -1.0 + Math.cos(angle) * reach;
+  const lift = Math.sin(angle) * reach * 0.9;
+
+  return poly([-1.0, y, 8.86], [x, y + lift, 8.88], [x, y + lift, 9.44], [-1.0, y, 9.46]);
+}
+
 export function Notebook() {
   const speak = useSpeak();
-  const [poke, bump] = usePoke();
+  const [turn, turnTo, setTurn] = useTween(700);
 
   const y = DESK.top + 0.004;
   const left = poly([-1.5, y, 8.86], [-1.0, y, 8.86], [-1.0, y, 9.46], [-1.5, y, 9.46]);
@@ -97,11 +108,12 @@ export function Notebook() {
       className="sc-hit"
       onClick={() => {
         playSfx("rustle");
-        bump();
+        setTurn(0);
+        turnTo(1, () => setTurn(0));
         speak(bubbleX, bubbleY, `🎋 Omikuji: ${pick(FORTUNES)}`);
       }}
     >
-      <g key={poke} className={poke ? "sc-hop" : undefined} style={pivot("50% 100%")}>
+      <g>
         <path d={poly([-1.52, y - 0.003, 8.84], [-0.48, y - 0.003, 8.84], [-0.48, y - 0.003, 9.48], [-1.52, y - 0.003, 9.48])} fill="#2f4a5e" />
         <path d={left} fill={C.paper} />
         <path d={right} fill="#f5f1e8" />
@@ -113,6 +125,13 @@ export function Notebook() {
         </g>
         <path d={rule(-1.42, -1.12, 9.03)} stroke="#4f5d7a" strokeWidth="0.8" strokeDasharray="3 2" />
         <path d={rule(-1.42, -1.18, 9.13)} stroke="#4f5d7a" strokeWidth="0.8" strokeDasharray="4 2" />
+
+        {turn > 0 && turn < 1 && (
+          <g>
+            <path d={turningPage(turn, y)} fill={turn < 0.5 ? "#f5f1e8" : C.paper} stroke="#d8cdbd" strokeWidth="0.6" />
+            <path d={turningPage(turn, y)} fill="#5a4a3a" opacity={0.18 * Math.sin(Math.PI * turn)} />
+          </g>
+        )}
       </g>
 
       {/* Pencil */}
@@ -155,7 +174,7 @@ export function Mug() {
     <g className="sc-hit" onClick={sip}>
       <At at={at}>
         <ellipse cx="2" cy="2" rx="18" ry="4" fill="#000000" opacity="0.2" />
-        <g key={poke} className={poke ? "sc-hop" : undefined} style={pivot("50% 100%")}>
+        <g key={poke} className={poke ? "sc-sip" : undefined} style={pivot("50% 100%")}>
           <path d="M12 -20 C 22 -20 22 -8 12 -8" fill="none" stroke="#86ad97" strokeWidth="4" strokeLinecap="round" />
           <path d="M-12 -26 H12 V-3 Q12 1 8 1 H-8 Q-12 1 -12 -3 Z" fill="url(#rm-mug)" />
           <ellipse cx="0" cy="-26" rx="12" ry="3" fill="#9cc2ad" />
@@ -428,28 +447,49 @@ export function SillVase() {
   );
 }
 
+const PERSIMMONS: Array<[number, number]> = [[-9, -7], [9, -7], [0, -17]];
+
+/** Click to eat one; the bowl is refilled after a while. */
 export function Persimmons() {
-  const [poke, bump] = usePoke();
+  const speak = useSpeak();
+  const [left, setLeft] = useState(PERSIMMONS.length);
+  const refill = useRef(0);
+
+  const at: Vec3 = [1.75, SILL_Y, SILL_Z];
+  const [bx, by] = project(at);
+
+  useEffect(() => () => window.clearTimeout(refill.current), []);
+
+  function eat() {
+    if (left === 0) {
+      playSfx("pop");
+      setLeft(PERSIMMONS.length);
+      speak(bx, by - 30, "A neighbour left more persimmons on the doorstep~");
+      return;
+    }
+
+    playSfx("sip");
+    setLeft(left - 1);
+    speak(bx, by - 30, left === 1 ? "The last one. So sweet…" : "Mm, ripe and sweet as honey.");
+
+    window.clearTimeout(refill.current);
+    refill.current = window.setTimeout(() => setLeft(PERSIMMONS.length), 90_000);
+  }
 
   return (
-    <g
-      className="season-autumn sc-hit"
-      onClick={() => {
-        playSfx("pop");
-        bump();
-      }}
-    >
-      <At at={[1.75, SILL_Y, SILL_Z]}>
-        <g key={poke} className={poke ? "sc-hop" : undefined} style={pivot("50% 100%")}>
-          {[[-9, -7], [9, -7], [0, -17]].map(([x, y], index) => (
-            <g key={index}>
-              <ellipse cx={x} cy={y} rx="9" ry="7.5" fill="#e98a3c" />
-              <ellipse cx={x + 3} cy={y + 2} rx="6" ry="4.5" fill="#c9622a" opacity="0.35" />
-              <ellipse cx={x - 3} cy={y - 3} rx="2.2" ry="1.4" fill="#ffffff" opacity="0.55" />
-              <path d={`M${x - 4} ${y - 7} l 4 -2 l 4 2 l -4 1.5 Z`} fill="#4f8a3c" />
-            </g>
-          ))}
-        </g>
+    <g className="season-autumn sc-hit" onClick={eat}>
+      <At at={at}>
+        <ellipse cx="0" cy="0" rx="20" ry="3" fill="#000000" opacity="0.12" />
+        {/* Eaten from the top of the pile down */}
+        {PERSIMMONS.slice(0, left).map(([x, y], index) => (
+          <g key={index}>
+            <ellipse cx={x} cy={y} rx="9" ry="7.5" fill="#e98a3c" />
+            <ellipse cx={x + 3} cy={y + 2} rx="6" ry="4.5" fill="#c9622a" opacity="0.35" />
+            <ellipse cx={x - 3} cy={y - 3} rx="2.2" ry="1.4" fill="#ffffff" opacity="0.55" />
+            <path d={`M${x - 4} ${y - 7} l 4 -2 l 4 2 l -4 1.5 Z`} fill="#4f8a3c" />
+          </g>
+        ))}
+        {left === 0 && <path d="M-6 -2 q 3 -3 6 0 q 3 -3 6 0" stroke="#4f8a3c" strokeWidth="1.4" fill="none" />}
       </At>
     </g>
   );

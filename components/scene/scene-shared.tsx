@@ -1,6 +1,7 @@
 "use client";
 
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
+import type { MouseEvent } from "react";
 
 /*
  * The room is drawn in a fixed 1600×1000 space, scaled to cover.
@@ -85,6 +86,62 @@ export function useParticles(lifetime = 1800) {
   }
 
   return [particles, burst] as const;
+}
+
+const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+
+/**
+ * A smoothly eased number, driven by animation frames. Call `to(value)`
+ * to glide there; `set(value)` jumps without animating.
+ */
+export function useTween(duration: number, initial = 0) {
+  const [value, setValue] = useState(initial);
+  const current = useRef(initial);
+  const frame = useRef(0);
+
+  useEffect(() => () => cancelAnimationFrame(frame.current), []);
+
+  function set(next: number) {
+    cancelAnimationFrame(frame.current);
+    current.current = next;
+    setValue(next);
+  }
+
+  function to(target: number, onDone?: () => void) {
+    cancelAnimationFrame(frame.current);
+
+    const from = current.current;
+    const start = performance.now();
+
+    const step = (now: number) => {
+      const t = Math.min(1, (now - start) / duration);
+      current.current = from + (target - from) * ease(t);
+      setValue(current.current);
+
+      if (t < 1) {
+        frame.current = requestAnimationFrame(step);
+      } else {
+        onDone?.();
+      }
+    };
+
+    frame.current = requestAnimationFrame(step);
+  }
+
+  return [value, to, set] as const;
+}
+
+/** Where a click landed, in the scene's own coordinates. */
+export function toScene(event: MouseEvent<SVGElement>) {
+  const svg = event.currentTarget.ownerSVGElement;
+  const matrix = svg?.getScreenCTM();
+
+  if (!matrix) {
+    return null;
+  }
+
+  const point = new DOMPoint(event.clientX, event.clientY).matrixTransform(matrix.inverse());
+  return { x: point.x, y: point.y };
 }
 
 export const floatStyle = (delay: number) => ({

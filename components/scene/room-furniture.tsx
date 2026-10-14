@@ -1,19 +1,31 @@
 "use client";
 
+import { useRef, useState } from "react";
+
 import { useNow } from "@/hooks/use-now";
 import { playSfx } from "@/lib/sfx";
 
 import {
   box,
   DESK,
+  FOCAL,
   poly,
   project,
   ROOM,
   scaleAt,
   type Vec3,
+  VP,
 } from "./projection";
 import { C } from "./room-palette";
-import { mulberry32, pick, pivot, usePoke, useSpeak } from "./scene-shared";
+import {
+  mulberry32,
+  pick,
+  pivot,
+  toScene,
+  usePoke,
+  useSpeak,
+  useTween,
+} from "./scene-shared";
 
 const { floor: F, back: B } = ROOM;
 
@@ -108,7 +120,11 @@ export function Desk() {
 /* Chair                                                               */
 /* ------------------------------------------------------------------ */
 
+/** Pulled out from the desk: nearer the viewer and a little to the side. */
+const CHAIR_OUT = { z: 6.85, dx: 0.18 };
+
 export function Chair() {
+  const [out, setOut] = useState(false);
   const [poke, bump] = usePoke();
 
   const z = 7.5;
@@ -121,17 +137,28 @@ export function Chair() {
 
   const half = 0.48 * s;
 
+  // Rolling along the floor is a change of depth: scale about the
+  // vanishing point, plus a small sideways shift.
+  const k = z / CHAIR_OUT.z;
+  const tx = (FOCAL * CHAIR_OUT.dx) / CHAIR_OUT.z;
+
   return (
     <g
       className="sc-hit"
       onClick={() => {
-        playSfx("click");
+        playSfx("rustle");
+        setOut(!out);
         bump();
+      }}
+      style={{
+        transform: out ? `translate(${tx.toFixed(1)}px, 0px) scale(${k.toFixed(4)})` : "none",
+        transformOrigin: `${VP.x}px ${VP.y}px`,
+        transition: "transform 1.1s cubic-bezier(0.3, 0.7, 0.3, 1)",
       }}
     >
       <ellipse cx={cx} cy={baseY + 20} rx={half * 1.25} ry="12" fill="url(#rm-drop-shadow)" />
 
-      <g key={poke} className={poke ? "sc-rustle" : undefined} style={pivot("50% 100%")}>
+      <g>
         {/* Star base and casters */}
         <g stroke="#30353f" strokeWidth="7" strokeLinecap="round">
           {[-1, -0.45, 0.45, 1].map((t) => (
@@ -147,6 +174,8 @@ export function Chair() {
         <rect x={cx - 5} y={seatY} width="10" height={baseY - seatY} fill="#7e8794" />
         <rect x={cx - 5} y={seatY} width="3" height={baseY - seatY} fill="#ffffff" opacity="0.3" />
 
+        {/* The seat and back swivel as it rolls */}
+        <g key={poke} className={poke ? "sc-swivel" : undefined} style={pivot("50% 50%")}>
         {/* Seat peeking out behind the backrest */}
         <ellipse cx={cx} cy={seatY} rx={half * 1.05} ry="13" fill="#3a404c" />
 
@@ -179,6 +208,7 @@ export function Chair() {
           fill="none"
           opacity="0.15"
         />
+        </g>
       </g>
     </g>
   );
@@ -266,11 +296,15 @@ export function Bed() {
       <path d={mattress.left} fill={C.sheetShade} />
       <path d={mattress.front} fill="#dde3e9" />
 
-      <g key={poke} className={poke ? "sc-hop" : undefined} style={pivot("50% 100%")}>
-        {[[3.05, 3.95], [4.05, 4.95]].map(([x0, x1]) => {
+      <g>
+        {[[3.05, 3.95], [4.05, 4.95]].map(([x0, x1], index) => {
           const p = pillow(x0, x1);
           return (
-            <g key={x0}>
+            <g
+              key={`${x0}-${poke}`}
+              className={poke ? "sc-fluff" : undefined}
+              style={{ ...pivot("50% 100%"), animationDelay: `${index * 0.12}s` }}
+            >
               <rect x={p.x} y={p.y} width={p.w} height={p.h} rx={p.h * 0.45} fill="#f4f6f8" />
               <rect x={p.x} y={p.y + p.h * 0.55} width={p.w} height={p.h * 0.45} rx={p.h * 0.3} fill="#d9e0e7" />
               <path d={`M${p.x + p.w * 0.2} ${p.y + p.h * 0.3} Q ${p.x + p.w * 0.5} ${p.y + p.h * 0.45} ${p.x + p.w * 0.8} ${p.y + p.h * 0.3}`} stroke="#c6ced8" strokeWidth="1.2" fill="none" />
@@ -304,9 +338,25 @@ export function Bed() {
 const SHELF_LEVELS = [-2.38, -1.45, -0.52, 0.41, 1.34];
 const CASE = { x0: -5, x1: -4.35, z0: 7.1, z1: 9.7, top: 1.98 };
 
+type Book = {
+  y0: number;
+  height: number;
+  z: number;
+  width: number;
+  color: string;
+  /** Spine centre on screen, to find the book that was clicked. */
+  cx: number;
+  cy: number;
+};
+
+/** The spine sits at this x; a pulled book slides out towards the room. */
+const SPINE_X = CASE.x1 - 0.06;
+const PULL = 0.2;
+const BOOK_DEPTH = 0.26;
+
 const BOOKS = (() => {
   const random = mulberry32(53);
-  const books: Array<{ d: string; band: string; color: string }> = [];
+  const books: Book[] = [];
 
   SHELF_LEVELS.forEach((level, shelfIndex) => {
     let z = CASE.z0 + 0.12;
@@ -320,13 +370,17 @@ const BOOKS = (() => {
 
       const width = 0.08 + random() * 0.1;
       const height = 0.48 + random() * 0.32 - (shelfIndex === 0 ? 0 : 0.05);
-      const x = CASE.x1 - 0.06;
       const y0 = level + 0.04;
+      const [cx, cy] = project([SPINE_X, y0 + height / 2, z + width / 2]);
 
       books.push({
-        d: poly([x, y0, z], [x, y0 + height, z], [x, y0 + height, z + width], [x, y0, z + width]),
-        band: poly([x, y0 + height * 0.78, z], [x, y0 + height * 0.84, z], [x, y0 + height * 0.84, z + width], [x, y0 + height * 0.78, z + width]),
+        y0,
+        height,
+        z,
+        width,
         color: C.books[Math.floor(random() * C.books.length)],
+        cx,
+        cy,
       });
 
       z += width + 0.005;
@@ -335,6 +389,43 @@ const BOOKS = (() => {
 
   return books;
 })();
+
+/** A book's visible faces, slid out of the shelf by `out` (0–1). */
+function bookFaces(book: Book, out: number) {
+  const x = SPINE_X + PULL * out;
+  const { y0, height, z, width } = book;
+  const top = y0 + height;
+  // Only the part that sticks out of the row can be seen.
+  const inner = Math.max(x - BOOK_DEPTH, SPINE_X);
+
+  return {
+    spine: poly([x, y0, z], [x, top, z], [x, top, z + width], [x, y0, z + width]),
+    band: poly([x, y0 + height * 0.78, z], [x, y0 + height * 0.84, z], [x, y0 + height * 0.84, z + width], [x, y0 + height * 0.78, z + width]),
+    // The cover nearest the camera shows once the book is out.
+    cover: out > 0 ? poly([inner, y0, z], [x, y0, z], [x, top, z], [inner, top, z]) : null,
+    // And its top or bottom edge, depending on eye level.
+    edge:
+      out > 0
+        ? top < 0
+          ? poly([inner, top, z], [x, top, z], [x, top, z + width], [inner, top, z + width])
+          : poly([inner, y0, z], [x, y0, z], [x, y0, z + width], [inner, y0, z + width])
+        : null,
+  };
+}
+
+function BookSpine({ book, out = 0 }: { book: Book; out?: number }) {
+  const faces = bookFaces(book, out);
+
+  return (
+    <g>
+      {faces.cover && <path d={faces.cover} fill={book.color} />}
+      {faces.cover && <path d={faces.cover} fill="#000000" opacity="0.28" />}
+      {faces.edge && <path d={faces.edge} fill="#efe6d2" />}
+      <path d={faces.spine} fill={book.color} />
+      <path d={faces.band} fill="#f3e7c8" opacity="0.55" />
+    </g>
+  );
+}
 
 const BOOK_LINES = [
   "“All that is gold does not glitter.”",
@@ -346,36 +437,57 @@ const BOOK_LINES = [
 
 export function Bookcase() {
   const speak = useSpeak();
-  const [poke, bump] = usePoke();
+  const [pulled, setPulled] = useState<number | null>(null);
+  const [out, slide, jump] = useTween(450);
+  const putBack = useRef(0);
 
   const back = poly([CASE.x0 + 0.02, F + 0.02, CASE.z0], [CASE.x0 + 0.02, CASE.top, CASE.z0], [CASE.x0 + 0.02, CASE.top, CASE.z1], [CASE.x0 + 0.02, F + 0.02, CASE.z1]);
   const side = box(CASE.x0, CASE.x1, F, CASE.top, CASE.z0 - 0.06, CASE.z0);
   const farSide = box(CASE.x0, CASE.x1, F, CASE.top, CASE.z1, CASE.z1 + 0.06);
 
-  const [bubbleX, bubbleY] = project([-4.4, 1.9, 8.3]);
+  function pullOut(event: React.MouseEvent<SVGGElement>) {
+    const point = toScene(event);
+
+    if (!point) {
+      return;
+    }
+
+    // The book nearest to where you clicked.
+    let index = 0;
+    let best = Infinity;
+
+    BOOKS.forEach((book, i) => {
+      const distance = Math.hypot(book.cx - point.x, (book.cy - point.y) * 0.5);
+
+      if (distance < best) {
+        best = distance;
+        index = i;
+      }
+    });
+
+    window.clearTimeout(putBack.current);
+    playSfx("rustle");
+    jump(0);
+    setPulled(index);
+    slide(1);
+
+    const book = BOOKS[index];
+    speak(book.cx + 70, book.cy - 30, `📖 ${pick(BOOK_LINES)}`);
+
+    // Slide it back after a little read.
+    putBack.current = window.setTimeout(() => slide(0, () => setPulled(null)), 4200);
+  }
 
   return (
-    <g
-      className="sc-hit"
-      onClick={() => {
-        playSfx("rustle");
-        bump();
-        speak(bubbleX + 60, bubbleY, `📖 ${pick(BOOK_LINES)}`);
-      }}
-    >
+    <g className="sc-hit" onClick={pullOut}>
       <path d={back} fill={C.woodDark} />
       <path d={farSide.front} fill={C.woodSide} />
 
-      <g key={poke} className={poke ? "sc-rustle" : undefined} style={pivot("50% 100%")}>
-        {BOOKS.map((book, index) => (
-          <g key={index}>
-            <path d={book.d} fill={book.color} />
-            <path d={book.band} fill="#f3e7c8" opacity="0.55" />
-          </g>
-        ))}
-      </g>
+      {BOOKS.map((book, index) => (index === pulled ? null : <BookSpine key={index} book={book} />))}
       <g fill="#000000" opacity="0.18">
-        {BOOKS.map((book, index) => (index % 3 === 0 ? <path key={index} d={book.d} /> : null))}
+        {BOOKS.map((book, index) =>
+          index % 3 === 0 && index !== pulled ? <path key={index} d={bookFaces(book, 0).spine} /> : null
+        )}
       </g>
 
       {SHELF_LEVELS.map((level) => {
@@ -389,6 +501,9 @@ export function Bookcase() {
       })}
       <path d={box(CASE.x0, CASE.x1, CASE.top - 0.06, CASE.top, CASE.z0, CASE.z1).right} fill={C.woodFront} />
       <path d={box(CASE.x0, CASE.x1, CASE.top - 0.06, CASE.top, CASE.z0, CASE.z1).bottom} fill={C.woodSide} />
+
+      {/* The pulled book sticks out past the shelf edge */}
+      {pulled !== null && <BookSpine book={BOOKS[pulled]} out={out} />}
 
       <path d={side.front} fill={C.woodFront} />
       <path d={side.right} fill={C.woodSide} />
@@ -526,7 +641,6 @@ export function Painting() {
 export function WallClock() {
   const now = useNow();
   const speak = useSpeak();
-  const [poke, bump] = usePoke();
 
   const [cx, cy] = project([4.05, 1.55, B - 0.02]);
   const r = 0.32 * scaleAt(B);
@@ -542,13 +656,12 @@ export function WallClock() {
     const english = date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
 
     playSfx("chime");
-    bump();
     speak(cx, cy - r - 6, `It's ${english} · ${h < 12 ? "午前" : "午後"}${h % 12 || 12}時${m}分`);
   }
 
   return (
     <g className="sc-hit" onClick={tellTime}>
-      <g key={poke} className={poke ? "sc-rustle" : undefined} style={pivot("50% 0%")}>
+      <g>
         <circle cx={cx + 3} cy={cy + 4} r={r} fill={C.shadow} />
         <circle cx={cx} cy={cy} r={r} fill="#8a6a4a" />
         <circle cx={cx} cy={cy} r={r * 0.84} fill="#fbfaf6" />
@@ -591,6 +704,7 @@ const TIPS = [
 export function Corkboard() {
   const speak = useSpeak();
   const [poke, bump] = usePoke();
+  const [fluttering, setFluttering] = useState(0);
 
   const z = B - 0.02;
   const [x0, y0] = project([3.45, 0.75, z]);
@@ -611,6 +725,7 @@ export function Corkboard() {
       className="sc-hit"
       onClick={() => {
         playSfx("rustle");
+        setFluttering(Math.floor(Math.random() * 5));
         bump();
         speak(x0 + w / 2, y0 - 4, `📌 ${pick(TIPS)}`);
       }}
@@ -618,7 +733,7 @@ export function Corkboard() {
       <rect x={x0 + 3} y={y0 + 5} width={w} height={h} fill={C.shadow} />
       <rect x={x0} y={y0} width={w} height={h} rx="2" fill="#a27a52" />
       <rect x={x0 + 4} y={y0 + 4} width={w - 8} height={h - 8} fill="#c8a072" />
-      <g key={poke} className={poke ? "sc-rustle" : undefined} style={pivot("50% 0%")}>
+      <g>
         {notes.map((note, index) => {
           const nx = x0 + 4 + note.x * (w - 8);
           const ny = y0 + 4 + note.y * (h - 8);
@@ -626,10 +741,16 @@ export function Corkboard() {
           const nh = note.h * (h - 8);
           return (
             <g key={index} transform={`rotate(${note.rotate} ${nx + nw / 2} ${ny + nh / 2})`}>
+              <g
+                key={index === fluttering ? poke : 0}
+                className={poke && index === fluttering ? "sc-flutter" : undefined}
+                style={pivot("50% 0%")}
+              >
               <rect x={nx} y={ny} width={nw} height={nh} fill={note.color} />
               <g stroke="#7a7066" strokeWidth="0.7" opacity="0.5">
                 <line x1={nx + 3} y1={ny + nh * 0.35} x2={nx + nw - 3} y2={ny + nh * 0.35} />
                 <line x1={nx + 3} y1={ny + nh * 0.55} x2={nx + nw - 6} y2={ny + nh * 0.55} />
+              </g>
               </g>
               <circle cx={nx + nw / 2} cy={ny + 3} r="2" fill="#c45a3a" />
             </g>
@@ -712,8 +833,8 @@ export function Plush() {
       }}
     >
       <AtPoint at={[3.45, -1.6, 8.55]}>
-        <g key={poke} className={poke ? "sc-hop" : undefined} style={pivot("50% 100%")}>
-          <ellipse cx="0" cy="-2" rx="30" ry="6" fill="#000000" opacity="0.12" />
+        <ellipse cx="0" cy="-2" rx="30" ry="6" fill="#000000" opacity="0.12" />
+        <g key={poke} className={poke ? "sc-squish" : undefined} style={pivot("50% 100%")}>
           <path d="M-28 -2 C -30 -22 -12 -34 4 -32 C 22 -30 32 -18 30 -4 C 28 2 -24 4 -28 -2 Z" fill="#f4f6f8" />
           <path d="M-28 -2 C -30 -12 -24 -20 -14 -24 C -22 -14 -22 -6 -20 0 Z" fill="#d9e0e6" />
           <ellipse cx="18" cy="-1" rx="9" ry="4" fill="#e6ebef" />

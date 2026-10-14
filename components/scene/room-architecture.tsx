@@ -225,7 +225,7 @@ function Curtain({ x0, x1, flip }: { x0: number; x1: number; flip?: boolean }) {
         bump();
       }}
     >
-      <g key={poke} className={poke ? "sc-rustle" : undefined} style={pivot("50% 0%")}>
+      <g key={poke} className={poke ? "sc-billow" : undefined} style={pivot("50% 0%")}>
         <g className="sc-curtain" style={pivot("50% 0%")}>
           <path d={d} fill="url(#rm-sheer)" />
           <path d={d} fill="url(#rm-sheer-glow)" style={{ opacity: "calc(var(--rm-light) * var(--sc-ray-weather))" }} />
