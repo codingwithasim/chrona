@@ -188,11 +188,20 @@ export function ClarityAnalytics() {
     process.env
       .NEXT_PUBLIC_CLARITY_PROJECT_ID;
 
+  // Read the saved choice after hydration so the
+  // server and client markup match.
+  useEffect(() => {
+    const consentTimer = window.setTimeout(
+      () => setConsent(getStoredConsent()),
+      0
+    );
+
+    return () => window.clearTimeout(consentTimer);
+  }, []);
+
   useEffect(() => {
     const storedConsent =
       getStoredConsent();
-
-    setConsent(storedConsent);
 
     if (!enabled) {
       console.info(
