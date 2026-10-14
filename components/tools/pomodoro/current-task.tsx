@@ -5,21 +5,40 @@ import { Popover } from "@base-ui/react/popover";
 import { Check, Plus, X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { useFocusStore } from "@/stores/focus-store";
+import { type FocusTask, MAX_ESTIMATE, useFocusStore } from "@/stores/focus-store";
 
-/** Small dots for the pomodoros a task has taken. */
-function Tally({ count }: { count: number }) {
-  if (count === 0) {
-    return null;
-  }
+/** Pomodoros taken (filled) against the guess (hollow). Click to change the guess. */
+function Tally({ task, onEstimate }: { task: FocusTask; onEstimate: (estimate: number) => void }) {
+  const estimate = task.estimate ?? 0;
+  const dots = Math.min(Math.max(task.pomodoros, estimate), 6);
+  const extra = Math.max(task.pomodoros, estimate) - dots;
 
   return (
-    <span className="flex shrink-0 items-center gap-0.5" aria-label={`${count} pomodoros`}>
-      {Array.from({ length: Math.min(count, 6) }, (_, index) => (
-        <span key={index} className="size-1 rounded-full" style={{ backgroundColor: "var(--ember)" }} />
-      ))}
-      {count > 6 && <span className="text-[10px] text-muted-foreground">+{count - 6}</span>}
-    </span>
+    <button
+      type="button"
+      disabled={task.done}
+      onClick={() => onEstimate(estimate >= MAX_ESTIMATE ? 0 : estimate + 1)}
+      title={estimate ? `${task.pomodoros} of ${estimate} pomodoros · click to change the guess` : "How many pomodoros will it take?"}
+      aria-label={`${task.pomodoros} pomodoros done${estimate ? ` of ${estimate}` : ""}. Change the estimate`}
+      className="flex h-6 shrink-0 items-center gap-0.5 rounded-full px-1.5 hover:bg-foreground/5 disabled:pointer-events-none"
+    >
+      {dots === 0 ? (
+        <span className="text-[10px] text-muted-foreground/50 opacity-0 transition-opacity group-hover:opacity-100">est.</span>
+      ) : (
+        Array.from({ length: dots }, (_, index) => (
+          <span
+            key={index}
+            className="size-1.5 rounded-full border"
+            style={
+              index < task.pomodoros
+                ? { backgroundColor: "var(--ember)", borderColor: "var(--ember)" }
+                : { borderColor: "color-mix(in oklab, var(--foreground) 30%, transparent)" }
+            }
+          />
+        ))
+      )}
+      {extra > 0 && <span className="text-[10px] text-muted-foreground">+{extra}</span>}
+    </button>
   );
 }
 
@@ -32,8 +51,10 @@ export function CurrentTask() {
   const removeTask = useFocusStore((state) => state.removeTask);
   const setCurrent = useFocusStore((state) => state.setCurrent);
   const clearDone = useFocusStore((state) => state.clearDone);
+  const setEstimate = useFocusStore((state) => state.setEstimate);
 
   const [draft, setDraft] = useState("");
+  const [estimate, setDraftEstimate] = useState(1);
 
   const current = tasks.find((task) => task.id === currentId && !task.done);
   const open = tasks.filter((task) => !task.done);
@@ -48,6 +69,9 @@ export function CurrentTask() {
           <>
             <span className="text-muted-foreground/70">working on · </span>
             <span className="text-foreground/80">{current.text}</span>
+            {(current.estimate ?? 0) > 0 && (
+              <span className="text-muted-foreground/70"> · {current.pomodoros}/{current.estimate}</span>
+            )}
           </>
         ) : (
           <span className="flex items-center gap-1.5">
@@ -68,8 +92,9 @@ export function CurrentTask() {
               className="flex gap-2"
               onSubmit={(event) => {
                 event.preventDefault();
-                addTask(draft);
+                addTask(draft, estimate);
                 setDraft("");
+                setDraftEstimate(1);
               }}
             >
               <input
@@ -80,6 +105,16 @@ export function CurrentTask() {
                 onChange={(event) => setDraft(event.target.value)}
                 className="h-9 min-w-0 flex-1 rounded-full border border-foreground/10 bg-foreground/[0.03] px-3.5 text-[13px] outline-none placeholder:text-muted-foreground/60 focus:border-foreground/25"
               />
+              <button
+                type="button"
+                onClick={() => setDraftEstimate((value) => (value >= MAX_ESTIMATE ? 0 : value + 1))}
+                title="How many pomodoros it should take (click to change)"
+                aria-label={estimate ? `Estimate: ${estimate} pomodoros. Change` : "No estimate. Change"}
+                className="flex h-9 shrink-0 items-center gap-1 rounded-full px-2.5 text-[12px] tabular-nums text-muted-foreground transition-colors hover:bg-foreground/5 hover:text-foreground"
+              >
+                <span className="size-1.5 rounded-full" style={{ backgroundColor: estimate ? "var(--ember)" : "color-mix(in oklab, var(--foreground) 25%, transparent)" }} />
+                {estimate ? `×${estimate}` : "–"}
+              </button>
               <button
                 type="submit"
                 aria-label="Add task"
@@ -92,8 +127,8 @@ export function CurrentTask() {
 
             {tasks.length === 0 ? (
               <p className="px-1 pt-3 text-[12px] leading-5 text-muted-foreground/80">
-                Add what you&apos;re focusing on. Each finished pomodoro
-                leaves a little dot on it.
+                Add what you&apos;re focusing on, and roughly how many
+                pomodoros it should take. Each finished one fills a dot.
               </p>
             ) : (
               <ul className="mt-2 max-h-64 space-y-0.5 overflow-y-auto">
@@ -130,7 +165,7 @@ export function CurrentTask() {
                         {task.text}
                       </button>
 
-                      <Tally count={task.pomodoros} />
+                      <Tally task={task} onEstimate={(value) => setEstimate(task.id, value)} />
 
                       <button
                         type="button"

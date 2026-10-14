@@ -1,7 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Wind } from "lucide-react";
+import { Check, Wind } from "lucide-react";
+
+import { useNow } from "@/hooks/use-now";
+import { useFocusStore } from "@/stores/focus-store";
 
 const SUGGESTIONS = [
   "Stand up and stretch your arms over your head.",
@@ -66,6 +69,47 @@ function Breathing({ onDone }: { onDone: () => void }) {
   );
 }
 
+/** One line about the session that just ended, for the journal. */
+function SessionNote() {
+  const now = useNow();
+  const last = useFocusStore((state) => state.log[state.log.length - 1]);
+  const noteLast = useFocusStore((state) => state.noteLast);
+  const [draft, setDraft] = useState("");
+
+  // Only for a session that just finished.
+  if (!now || !last || now.getTime() - last.at > 40 * 60_000) {
+    return null;
+  }
+
+  if (last.note) {
+    return (
+      <p className="flex items-center gap-1.5 text-[12px] text-muted-foreground/80">
+        <Check className="size-3.5" strokeWidth={2} style={{ color: "var(--mint)" }} />
+        Noted in your journal
+      </p>
+    );
+  }
+
+  return (
+    <form
+      className="w-full"
+      onSubmit={(event) => {
+        event.preventDefault();
+        noteLast(draft);
+      }}
+    >
+      <input
+        value={draft}
+        maxLength={140}
+        onChange={(event) => setDraft(event.target.value)}
+        aria-label="What did you get done in that session?"
+        placeholder="What did you get done?"
+        className="h-8 w-full rounded-full border border-foreground/15 bg-background/45 px-3.5 text-center text-[12px] backdrop-blur-sm outline-none placeholder:text-foreground/55 focus:border-foreground/30 focus:bg-background/60"
+      />
+    </form>
+  );
+}
+
 /** During a break: a small idea for resting, and an offer to breathe. */
 export function BreakCompanion({ cycle }: { cycle: number }) {
   const [breathing, setBreathing] = useState(false);
@@ -76,7 +120,8 @@ export function BreakCompanion({ cycle }: { cycle: number }) {
   }
 
   return (
-    <div className="flex max-w-[16rem] flex-col items-center gap-2 text-center">
+    <div className="flex w-[16rem] max-w-full flex-col items-center gap-2 text-center">
+      <SessionNote />
       <p className="text-[12px] leading-5 text-muted-foreground">{suggestion}</p>
       <button
         type="button"

@@ -12,26 +12,41 @@ import { say } from "./dialogue-store";
  * in this browser.
  */
 
-export type FocusTask = { id: string; text: string; done: boolean; pomodoros: number };
+export type FocusTask = {
+  id: string;
+  text: string;
+  done: boolean;
+  pomodoros: number;
+  /** How many pomodoros you expect it to take; 0 for no guess. */
+  estimate?: number;
+};
 export type FocusDay = { date: string; minutes: number; sessions: number };
+/** One finished focus session, and what you got done in it. */
+export type FocusEntry = { at: number; minutes: number; task?: string; note?: string };
 
 type FocusStore = {
   tasks: FocusTask[];
   currentId: string | null;
   days: FocusDay[];
+  log: FocusEntry[];
   /** Minutes of focus to aim for each day. */
   dailyGoal: number;
   setDailyGoal: (minutes: number) => void;
 
-  addTask: (text: string) => void;
+  addTask: (text: string, estimate?: number) => void;
+  setEstimate: (id: string, estimate: number) => void;
   toggleTask: (id: string) => void;
   removeTask: (id: string) => void;
   setCurrent: (id: string | null) => void;
   clearDone: () => void;
   recordFocus: (minutes: number) => void;
+  /** Say what you got done in the session that just ended. */
+  noteLast: (note: string) => void;
 };
 
 const KEEP_DAYS = 120;
+const KEEP_ENTRIES = 500;
+export const MAX_ESTIMATE = 8;
 
 export const useFocusStore = create<FocusStore>()(
   persist(
@@ -39,16 +54,18 @@ export const useFocusStore = create<FocusStore>()(
       tasks: [],
       currentId: null,
       days: [],
+      log: [],
       dailyGoal: 120,
       setDailyGoal: (minutes) => set({ dailyGoal: Math.min(600, Math.max(15, Math.round(minutes / 15) * 15)) }),
 
-      addTask: (text) =>
+      addTask: (text, estimate = 0) =>
         set((state) => {
           const task: FocusTask = {
             id: `task-${Date.now()}`,
             text: text.trim().slice(0, 80),
             done: false,
             pomodoros: 0,
+            estimate,
           };
 
           if (!task.text) {
@@ -80,6 +97,13 @@ export const useFocusStore = create<FocusStore>()(
           currentId: state.currentId === id ? null : state.currentId,
         })),
 
+      setEstimate: (id, estimate) =>
+        set((state) => ({
+          tasks: state.tasks.map((task) =>
+            task.id === id ? { ...task, estimate: Math.min(MAX_ESTIMATE, Math.max(0, estimate)) } : task
+          ),
+        })),
+
       setCurrent: (currentId) => set({ currentId }),
 
       clearDone: () => set((state) => ({ tasks: state.tasks.filter((task) => !task.done) })),
@@ -102,12 +126,27 @@ export const useFocusStore = create<FocusStore>()(
               )
             : [...state.days, { date, minutes, sessions: 1 }].slice(-KEEP_DAYS);
 
+          const current = state.tasks.find((task) => task.id === state.currentId && !task.done);
+
           return {
             days,
+            log: [...state.log, { at: Date.now(), minutes, task: current?.text }].slice(-KEEP_ENTRIES),
             tasks: state.tasks.map((task) =>
               task.id === state.currentId ? { ...task, pomodoros: task.pomodoros + 1 } : task
             ),
           };
+        }),
+
+      noteLast: (note) =>
+        set((state) => {
+          const last = state.log[state.log.length - 1];
+          const text = note.trim().slice(0, 140);
+
+          if (!last || !text) {
+            return state;
+          }
+
+          return { log: [...state.log.slice(0, -1), { ...last, note: text }] };
         }),
     }),
     {
