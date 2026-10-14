@@ -18,7 +18,9 @@ const RANGE: Pt = [470, 1060];
 export const BED_X = 600;
 export const BED_SPOT = BED_X + 8;
 const WALK_SPEED = 56;
-const CHASE_SPEED = 160;
+const CHASE_SPEED = 210;
+/** Creeping up on something, belly low. */
+const STALK_SPEED = 34;
 /** Zoomies, and running for cover. */
 const DASH_SPEED = 250;
 
@@ -40,6 +42,8 @@ export type Activity =
   | "crouch"
   | "pounce"
   | "chase"
+  /** Creeping up on prey, low to the ground. */
+  | "stalk"
   /** Making biscuits: front paws pressing in turn, purring. */
   | "knead"
   /** Zoomies, or running off to hide. */
@@ -50,7 +54,7 @@ export type Activity =
   | "startle";
 
 /** Which drawing each activity uses. */
-export type ArtPose = "loaf" | "sit" | "stretch" | "walk";
+export type ArtPose = "loaf" | "sit" | "stretch" | "walk" | "crouch";
 
 export const ART_POSE: Record<Activity, ArtPose> = {
   sleep: "loaf",
@@ -63,7 +67,8 @@ export const ART_POSE: Record<Activity, ArtPose> = {
   stand: "walk",
   walk: "walk",
   chase: "walk",
-  crouch: "walk",
+  crouch: "crouch",
+  stalk: "crouch",
   pounce: "walk",
   stretch: "stretch",
   knead: "loaf",
@@ -84,8 +89,9 @@ const DURATION: Record<Activity, Pt> = {
   look: [4, 8],
   bat: [1.3, 1.3],
   yawn: [1.8, 1.8],
-  crouch: [1.4, 2.4],
-  pounce: [0.5, 0.5],
+  crouch: [0.9, 1.7],
+  stalk: [0, 0],
+  pounce: [0.42, 0.42],
   chase: [0, 0],
   knead: [4, 7],
   dash: [0, 0],
@@ -105,6 +111,7 @@ const NEXT: Record<Activity, Array<[Activity, number]>> = {
   bat: [["sit", 0.6], ["bat", 0.4]],
   yawn: [["sit", 1]],
   crouch: [["pounce", 1]],
+  stalk: [["crouch", 1]],
   pounce: [["sit", 1]],
   chase: [["crouch", 1]],
   knead: [["sleep", 0.6], ["loaf", 0.4]],
@@ -135,10 +142,18 @@ const pick = <T,>(items: T[]) => items[Math.floor(Math.random() * items.length)]
 
 export type Interest = { point: Pt; strength: number };
 
+/** Something to hunt: the pointer wiggling on the floor, or a mouse. */
+export type Prey = { point: Pt; kind: "pointer" | "mouse"; fleeing?: boolean };
+
+/** What's ahead of her when she lands a pounce, and whether she got it. */
+const PAW_REACH = 72;
+
 export type CatEvents = {
   speak: (point: Pt, text: string) => void;
   bat: () => void;
   purr: () => void;
+  /** She landed a pounce with her paws here: did she get it? */
+  landed: (pawX: number) => boolean;
 };
 
 export class CatBrain {
@@ -178,13 +193,18 @@ export class CatBrain {
   private nextMlem = rand(25, 60);
   private chattering = false;
 
+  /** After a pounce or giving up, she takes a breath before hunting again. */
+  private huntRestUntil = 0;
+  private misses = 0;
+  private noticed = false;
+
   /** Dusk is when cats get the zoomies; the room tells her the time. */
   evening = false;
 
   /** Something she is interested in this frame (the pointer, mostly). */
   interest: Interest | null = null;
   /** Prey to hunt (the pointer or a mouse), in scene space. */
-  prey: { point: Pt; kind: "pointer" | "mouse" } | null = null;
+  prey: Prey | null = null;
 
   constructor(
     readonly events: CatEvents,
@@ -200,7 +220,7 @@ export class CatBrain {
    * Walks go to `target`, or somewhere random.
    */
   start(activity: Activity, target?: number) {
-    const needsLegs = activity === "walk" || activity === "chase" || activity === "dash";
+    const needsLegs = activity === "walk" || activity === "chase" || activity === "dash" || activity === "stalk";
     const down = LYING.includes(this.activity) || SITTING.includes(this.activity);
 
     if (needsLegs && down) {
@@ -236,8 +256,10 @@ export class CatBrain {
 
     if (activity === "pounce") {
       this.pounceFrom = this.x;
-      const aim = this.prey ? this.prey.point[0] : this.x - 90 * this.facing;
-      this.pounceTo = clamp(this.x + clamp(aim - this.x, -130, 130), RANGE[0], RANGE[1]);
+      // Land with her front paws on it, leading a running mouse a little.
+      const lead = this.prey?.fleeing ? -this.facing * 24 : 0;
+      const aim = this.prey ? this.prey.point[0] + lead + this.facing * PAW_REACH * SCALE : this.x - 90 * this.facing;
+      this.pounceTo = clamp(this.x + clamp(aim - this.x, -170, 170), RANGE[0], RANGE[1]);
     }
   }
 
@@ -331,7 +353,7 @@ export class CatBrain {
       this.start("loaf");
     } else if (this.activity === "loaf") {
       this.start("sit");
-    } else if (["walk", "chase", "crouch", "stand", "dash"].includes(this.activity)) {
+    } else if (["walk", "chase", "crouch", "stalk", "stand", "dash"].includes(this.activity)) {
       this.queue = [];
       this.targetX = this.x;
       this.start("sit");
@@ -378,7 +400,7 @@ export class CatBrain {
 
   /** Something outside: sit up and watch it, chattering at birds. */
   watchWindow(kind: string) {
-    if (this.prey || ["sleep", "dash", "startle", "walk", "chase", "pounce", "crouch"].includes(this.activity)) {
+    if (this.prey || ["sleep", "dash", "startle", "walk", "chase", "pounce", "crouch", "stalk"].includes(this.activity)) {
       this.glance([800, 380], 3.5);
       return;
     }
@@ -454,18 +476,28 @@ export class CatBrain {
   }
 
   /** The pointer is wiggling on the floor, or a mouse ran in: hunt it. */
-  hunt(prey: { point: Pt; kind: "pointer" | "mouse" }) {
+  hunt(prey: Prey) {
     this.prey = prey;
 
+    if (this.clock < this.huntRestUntil) {
+      return;
+    }
+
     if (this.activity === "sleep") {
-      if (prey.kind === "mouse" && Math.random() < 0.55) {
+      // A mouse may wake her (once); the pointer doesn't.
+      if (prey.kind === "mouse" && !this.noticed) {
+        this.noticed = true;
         this.twitches++;
-        this.start("loaf");
+
+        if (Math.random() < 0.75) {
+          this.start("loaf");
+          this.huntRestUntil = this.clock + 0.8;
+        }
       }
       return;
     }
 
-    if (["crouch", "pounce", "chase"].includes(this.activity)) {
+    if (["stalk", "crouch", "pounce", "chase", "startle", "dash"].includes(this.activity)) {
       return;
     }
 
@@ -473,20 +505,78 @@ export class CatBrain {
     this.approachPrey();
   }
 
+  /** Turn towards the prey, but don't flip-flop when it's right below her. */
+  private face(x: number) {
+    const dx = x - this.x;
+
+    if (Math.abs(dx) > 24) {
+      this.facingTarget = dx < 0 ? 1 : -1;
+    }
+  }
+
   private approachPrey() {
     if (!this.prey) {
       return;
     }
 
-    const dx = this.prey.point[0] - this.x;
-    this.facingTarget = dx < 0 ? 1 : -1;
-    this.start(Math.abs(dx) > 170 ? "chase" : "crouch");
+    const distance = Math.abs(this.prey.point[0] - this.x);
+    this.face(this.prey.point[0]);
+
+    if (this.prey.fleeing) {
+      this.start("chase");
+    } else if (distance > 170) {
+      this.start("stalk");
+    } else {
+      this.start("crouch");
+    }
+  }
+
+  /** Where her front paws come down, in front of her. */
+  private get pawX() {
+    return this.x - this.facing * PAW_REACH * SCALE;
+  }
+
+  /** The pounce came down: a catch, or a miss (and after two, she gives up). */
+  private land() {
+    this.queue = [];
+
+    if (!this.prey) {
+      this.start("sit");
+      return;
+    }
+
+    const caught = this.events.landed(this.pawX);
+
+    if (caught) {
+      this.misses = 0;
+      this.prey = null;
+      this.happyUntil = this.clock + 3;
+      this.huntRestUntil = this.clock + 6;
+      this.start("sit");
+      return;
+    }
+
+    this.misses += 1;
+
+    if (this.misses >= 2) {
+      // Fine. She didn't want it anyway.
+      this.misses = 0;
+      this.huntRestUntil = this.clock + 9;
+      this.start("sit");
+      this.events.speak(this.headSpot(), pick(["Hmph. I wasn't even trying.", "*pretends to groom*", "I let it go. On purpose."]));
+      return;
+    }
+
+    this.huntRestUntil = this.clock + 0.9;
+    this.start("sit");
   }
 
   stopHunting() {
     this.prey = null;
+    this.noticed = false;
+    this.misses = 0;
 
-    if (["crouch", "chase"].includes(this.activity)) {
+    if (["crouch", "chase", "stalk"].includes(this.activity)) {
       this.start("sit");
     }
   }
@@ -525,7 +615,7 @@ export class CatBrain {
 
   /** Pupils: wide for the hunt and the dark, slim in bright daylight. */
   pupil(daylight: boolean): "slit" | "normal" | "wide" {
-    if (this.prey || ["crouch", "chase", "pounce", "dash", "startle", "watch", "bat"].includes(this.activity) || this.puffed) {
+    if (this.prey || ["crouch", "stalk", "chase", "pounce", "dash", "startle", "watch", "bat"].includes(this.activity) || this.puffed) {
       return "wide";
     }
 
@@ -574,14 +664,35 @@ export class CatBrain {
     const turning = Math.abs(this.facing - this.facingTarget) > 0.05;
 
     /* Walking and chasing */
-    const moving = this.activity === "walk" || this.activity === "chase" || this.activity === "dash";
+    const moving = this.activity === "walk" || this.activity === "chase" || this.activity === "dash" || this.activity === "stalk";
 
     if (moving) {
-      if (this.activity === "chase" && this.prey) {
-        this.walkTo(this.prey.point[0] - Math.sign(this.prey.point[0] - this.x || 1) * 100);
+      if ((this.activity === "chase" || this.activity === "stalk") && this.prey) {
+        const side = Math.sign(this.prey.point[0] - this.x || 1);
+        this.walkTo(this.prey.point[0] - side * (this.activity === "stalk" ? 130 : 110));
+
+        // Close enough: drop into a crouch.
+        if (this.activity === "stalk" && Math.abs(this.prey.point[0] - this.x) < 150) {
+          this.start("crouch");
+        }
+
+        // Running it down: leap when it's in reach.
+        if (this.activity === "chase" && this.prey.fleeing && Math.abs(this.prey.point[0] - this.x) < 165 && Math.random() < 0.5) {
+          this.start("pounce");
+        }
       }
 
-      const top = this.activity === "dash" ? DASH_SPEED : this.activity === "chase" ? CHASE_SPEED : WALK_SPEED;
+      const top =
+        this.activity === "dash"
+          ? DASH_SPEED
+          : this.activity === "chase"
+            ? CHASE_SPEED
+            : this.activity === "stalk"
+              ? // Quick and quiet from afar, slow and careful up close.
+                this.prey && Math.abs(this.prey.point[0] - this.x) > 270
+                ? STALK_SPEED * 2.1
+                : STALK_SPEED
+              : WALK_SPEED;
       const remaining = this.targetX - this.x;
       // Ease in, and slow down on arrival.
       const wanted = turning ? 0 : Math.min(top, Math.abs(remaining) * 2.2 + 8);
@@ -600,6 +711,13 @@ export class CatBrain {
     /* Pounce: a leap in an arc */
     if (this.activity === "pounce") {
       const t = clamp(this.activityClock / DURATION.pounce[0], 0, 1);
+
+      // Mid-leap she can still twist a little towards it.
+      if (this.prey && t < 0.6) {
+        const want = this.prey.point[0] + this.facing * PAW_REACH * SCALE;
+        this.pounceTo += clamp(want - this.pounceTo, -220 * dt, 220 * dt);
+      }
+
       this.x = lerp(this.pounceFrom, this.pounceTo, smoothstep(t));
       this.lift = Math.sin(Math.PI * t) * 30;
     } else if (this.activity === "startle" && this.activityClock < 0.42) {
@@ -616,20 +734,23 @@ export class CatBrain {
       this.timer -= dt;
 
       if (this.activity === "crouch" && this.prey) {
-        this.facingTarget = this.prey.point[0] < this.x ? 1 : -1;
+        this.face(this.prey.point[0]);
 
-        // Prey slipped away: give chase again.
-        if (Math.abs(this.prey.point[0] - this.x) > 220 && this.activityClock > 0.6) {
+        const distance = Math.abs(this.prey.point[0] - this.x);
+
+        // It wandered right up to her, or it's bolting: now!
+        if ((distance < 105 || this.prey.fleeing) && this.activityClock > 0.25 && distance < 175) {
+          this.start("pounce");
+        } else if (distance > 230 && this.activityClock > 0.5) {
+          // Slipped away: after it again.
           this.approachPrey();
         }
       }
 
       if (this.timer <= 0) {
-        if (this.activity === "pounce" && this.prey) {
-          this.queue = [];
-          this.start("sit");
-          this.timer = 1.2;
-        } else if (this.activity === "sit" && this.prey && this.activityClock > 1) {
+        if (this.activity === "pounce") {
+          this.land();
+        } else if (this.activity === "sit" && this.prey && this.clock > this.huntRestUntil) {
           this.approachPrey();
         } else {
           this.next();
@@ -670,9 +791,13 @@ export class CatBrain {
   }
 
   /** Legs: still, walking, or running. */
-  get legs(): "still" | "walk" | "run" {
+  get legs(): "still" | "walk" | "run" | "stalk" {
     if (this.activity === "chase" || this.activity === "pounce" || (this.activity === "dash" && this.speed > 4)) {
       return "run";
+    }
+
+    if (this.activity === "stalk" && this.speed > 2) {
+      return "stalk";
     }
 
     return this.activity === "walk" && this.speed > 4 ? "walk" : "still";

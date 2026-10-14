@@ -865,6 +865,11 @@
   50% { transform: translateY(-3px); }
 }
 
+@keyframes sc-butt {
+  0%, 100% { transform: translateX(0) rotate(0deg); }
+  50% { transform: translateX(2.5px) rotate(1.5deg); }
+}
+
 @keyframes sc-knead {
   0%, 100% { transform: translateY(0); }
   35% { transform: translateY(-5px); }
@@ -947,6 +952,7 @@
 .sc-lick { animation: sc-lick 0.42s ease-in-out infinite; }
 .sc-wiggle { animation: sc-wiggle 0.16s ease-in-out infinite; }
 .sc-knead { animation: sc-knead 0.8s ease-in-out infinite; }
+.sc-butt { animation: sc-butt 0.22s ease-in-out infinite; }
 .sc-chatter { animation: sc-chatter 0.12s linear infinite; }
 .sc-puff { transform-box: fill-box; transform-origin: 50% 100%; animation: sc-puff 0.25s ease-in-out infinite; }
 /* Mochi's legs: the walk speed and pausing come from her root group. */

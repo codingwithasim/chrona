@@ -671,10 +671,62 @@ export function WalkPose({ ...head }: HeadProps) {
   );
 }
 
+const CROUCH_BODY = fluff(6, -36, 62, 21, { tufts: 32, depth: 4, seed: 71 });
+const CROUCH_CHEST = fluff(-40, -32, 25, 21, { tufts: 14, depth: 5.5, seed: 73, only: [[30, 200]] });
+const CROUCH_HIP = fluff(44, -44, 30, 27, { tufts: 16, depth: 4.5, seed: 75 });
+const CROUCH_STRANDS = strands(8, -42, 56, 14, 20, 77, 7);
+
+/**
+ * Low to the ground, stalking: elbows bent, belly near the floor, bottom
+ * a touch higher than her shoulders, tail out straight behind with only
+ * its tip twitching. Before a pounce her bottom wiggles.
+ */
+export function CrouchPose({ wiggling, stalking, ...head }: HeadProps & { wiggling: boolean; stalking: boolean }) {
+  return (
+    <g>
+      <ellipse cx="4" cy="0" rx="96" ry="8" fill="url(#sc-drop-shadow)" />
+
+      {/* Back legs folded under her, ready to spring */}
+      <g className={wiggling ? "sc-butt" : undefined} style={pivot("50% 100%")}>
+        <ellipse cx="34" cy="-4" rx="15" ry="6" fill={FUR} stroke={LINE} strokeOpacity="0.7" strokeWidth="1.8" />
+        <ellipse cx="58" cy="-4" rx="15" ry="6" fill={FUR} stroke={LINE} strokeOpacity="0.7" strokeWidth="1.8" />
+
+        {/* The tail, low and straight, the tip flicking */}
+        <g className="sc-tail" style={{ ...pivot("0% 50%"), animationDuration: wiggling ? "0.35s" : "0.8s" }}>
+          <Tail d="M64 -40 C 92 -38 114 -30 136 -36" width={16} />
+        </g>
+      </g>
+
+      {/* Front legs, bent, stepping slowly while she stalks */}
+      <g className={stalking ? "sc-leg" : undefined} style={{ ...pivot("50% 0%"), animationDelay: "-0.45s" }}>
+        <Leg x={-28} top={-26} width={14} shade />
+      </g>
+      <g className={stalking ? "sc-leg" : undefined} style={pivot("50% 0%")}>
+        <Leg x={-46} top={-26} />
+      </g>
+
+      <g className={wiggling ? "sc-butt" : undefined} style={pivot("50% 100%")}>
+        <FurBody id="sc-cat-crouch-clip" parts={[CROUCH_HIP, CROUCH_BODY, CROUCH_CHEST]}>
+          <ellipse cx="30" cy="-56" rx="40" ry="18" fill={PATCH} />
+          <ellipse cx="-12" cy="-58" rx="16" ry="9" fill={PATCH_DARK} />
+          <ellipse cx="4" cy="-12" rx="80" ry="10" fill={SHADE} opacity="0.7" />
+          <rect x="-80" y="-80" width="160" height="70" fill="url(#sc-cat-light)" />
+          <Strands d={CROUCH_STRANDS} />
+        </FurBody>
+      </g>
+      <path d={CROUCH_CHEST} fill="#fffbf6" opacity="0.6" />
+
+      {/* Head low and forward, eyes on the prey */}
+      <HeadAt x={-62} y={-62} scale={0.86} {...head} />
+    </g>
+  );
+}
+
 /** Where her head is in each pose, for bubbles, hearts and Zzz. */
 export const HEAD_SPOT = {
   loaf: { x: -80, y: -56 },
   sit: { x: -10, y: -128 },
   stretch: { x: -62, y: -44 },
   walk: { x: -58, y: -92 },
+  crouch: { x: -62, y: -62 },
 } as const;

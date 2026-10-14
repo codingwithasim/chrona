@@ -21,6 +21,7 @@ import {
   CatDefs,
   CatWear,
   type Eyes,
+  CrouchPose,
   type Look,
   LoafPose,
   type Mouth,
@@ -127,7 +128,7 @@ type View = {
   look: Look;
   yawning: boolean;
   earPoke: number;
-  legs: "still" | "walk" | "run";
+  legs: "still" | "walk" | "run" | "stalk";
   zzz: Pt | null;
   pupil: Pupil;
   mouth: Mouth;
@@ -154,7 +155,7 @@ function viewOf(brain: CatBrain): View {
   else if (activity === "loaf") eyes = "half";
 
   const gaze = brain.gaze();
-  const onTheMove = ["walk", "chase", "crouch", "pounce", "stand", "dash", "startle"].includes(activity);
+  const onTheMove = ["walk", "chase", "crouch", "stalk", "pounce", "stand", "dash", "startle"].includes(activity);
   let look: Look = onTheMove ? "left" : "viewer";
 
   if (activity === "groom") {
@@ -259,6 +260,23 @@ export function Mochi({ yarnX, onBat }: { yarnX: number; onBat: () => void }) {
         },
         bat: () => latest.current.onBat(),
         purr: () => playSfx("purr"),
+        landed: (pawX) => {
+          if (brain.prey?.kind === "mouse" && mouse && !mouse.free && !mouse.caught && Math.abs(mouse.x - pawX) < 46) {
+            mouse.catchIt(brain.x);
+            window.setTimeout(() => {
+              brain.events.speak(brain.headSpot(), pick(["Gotcha! …okay, you can go.", "Caught it! Just playing~", "Mrrp! Mine. …fine, run along."]));
+            }, 250);
+            return true;
+          }
+
+          if (brain.prey?.kind === "pointer" && Math.abs(pointer.point[0] - pawX) < 48) {
+            latest.current.speak(brain.headSpot()[0], brain.headSpot()[1] - 40, pick(["Got it!", "Mrrp!", "Hah!"]));
+            brainRef.current?.talk();
+            return true;
+          }
+
+          return false;
+        },
       },
       yarnX
     );
@@ -362,8 +380,9 @@ export function Mochi({ yarnX, onBat }: { yarnX: number; onBat: () => void }) {
       }
 
       if (mouse) {
-        const hunting = ["crouch", "chase", "pounce"].includes(brain.activity);
-        mouse.update(dt, brain.x, hunting);
+        const loud = ["chase", "pounce", "dash", "walk"].includes(brain.activity) && brain.legs !== "still";
+        const sneaky = brain.activity === "stalk" || brain.activity === "crouch";
+        mouse.update(dt, brain.x, loud ? "loud" : sneaky ? "sneaky" : "calm");
         mouse.draw();
 
         if (mouse.done) {
@@ -378,8 +397,14 @@ export function Mochi({ yarnX, onBat }: { yarnX: number; onBat: () => void }) {
               pick(["Mrrp?! It got away…", "Next time, mouse. Next time.", `*stares under the ${hole}*`])
             );
           }
+        } else if (mouse.free) {
+          // Let go: she watches it run, and doesn't chase.
+          if (brain.prey?.kind === "mouse") {
+            brain.prey = null;
+          }
+          brain.interest = { point: [mouse.x, FLOOR_Y], strength: 1 };
         } else {
-          brain.hunt({ point: [mouse.x, FLOOR_Y], kind: "mouse" });
+          brain.hunt({ point: [mouse.x, FLOOR_Y], kind: "mouse", fleeing: mouse.scared });
           brain.interest = { point: [mouse.x, FLOOR_Y], strength: 1 };
         }
       }
@@ -493,7 +518,7 @@ export function Mochi({ yarnX, onBat }: { yarnX: number; onBat: () => void }) {
   );
 
   const legStyle = {
-    "--leg-speed": view.legs === "run" ? "0.42s" : "0.9s",
+    "--leg-speed": view.legs === "run" ? "0.42s" : view.legs === "stalk" ? "1.5s" : "0.9s",
     "--leg-play": view.legs === "still" ? "paused" : "running",
   } as CSSProperties;
 
@@ -510,16 +535,13 @@ export function Mochi({ yarnX, onBat }: { yarnX: number; onBat: () => void }) {
             {view.pose === "loaf" && <LoafPose {...head} sleeping={view.activity === "sleep"} />}
             {view.pose === "sit" && <SitPose {...head} activity={view.activity} />}
             {view.pose === "stretch" && <StretchPose earPoke={view.earPoke} />}
+            {view.pose === "crouch" && (
+              <CrouchPose {...head} wiggling={view.activity === "crouch"} stalking={view.activity === "stalk"} />
+            )}
             {view.pose === "walk" &&
-              (view.activity === "crouch" ? (
-                // Low to the ground, bottom wiggling before the pounce.
-                <g transform="scale(1.07 0.74)">
-                  <g className="sc-wiggle" style={pivot("0% 100%")}>
-                    <WalkPose {...head} />
-                  </g>
-                </g>
-              ) : view.activity === "pounce" ? (
-                <g transform="rotate(9)">
+              (view.activity === "pounce" ? (
+                // Mid-leap: stretched out, front paws reaching.
+                <g transform="rotate(6) scale(1.08 0.96)">
                   <WalkPose {...head} />
                 </g>
               ) : (

@@ -3,7 +3,11 @@
  * stopping to sniff, and bolting when Mochi gets close.
  */
 
-import { FLOOR_Y } from "./brain";
+import { BED_X, FLOOR_Y } from "./brain";
+
+/** Her bed sits on the floor; the mouse runs round its front, not through it. */
+const BED_HALF = 150;
+const BED_FRONT = 24;
 
 const SVG = "http://www.w3.org/2000/svg";
 
@@ -15,6 +19,10 @@ export class FieldMouse {
   dir: 1 | -1;
   done = false;
   scared = false;
+  /** Pinned under her paws for a moment (she always lets go). */
+  caught = false;
+  /** Let go: it only wants its hole now, and she leaves it be. */
+  free = false;
 
   private speed = 120;
   private pause = 0;
@@ -61,12 +69,38 @@ export class FieldMouse {
     this.feet = Array.from(this.group.querySelectorAll("[data-foot]"));
   }
 
-  update(dt: number, catX: number, catHunting: boolean) {
-    const near = Math.abs(catX - this.x) < 170;
-
-    if (catHunting && near && !this.scared) {
+  /** Caught! Held a moment, then let go to run for its hole. */
+  catchIt(catX: number) {
+    this.caught = true;
+    this.pause = 1.3;
+    this.sniff = 0;
+    window.setTimeout(() => {
+      this.caught = false;
+      this.free = true;
       this.scared = true;
       this.pause = 0;
+      // Away from her, to the nearer hole on that side.
+      this.dir = catX < this.x ? 1 : -1;
+    }, 1300);
+  }
+
+  /**
+   * `cat` is how she's moving: a running or leaping cat is noticed from a
+   * way off; a stalking one only when she's almost on top of it.
+   */
+  update(dt: number, catX: number, cat: "calm" | "sneaky" | "loud") {
+    if (this.caught) {
+      this.sniff += dt;
+      return;
+    }
+
+    const distance = Math.abs(catX - this.x);
+    const noticed = (cat === "loud" && distance < 230) || (cat === "sneaky" && distance < 60);
+
+    if (noticed && !this.scared) {
+      this.scared = true;
+      // A split second frozen in surprise, then it bolts.
+      this.pause = 0.2 + Math.random() * 0.18;
       // Run away from the cat, to the nearest hole on the far side.
       this.dir = catX < this.x ? 1 : -1;
     }
@@ -95,9 +129,18 @@ export class FieldMouse {
     const running = this.pause <= 0;
     const step = Math.sin(this.phase);
 
-    this.group.setAttribute("transform", `translate(${this.x.toFixed(1)} ${FLOOR_Y + 8}) scale(${this.dir * 0.95} 0.95)`);
+    // Round the front of her bed rather than through it.
+    const nearBed = Math.max(0, 1 - Math.abs(this.x - BED_X) / BED_HALF);
+    const y = FLOOR_Y + 8 + BED_FRONT * Math.sin((nearBed * Math.PI) / 2);
+    // Caught: squashed flat under her paws, wriggling.
+    const squash = this.caught ? `scale(1.15 0.7)` : "";
+
+    this.group.setAttribute("transform", `translate(${this.x.toFixed(1)} ${y.toFixed(1)}) scale(${this.dir * 0.95} 0.95) ${squash}`);
     this.body.setAttribute("transform", `translate(0 ${running ? (Math.abs(step) * -1.4).toFixed(2) : 0})`);
-    this.head.setAttribute("transform", running ? "" : `rotate(${(Math.sin(this.sniff * 18) * 3).toFixed(1)} 8 -8)`);
+    this.head.setAttribute(
+      "transform",
+      running ? "" : `rotate(${(Math.sin(this.sniff * (this.caught ? 30 : 18)) * (this.caught ? 6 : 3)).toFixed(1)} 8 -8)`
+    );
     this.feet[0].setAttribute("cx", (-5 + (running ? step * 3 : 0)).toFixed(1));
     this.feet[1].setAttribute("cx", (5 - (running ? step * 3 : 0)).toFixed(1));
 
