@@ -639,3 +639,91 @@ export function Corkboard() {
     </g>
   );
 }
+
+/* ------------------------------------------------------------------ */
+/* Little things that make the room feel lived in                      */
+/* ------------------------------------------------------------------ */
+
+function AtPoint({ at, children }: { at: Vec3; children: React.ReactNode }) {
+  const [x, y] = project(at);
+  const s = scaleAt(at[2]) / 100;
+
+  return <g transform={`translate(${x} ${y}) scale(${s.toFixed(3)})`}>{children}</g>;
+}
+
+export function FloorClutter() {
+  return (
+    <g>
+      {/* A stack of books by the bookcase */}
+      <AtPoint at={[-3.55, F, 6.5]}>
+        <ellipse cx="0" cy="2" rx="34" ry="6" fill="#000000" opacity="0.18" />
+        {[
+          { y: -9, w: 58, color: C.books[0], rotate: -2 },
+          { y: -18, w: 52, color: C.books[7], rotate: 3 },
+          { y: -26, w: 48, color: C.books[3], rotate: -4 },
+        ].map((book) => (
+          <g key={book.y} transform={`rotate(${book.rotate} 0 ${book.y})`}>
+            <rect x={-book.w / 2} y={book.y} width={book.w} height="9" rx="1.5" fill={book.color} />
+            <rect x={book.w / 2 - 6} y={book.y + 1.5} width="5" height="6" fill="#f3eee4" />
+          </g>
+        ))}
+      </AtPoint>
+
+      {/* Floor cushion */}
+      <AtPoint at={[-2.75, F, 6.05]}>
+        <ellipse cx="0" cy="3" rx="52" ry="10" fill="#000000" opacity="0.15" />
+        <path d="M-50 -2 Q -52 -16 -30 -18 L 30 -18 Q 52 -16 50 -2 Q 48 8 30 8 L -30 8 Q -48 8 -50 -2 Z" fill="#c9a25f" />
+        <path d="M-44 -12 Q 0 -20 44 -12" stroke="#ffffff" strokeWidth="2" fill="none" opacity="0.3" />
+        <circle cx="0" cy="-6" r="3" fill="#a07d44" />
+      </AtPoint>
+
+      {/* Slippers by the bed */}
+      <AtPoint at={[2.25, F, 6.0]}>
+        {[-14, 14].map((x) => (
+          <g key={x} transform={`rotate(${x > 0 ? 8 : -6} ${x} 0)`}>
+            <ellipse cx={x} cy="0" rx="11" ry="20" fill="#7e93b3" />
+            <ellipse cx={x} cy="-8" rx="10" ry="9" fill="#5f7599" />
+            <ellipse cx={x - 3} cy="6" rx="4" ry="7" fill="#ffffff" opacity="0.2" />
+          </g>
+        ))}
+      </AtPoint>
+
+      {/* Little bin under the desk */}
+      <AtPoint at={[1.15, F, 9.3]}>
+        <path d="M-15 -32 H15 L12 0 H-12 Z" fill="#9aa6b2" />
+        <path d="M-15 -32 H-7 L-6 0 H-12 Z" fill="#ffffff" opacity="0.2" />
+        <ellipse cx="0" cy="-32" rx="15" ry="3.5" fill="#7d8996" />
+        <path d="M-6 -34 l 4 -6 l 6 3 l -2 5 Z" fill="#f3eee4" />
+      </AtPoint>
+    </g>
+  );
+}
+
+/** A plush seal on the bed. Squeaks. */
+export function Plush() {
+  const [poke, bump] = usePoke();
+
+  return (
+    <g
+      className="sc-hit"
+      onClick={() => {
+        playSfx("pop");
+        bump();
+      }}
+    >
+      <AtPoint at={[3.45, -1.6, 8.55]}>
+        <g key={poke} className={poke ? "sc-hop" : undefined} style={pivot("50% 100%")}>
+          <ellipse cx="0" cy="-2" rx="30" ry="6" fill="#000000" opacity="0.12" />
+          <path d="M-28 -2 C -30 -22 -12 -34 4 -32 C 22 -30 32 -18 30 -4 C 28 2 -24 4 -28 -2 Z" fill="#f4f6f8" />
+          <path d="M-28 -2 C -30 -12 -24 -20 -14 -24 C -22 -14 -22 -6 -20 0 Z" fill="#d9e0e6" />
+          <ellipse cx="18" cy="-1" rx="9" ry="4" fill="#e6ebef" />
+          <circle cx="-6" cy="-20" r="1.8" fill="#2e3440" />
+          <circle cx="6" cy="-20" r="1.8" fill="#2e3440" />
+          <ellipse cx="0" cy="-15" rx="2.6" ry="1.8" fill="#2e3440" />
+          <ellipse cx="-11" cy="-15" rx="3" ry="1.8" fill="#f0b3a8" opacity="0.7" />
+          <ellipse cx="11" cy="-15" rx="3" ry="1.8" fill="#f0b3a8" opacity="0.7" />
+        </g>
+      </AtPoint>
+    </g>
+  );
+}

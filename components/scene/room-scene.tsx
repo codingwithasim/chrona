@@ -25,7 +25,9 @@ import {
   Corkboard,
   Desk,
   Dresser,
+  FloorClutter,
   Painting,
+  Plush,
   Rug,
   WallClock,
   WallShelf,
@@ -155,8 +157,10 @@ function RoomLayer({
         <Mug />
 
         <Bed />
+        <Plush />
         <Dresser />
         <Rug />
+        <FloorClutter />
         <Chair />
         <YarnBall kick={yarnKick} offsetX={CAT_OFFSET} />
         <Cat offsetX={CAT_OFFSET} onBat={() => setYarnKick((value) => value + 1)} />
