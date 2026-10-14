@@ -69,13 +69,13 @@ export const navigation: NavItem[] = [
     line: "I'll wake you up. Just leave this tab open, nya.",
   },
   {
-    title: "Feedback",
-    jp: "おたより",
+    title: "Contact",
+    jp: "れんらく",
     href: "/feedback",
     icon: Mail,
     color: "var(--ember)",
-    description: "Write us a letter with ideas or bugs.",
-    line: "Write us a letter! We read every single one.",
+    description: "Ideas, bugs, or just a hello.",
+    line: "Got an idea or found a bug? Every message gets read.",
   },
 ];
 

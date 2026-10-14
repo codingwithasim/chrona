@@ -3,20 +3,19 @@
 import { type FormEvent, useState } from "react";
 import {
   Bug,
-  ExternalLink,
+  Check,
+  Coffee,
   Lightbulb,
   Loader2,
   Mail,
   MessageSquare,
   Send,
-  Sparkles,
 } from "lucide-react";
 import { BsGithub } from "react-icons/bs";
 import { FaLinkedinIn, FaXTwitter } from "react-icons/fa6";
 
 import { ToolFrame } from "@/components/shell/tool-frame";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { say } from "@/stores/dialogue-store";
 
@@ -43,7 +42,7 @@ const feedbackTypes = [
   },
   {
     value: "other",
-    label: "Other",
+    label: "Just saying hi",
     jp: "そのほか",
     description: "Just saying hi",
     icon: MessageSquare,
@@ -91,17 +90,8 @@ const socialLinks = [
   },
 ];
 
-function Envelope() {
-  return (
-    <svg viewBox="0 0 160 110" className="w-40 float-soft" aria-hidden="true">
-      <rect x="6" y="14" width="148" height="90" rx="10" fill="var(--card)" stroke="var(--ink)" strokeWidth="3" />
-      <path d="M8 20 L80 66 L152 20" fill="none" stroke="var(--ink)" strokeWidth="3" strokeLinejoin="round" />
-      <path d="M8 100 L62 56 M152 100 L98 56" stroke="var(--ink)" strokeWidth="2.5" opacity="0.5" />
-      <circle cx="80" cy="66" r="13" fill="var(--ember)" stroke="var(--ink)" strokeWidth="2.5" />
-      <path d="M80 72 C 72 66 74 60 78 61 C 79 61 80 62 80 63 C 80 62 81 61 82 61 C 86 60 88 66 80 72 Z" fill="#fff" />
-    </svg>
-  );
-}
+/** Where the coffee link goes. */
+export const COFFEE_URL = "https://buymeacoffee.com/codingwithasim";
 
 export function FeedbackForm() {
   const [type, setType] = useState<FeedbackType>("bug");
@@ -143,7 +133,7 @@ export function FeedbackForm() {
       const result = (await response.json()) as { error?: string };
 
       if (!response.ok) {
-        throw new Error(result.error || "Feedback could not be sent.");
+        throw new Error(result.error || "Your message could not be sent.");
       }
 
       setSubmissionState("success");
@@ -151,56 +141,52 @@ export function FeedbackForm() {
       setEmail("");
       setWebsite("");
 
-      say({ text: "Delivered! Thank you for the letter~ We read every one." });
+      say({ text: "Delivered! Thank you~ Every message gets read." });
     } catch (caughtError) {
       setSubmissionState("error");
       setError(
         caughtError instanceof Error
           ? caughtError.message
-          : "Feedback could not be sent."
+          : "Your message could not be sent."
       );
     }
   }
 
-  if (submissionState === "success") {
-    return (
-      <ToolFrame href="/feedback">
-        <div className="flex flex-col items-center py-10 text-center">
-          <Envelope />
+  return (
+    <ToolFrame href="/feedback" className="max-w-xl">
+      {submissionState === "success" ? (
+        <div className="flex flex-col items-center py-12 text-center animate-in fade-in-0 duration-700">
+          <span className="grid size-14 place-items-center rounded-full bg-foreground/[0.06]">
+            <Check className="size-6 text-foreground/70" strokeWidth={1.6} />
+          </span>
 
-          <h2 className="mt-6 font-display text-2xl">Letter sent!</h2>
-          <p className="mt-1 text-xs font-bold tracking-[0.3em] text-muted-foreground">
-            おてがみ ありがとう
-          </p>
+          <h2 className="mt-6 text-lg font-medium">Message sent</h2>
+          <p className="mt-1 text-[11px] tracking-[0.3em] text-muted-foreground/70">ありがとう</p>
 
-          <p className="mt-4 max-w-sm text-sm leading-6 text-muted-foreground">
-            Thank you for helping make Chrona cozier. Your letter
-            has been received.
+          <p className="mt-4 max-w-xs text-[13px] leading-6 text-muted-foreground">
+            Thank you for helping make Chrona better. If you left an
+            email, you&apos;ll hear back soon.
           </p>
 
           <Button
-            variant="outline"
-            className="mt-6"
+            variant="ghost"
+            className="mt-6 rounded-full px-5"
             onClick={() => setSubmissionState("idle")}
           >
-            Write another letter
+            Write another
           </Button>
         </div>
-      </ToolFrame>
-    );
-  }
-
-  return (
-    <ToolFrame href="/feedback" className="max-w-5xl">
-      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_17rem]">
+      ) : (
         <form className="space-y-6" onSubmit={handleSubmit}>
-          <fieldset className="space-y-3">
-            <legend className="text-sm font-bold">
-              What&apos;s your letter about?
-            </legend>
+          <p className="text-[13px] leading-6 text-muted-foreground">
+            Found a bug, have an idea, or just want to say hi? I read
+            every message.
+          </p>
 
-            <div className="grid grid-cols-3 gap-2 sm:gap-3">
-              {feedbackTypes.map(({ value, label, jp, description, icon: Icon, color }) => {
+          <fieldset>
+            <legend className="sr-only">What is it about?</legend>
+            <div className="flex flex-wrap gap-1.5">
+              {feedbackTypes.map(({ value, label, icon: Icon, color }) => {
                 const active = type === value;
 
                 return (
@@ -210,83 +196,61 @@ export function FeedbackForm() {
                     aria-pressed={active}
                     onClick={() => setType(value)}
                     className={cn(
-                      "relative flex flex-col items-center gap-1 rounded-xl border border-dashed p-3 text-center transition-all",
+                      "flex items-center gap-2 rounded-full px-3.5 py-1.5 text-[13px] transition-colors duration-300",
                       active
-                        ? "-rotate-1 border-black/10 text-[#1b1530] shadow-cel"
-                        : "border-border hover:-translate-y-0.5 hover:bg-muted"
+                        ? "bg-foreground/[0.08] text-foreground"
+                        : "text-muted-foreground hover:bg-foreground/5 hover:text-foreground"
                     )}
-                    style={active ? { backgroundColor: color } : undefined}
                   >
-                    <Icon className="size-5" />
-                    <span className="text-sm font-bold">{label}</span>
-                    <span className="hidden text-[11px] opacity-75 sm:block">
-                      {description}
-                    </span>
-                    <span className="absolute top-1.5 right-2 text-[9px] font-bold opacity-60">
-                      {jp}
-                    </span>
+                    <Icon className="size-3.5" strokeWidth={1.8} style={active ? { color } : undefined} />
+                    {label}
                   </button>
                 );
               })}
             </div>
           </fieldset>
 
-          <div className="space-y-2">
-            <div className="flex items-center justify-between gap-3">
-              <label htmlFor="feedback-message" className="text-sm font-bold">
-                Your letter
-              </label>
-              <span className="text-xs text-muted-foreground tabular-nums">
-                {message.length}/2000
-              </span>
-            </div>
+          <div className="relative">
+            <label htmlFor="feedback-message" className="sr-only">
+              Your message
+            </label>
+            <textarea
+              id="feedback-message"
+              value={message}
+              maxLength={2000}
+              rows={7}
+              required
+              placeholder={placeholders[type]}
+              onChange={(event) => {
+                setMessage(event.target.value);
 
-            <div className="rounded-2xl border border-(--panel-line) bg-[#fffaf0] p-4 text-[#3b2e4a] shadow-cel-sm">
-              <p className="font-display text-sm text-[#7f6e93]">Dear Chrona,</p>
-              <textarea
-                id="feedback-message"
-                value={message}
-                maxLength={2000}
-                rows={8}
-                required
-                placeholder={placeholders[type]}
-                onChange={(event) => {
-                  setMessage(event.target.value);
-
-                  if (error) {
-                    setError(null);
-                  }
-                }}
-                className="paper-lines mt-1 w-full resize-none bg-transparent text-[15px] outline-none placeholder:text-[#a497b4]"
-              />
-            </div>
-
-            <p className="text-xs leading-5 text-muted-foreground">
-              For bugs, mention the tool you were using and whether
-              you were on mobile or desktop.
-            </p>
+                if (error) {
+                  setError(null);
+                }
+              }}
+              className="block w-full resize-none rounded-2xl border border-foreground/10 bg-foreground/[0.03] px-4 py-3.5 text-[14px] leading-6 transition-colors duration-300 outline-none placeholder:text-muted-foreground/60 focus:border-foreground/25 focus:bg-foreground/[0.045]"
+            />
+            <span className="pointer-events-none absolute right-4 bottom-3 text-[10px] text-muted-foreground/60 tabular-nums">
+              {message.length}/2000
+            </span>
           </div>
 
-          <div className="space-y-2">
-            <label htmlFor="feedback-email" className="text-sm font-bold">
-              Signed,
-              <span className="ml-1 font-normal text-muted-foreground">
-                your email (optional)
-              </span>
+          <div>
+            <label htmlFor="feedback-email" className="sr-only">
+              Your email (optional)
             </label>
-
-            <Input
+            <input
               id="feedback-email"
               type="email"
               value={email}
               maxLength={254}
               autoComplete="email"
-              placeholder="you@example.com"
+              placeholder="Your email, if you'd like a reply"
               onChange={(event) => setEmail(event.target.value)}
+              className="block h-11 w-full rounded-2xl border border-foreground/10 bg-foreground/[0.03] px-4 text-[14px] transition-colors duration-300 outline-none placeholder:text-muted-foreground/60 focus:border-foreground/25 focus:bg-foreground/[0.045]"
             />
-
-            <p className="text-xs leading-5 text-muted-foreground">
-              Only if you&apos;d like a reply. It&apos;s never used for marketing.
+            <p className="mt-2 px-1 text-[11px] text-muted-foreground/70">
+              Optional, and never used for anything else.
             </p>
           </div>
 
@@ -304,86 +268,65 @@ export function FeedbackForm() {
           </div>
 
           {error && (
-            <div
-              role="alert"
-              className="rounded-xl border border-destructive/40 bg-destructive/10 px-3 py-2.5 text-sm font-bold text-destructive"
-            >
+            <p role="alert" className="px-1 text-[13px] text-destructive">
               {error}
-            </div>
+            </p>
           )}
 
-          <Button
-            type="submit"
-            size="lg"
-            className="w-full sm:w-auto"
-            disabled={submissionState === "submitting"}
-          >
-            {submissionState === "submitting" ? (
-              <>
-                <Loader2 className="animate-spin" />
-                Sending…
-              </>
-            ) : (
-              <>
-                <Send />
-                Send letter
-              </>
-            )}
-          </Button>
+          <div className="flex justify-end">
+            <Button
+              type="submit"
+              className="h-11 rounded-full px-6"
+              disabled={submissionState === "submitting"}
+            >
+              {submissionState === "submitting" ? (
+                <>
+                  <Loader2 className="animate-spin" />
+                  Sending…
+                </>
+              ) : (
+                <>
+                  Send
+                  <Send className="size-3.5" strokeWidth={1.8} />
+                </>
+              )}
+            </Button>
+          </div>
         </form>
+      )}
 
-        <aside className="space-y-4">
-          <div className="rounded-2xl border border-border bg-card/50 p-4">
-            <h2 className="font-display text-sm">Say hello</h2>
-            <p className="mt-1 text-xs leading-5 text-muted-foreground">
-              Follow Chrona updates or reach the developer directly.
-            </p>
+      {/* Elsewhere: quiet links, and a coffee */}
+      <footer className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-foreground/[0.06] pt-5">
+        <div className="flex items-center gap-0.5">
+          {socialLinks.map(({ label, href, icon: Icon }) => {
+            const isExternal = href.startsWith("http");
 
-            <div className="mt-3 space-y-1">
-              {socialLinks.map(({ label, description, href, icon: Icon }) => {
-                const isExternal = href.startsWith("http");
+            return (
+              <a
+                key={label}
+                href={href}
+                target={isExternal ? "_blank" : undefined}
+                rel={isExternal ? "noreferrer" : undefined}
+                aria-label={label}
+                title={label}
+                className="grid size-9 place-items-center rounded-full text-foreground/50 transition-colors duration-300 hover:bg-foreground/5 hover:text-foreground"
+              >
+                <Icon className="size-[15px]" />
+              </a>
+            );
+          })}
+        </div>
 
-                return (
-                  <a
-                    key={label}
-                    href={href}
-                    target={isExternal ? "_blank" : undefined}
-                    rel={isExternal ? "noreferrer" : undefined}
-                    className="group flex items-center gap-3 rounded-xl px-2 py-2 transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-                  >
-                    <span className="grid size-9 shrink-0 place-items-center rounded-lg border border-black/10 bg-card dark:border-border">
-                      <Icon className="size-4" />
-                    </span>
-
-                    <span className="min-w-0 flex-1">
-                      <span className="block text-sm font-bold">{label}</span>
-                      <span className="block truncate text-xs text-muted-foreground">
-                        {description}
-                      </span>
-                    </span>
-
-                    {isExternal && (
-                      <ExternalLink className="size-3.5 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                    )}
-                  </a>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="rounded-2xl border border-dashed border-border p-4">
-            <h2 className="flex items-center gap-2 font-display text-sm">
-              <Sparkles className="size-4 text-honey" />
-              Helpful letters
-            </h2>
-            <ul className="mt-2 list-inside list-disc space-y-1 text-xs leading-5 text-muted-foreground">
-              <li>Describe what you expected to happen.</li>
-              <li>Name the tool where it happened.</li>
-              <li>Mention mobile or desktop.</li>
-            </ul>
-          </div>
-        </aside>
-      </div>
+        <a
+          href={COFFEE_URL}
+          target="_blank"
+          rel="noreferrer"
+          className="flex items-center gap-2 rounded-full bg-[#f6e3c4] px-4 py-2 text-[13px] text-[#4a3424] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#f3d9b0]"
+        >
+          <Coffee className="size-4" strokeWidth={1.8} />
+          Buy me a coffee
+        </a>
+      </footer>
     </ToolFrame>
   );
 }

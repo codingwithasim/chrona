@@ -157,7 +157,7 @@ export function LandingPage() {
           <span>© {year} Chrona · made with rain and tea</span>
           <span className="flex items-center gap-4">
             <Link href="/feedback" className="hover:text-foreground">
-              Feedback
+              Contact
             </Link>
             <Link href="/settings" className="hover:text-foreground">
               Settings

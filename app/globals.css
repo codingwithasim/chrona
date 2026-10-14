@@ -564,19 +564,6 @@
   text-shadow: 0 2px 18px rgb(20 10 40 / 0.14);
 }
 
-/* Lined notebook paper */
-@utility paper-lines {
-  background-image: repeating-linear-gradient(
-    to bottom,
-    transparent 0,
-    transparent 31px,
-    color-mix(in oklab, var(--lavender) 28%, transparent) 31px,
-    color-mix(in oklab, var(--lavender) 28%, transparent) 32px
-  );
-  background-attachment: local;
-  line-height: 32px;
-}
-
 /* ------------------------------------------------------------------
  * Scene animations
  * ------------------------------------------------------------------ */

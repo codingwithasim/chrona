@@ -3,10 +3,10 @@ import type {
 } from "next";
 
 export const metadata: Metadata = {
-  title: "Feedback",
+  title: "Contact",
 
   description:
-    "Send feedback and suggestions about Chrona.",
+    "Contact Chrona: report a bug, share an idea, or just say hello.",
 
   alternates: {
     canonical: "/feedback",
