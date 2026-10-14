@@ -25,7 +25,7 @@ function At({ at, children }: { at: Vec3; children: React.ReactNode }) {
 /* Desk lamp                                                           */
 /* ------------------------------------------------------------------ */
 
-export const LAMP_BULB: Vec3 = [1.86, -0.38, 9.3];
+export const LAMP_BULB: Vec3 = [1.77, -0.56, 9.3];
 
 export function DeskLamp() {
   const lampOn = useSceneStore((state) => state.lampOn);
@@ -53,8 +53,8 @@ export function DeskLamp() {
         <g transform="translate(-40 -86) rotate(35)">
           <path d="M-9 -6 L9 -6 L20 18 L-20 18 Z" fill="#e8ecef" />
           <path d="M-9 -6 L0 -6 L-8 18 L-20 18 Z" fill="#ffffff" opacity="0.7" />
-          <ellipse cx="0" cy="18" rx="20" ry="4.5" fill={lampOn ? "#fff4d2" : "#b7bfc6"} />
-          {lampOn && <ellipse cx="0" cy="18" rx="12" ry="2.6" fill="#ffffff" />}
+          <ellipse cx="0" cy="18" rx="20" ry="4.5" fill={lampOn ? "#ffe2a6" : "#aab3bb"} />
+          {lampOn && <ellipse cx="0" cy="17.4" rx="9" ry="2" fill="#fff8e6" opacity="0.9" />}
         </g>
       </At>
     </g>

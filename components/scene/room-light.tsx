@@ -294,10 +294,31 @@ export function WindowGlow() {
   );
 }
 
+/* The pool of lamplight on the desk: a circle in world space, so it
+ * follows the perspective of the desk top, clipped to the desk. */
+const POOL_CENTER: Vec3 = [1.4, DESK.top, 9.3];
+
+const LAMP_POOL = pathOf(
+  Array.from({ length: 36 }, (_, index) => {
+    const angle = (index / 36) * Math.PI * 2;
+    return project([
+      POOL_CENTER[0] + Math.cos(angle) * 1.15,
+      DESK.top,
+      POOL_CENTER[2] + Math.sin(angle) * 0.62,
+    ]);
+  })
+);
+
+const DESK_TOP = poly(
+  [DESK.left, DESK.top, DESK.front],
+  [DESK.right, DESK.top, DESK.front],
+  [DESK.right, DESK.top, DESK.back],
+  [DESK.left, DESK.top, DESK.back]
+);
+
 export function LampLight() {
   const lampOn = useSceneStore((state) => state.lampOn);
   const [bx, by] = project(LAMP_BULB);
-  const [px, py] = project([1.45, DESK.top, 9.2]);
 
   return (
     <g
@@ -307,17 +328,27 @@ export function LampLight() {
         mixBlendMode: "screen",
       }}
     >
-      <radialGradient id="rm-lamp-room" cx={bx} cy={by} r="520" gradientUnits="userSpaceOnUse">
-        <stop offset="0" stopColor="#ffc983" stopOpacity="0.55" />
-        <stop offset="0.35" stopColor="#ffb36b" stopOpacity="0.2" />
+      <radialGradient id="rm-lamp-room" cx={bx} cy={by} r="560" gradientUnits="userSpaceOnUse">
+        <stop offset="0" stopColor="#ffc983" stopOpacity="0.45" />
+        <stop offset="0.3" stopColor="#ffb36b" stopOpacity="0.16" />
         <stop offset="1" stopColor="#ffb36b" stopOpacity="0" />
       </radialGradient>
-      <radialGradient id="rm-lamp-pool" cx={px} cy={py} r="150" gradientUnits="userSpaceOnUse" gradientTransform={`translate(${px} ${py}) scale(1 0.32) translate(${-px} ${-py})`}>
-        <stop offset="0" stopColor="#ffe6b0" stopOpacity="0.9" />
-        <stop offset="1" stopColor="#ffe6b0" stopOpacity="0" />
+      <radialGradient id="rm-lamp-pool" cx="0.5" cy="0.45" r="0.5">
+        <stop offset="0" stopColor="#ffe9bd" stopOpacity="0.85" />
+        <stop offset="0.45" stopColor="#ffd391" stopOpacity="0.32" />
+        <stop offset="1" stopColor="#ffc27a" stopOpacity="0" />
       </radialGradient>
+      <radialGradient id="rm-lamp-bloom">
+        <stop offset="0" stopColor="#fff3d6" stopOpacity="0.85" />
+        <stop offset="1" stopColor="#ffcf8a" stopOpacity="0" />
+      </radialGradient>
+      <clipPath id="rm-desk-top">
+        <path d={DESK_TOP} />
+      </clipPath>
+
       <path d={ROOM_MASK} fillRule="evenodd" fill="url(#rm-lamp-room)" />
-      <ellipse cx={px} cy={py} rx="150" ry="48" fill="url(#rm-lamp-pool)" />
+      <path d={LAMP_POOL} clipPath="url(#rm-desk-top)" fill="url(#rm-lamp-pool)" />
+      <circle cx={bx} cy={by} r="34" fill="url(#rm-lamp-bloom)" />
     </g>
   );
 }
