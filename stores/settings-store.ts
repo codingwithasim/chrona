@@ -40,6 +40,12 @@ type SettingsStore = {
   /** Keep the screen from sleeping while something is counting. */
   keepAwake: boolean;
   setKeepAwake: (keepAwake: boolean) => void;
+
+  /** While watching the rain: a big quiet clock, and dimming for bedside use. */
+  gazeClock: boolean;
+  setGazeClock: (gazeClock: boolean) => void;
+  gazeDim: boolean;
+  setGazeDim: (gazeDim: boolean) => void;
 };
 
 export const soundSlots: Record<
@@ -93,6 +99,11 @@ export const useSettingsStore = create<SettingsStore>()(
 
       keepAwake: true,
       setKeepAwake: (keepAwake) => set({ keepAwake }),
+
+      gazeClock: false,
+      setGazeClock: (gazeClock) => set({ gazeClock }),
+      gazeDim: false,
+      setGazeDim: (gazeDim) => set({ gazeDim }),
     }),
     {
       name: "chrona-settings",
