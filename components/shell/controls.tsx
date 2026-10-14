@@ -88,7 +88,7 @@ export function QuietAction({
             aria-label={label}
             data-quiet
             className={cn(
-              "grid size-11 place-items-center rounded-full bg-foreground/[0.05] text-foreground/65 ring-1 ring-foreground/[0.06] transition-all duration-300 outline-none hover:bg-[color-mix(in_oklab,var(--tool)_16%,transparent)] hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/40 active:scale-[0.95] disabled:pointer-events-none disabled:opacity-30",
+              "grid size-11 place-items-center rounded-full bg-background/30 text-foreground/70 ring-1 ring-foreground/[0.08] backdrop-blur-md transition-all duration-300 outline-none hover:bg-[color-mix(in_oklab,var(--tool)_16%,transparent)] hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/40 active:scale-[0.95] disabled:pointer-events-none disabled:opacity-30",
               className
             )}
           >

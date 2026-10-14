@@ -51,7 +51,7 @@ export function PomodoroTool() {
           data-compact-hide
           role="tablist"
           aria-label="Pomodoro phase"
-          className="flex gap-1 rounded-full bg-foreground/[0.05] p-1 ring-1 ring-foreground/[0.05]"
+          className="flex gap-1 rounded-full bg-background/30 p-1 ring-1 ring-foreground/[0.08] backdrop-blur-md"
         >
           {(Object.keys(pomodoroModes) as PomodoroMode[]).map((item) => {
             const active = item === mode;

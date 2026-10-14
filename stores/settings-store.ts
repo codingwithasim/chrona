@@ -91,7 +91,7 @@ export const useSettingsStore = create<SettingsStore>()(
       notify: false,
       setNotify: (notify) => set({ notify }),
 
-      panelStyle: "float",
+      panelStyle: "card",
       setPanelStyle: (panelStyle) => set({ panelStyle }),
 
       focusFade: false,
