@@ -140,10 +140,10 @@
  * ------------------------------------------------------------------ */
 :root,
 [data-tod="day"] {
-  --sc-sky-1: #5f9fd8;
-  --sc-sky-2: #8fc0e8;
-  --sc-sky-3: #c5e1f2;
-  --sc-sky-4: #f0ece4;
+  --sc-sky-1: #3d84d4;
+  --sc-sky-2: #74b3ea;
+  --sc-sky-3: #b9dcf3;
+  --sc-sky-4: #eef4f2;
   --sc-cloud: #ffffff;
   --sc-cloud-opacity: 0.8;
   --sc-overcast: #a3acbd;
@@ -188,7 +188,7 @@
   --sc-spill-opacity: 0.55;
   --sc-dark-room: 0.08;
   --sc-fairy-opacity: 0.5;
-  --sc-glass-opacity: 0.12;
+  --sc-glass-opacity: 0.06;
 
   --sc-plant: #5fb48d;
   --sc-plant-dark: #3f8c6c;
@@ -202,6 +202,37 @@
 
   --sc-vignette: rgb(80 60 90 / 0.2);
   --sc-rain: 255 255 255;
+
+  /* Landscape */
+  --sc-cloud-light: #ffffff;
+  --sc-cloud-shade: #cad7ee;
+  --sc-cloud-rim: #ffffff;
+  --sc-mtn-far: #a9bedc;
+  --sc-mtn-mid: #87a3c9;
+  --sc-snow: #ffffff;
+  --sc-ridge: rgb(255 255 255 / 0.5);
+  --sc-mist-color: #ffffff;
+  --sc-mist: 0.18;
+  --sc-house-wall: #f4ecdc;
+  --sc-house-shade: #d8cbb6;
+  --sc-train: #efe8cf;
+  --sc-train-window: #8fb3cc;
+  --sc-bird: #3d3a4f;
+  --sc-skyray-opacity: 0.25;
+  --sc-edge: rgb(70 50 70 / 0.42);
+  --sc-silhouette: #4b4a5e;
+  --sc-window-glow: 0;
+
+  /* Light coming into the room */
+  --sc-ray-color: #fff6dc;
+  --sc-ray-opacity: 0.32;
+  --sc-ray-skew: -9deg;
+  --sc-sunpatch: #fff1cc;
+  --sc-sunpatch-opacity: 0.42;
+  --sc-mote-opacity: 0.9;
+  --sc-bloom: 0.14;
+  --sc-grade: #ffe9c9;
+  --sc-grade-opacity: 0.12;
 }
 
 /* Morning — pastel sunrise */
@@ -236,6 +267,32 @@
   --sc-spill-opacity: 0.6;
   --sc-dark-room: 0.06;
   --sc-vignette: rgb(120 70 90 / 0.18);
+
+  --sc-cloud-light: #fff4ee;
+  --sc-cloud-shade: #e5bccf;
+  --sc-cloud-rim: #fff8f2;
+  --sc-mtn-far: #a99bc6;
+  --sc-mtn-mid: #8a7fb4;
+  --sc-snow: #fff0f4;
+  --sc-ridge: rgb(255 228 214 / 0.6);
+  --sc-mist-color: #fff0f2;
+  --sc-mist: 0.58;
+  --sc-house-wall: #f6e6dc;
+  --sc-train: #f3e6d4;
+  --sc-train-window: #b8a6c8;
+  --sc-bird: #4a3a55;
+  --sc-skyray-opacity: 0.7;
+  --sc-silhouette: #5b4b66;
+
+  --sc-ray-color: #ffe3c6;
+  --sc-ray-opacity: 0.4;
+  --sc-ray-skew: 16deg;
+  --sc-sunpatch: #ffe0c8;
+  --sc-sunpatch-opacity: 0.4;
+  --sc-mote-opacity: 0.85;
+  --sc-bloom: 0.16;
+  --sc-grade: #ffd6dc;
+  --sc-grade-opacity: 0.18;
 }
 
 /* Evening — golden hour turning to dusk */
@@ -300,6 +357,35 @@
 
   --sc-vignette: rgb(30 10 40 / 0.45);
   --sc-rain: 235 210 235;
+
+  --sc-cloud-light: #ffcf9f;
+  --sc-cloud-shade: #a9709d;
+  --sc-cloud-rim: #ffe4bc;
+  --sc-mtn-far: #8f6595;
+  --sc-mtn-mid: #634879;
+  --sc-snow: #ffd2c4;
+  --sc-ridge: rgb(255 196 150 / 0.7);
+  --sc-mist-color: #ffc7a8;
+  --sc-mist: 0.28;
+  --sc-house-wall: #e8c7ae;
+  --sc-house-shade: #b9917d;
+  --sc-train: #d8c0a8;
+  --sc-train-window: #ffd9a0;
+  --sc-bird: #2d1f35;
+  --sc-skyray-opacity: 0.9;
+  --sc-edge: rgb(30 15 40 / 0.55);
+  --sc-silhouette: #2a1c33;
+  --sc-window-glow: 0.8;
+
+  --sc-ray-color: #ffc48a;
+  --sc-ray-opacity: 0.5;
+  --sc-ray-skew: -22deg;
+  --sc-sunpatch: #ffb877;
+  --sc-sunpatch-opacity: 0.5;
+  --sc-mote-opacity: 1;
+  --sc-bloom: 0.16;
+  --sc-grade: #ff9f5a;
+  --sc-grade-opacity: 0.2;
 }
 
 /* Night — city lights, neon, warm lamp */
@@ -320,7 +406,7 @@
   --sc-city-near: #141238;
   --sc-light-opacity: 1;
   --sc-neon-opacity: 1;
-  --sc-outside-tint: rgb(10 8 40 / 0.4);
+  --sc-outside-tint: rgb(12 10 46 / 0.55);
   --sc-branch: #17132f;
 
   --sc-wall-1: #2c2650;
@@ -366,6 +452,35 @@
 
   --sc-vignette: rgb(6 4 20 / 0.6);
   --sc-rain: 200 212 255;
+
+  --sc-cloud-light: #4b5192;
+  --sc-cloud-shade: #2b2c5c;
+  --sc-cloud-rim: #a8b2ee;
+  --sc-mtn-far: #1e2150;
+  --sc-mtn-mid: #171a40;
+  --sc-snow: #b9c3ea;
+  --sc-ridge: rgb(170 185 255 / 0.45);
+  --sc-mist-color: #9aa6e8;
+  --sc-mist: 0.16;
+  --sc-house-wall: #4f4f78;
+  --sc-house-shade: #3c3c62;
+  --sc-train: #4a4a70;
+  --sc-train-window: #ffe2a0;
+  --sc-bird: #12102a;
+  --sc-skyray-opacity: 0;
+  --sc-edge: rgb(8 5 22 / 0.62);
+  --sc-silhouette: #0d0c22;
+  --sc-window-glow: 1;
+
+  --sc-ray-color: #b9c6ff;
+  --sc-ray-opacity: 0.2;
+  --sc-ray-skew: -6deg;
+  --sc-sunpatch: #aeb9ff;
+  --sc-sunpatch-opacity: 0.22;
+  --sc-mote-opacity: 0.3;
+  --sc-bloom: 0.06;
+  --sc-grade: #3a46a0;
+  --sc-grade-opacity: 0.22;
 }
 
 /* ------------------------------------------------------------------
@@ -375,20 +490,28 @@
 [data-weather="clear"] {
   --sc-overcast-opacity: 0;
   --sc-frost-opacity: 0;
+  --sc-ray-weather: 1;
+  --sc-mist-add: 0;
 }
 
 [data-weather="drizzle"] {
-  --sc-overcast-opacity: 0.55;
+  --sc-overcast-opacity: 0.5;
+  --sc-ray-weather: 0.28;
+  --sc-mist-add: 0.25;
 }
 
 [data-weather="storm"] {
-  --sc-overcast-opacity: 0.78;
+  --sc-overcast-opacity: 0.75;
   --sc-cloud-opacity: 0.9;
+  --sc-ray-weather: 0;
+  --sc-mist-add: 0.4;
 }
 
 [data-weather="snow"] {
-  --sc-overcast-opacity: 0.5;
+  --sc-overcast-opacity: 0.45;
   --sc-frost-opacity: 1;
+  --sc-ray-weather: 0.22;
+  --sc-mist-add: 0.3;
 }
 
 /* ------------------------------------------------------------------
@@ -396,27 +519,59 @@
  * ------------------------------------------------------------------ */
 :root,
 [data-season="spring"] {
-  --sc-foliage-1: #ffc6da;
-  --sc-foliage-2: #ff9fc0;
-  --sc-foliage-3: #fff2f6;
-  --sc-foliage-opacity: 1;
+  --sc-tree-1: #6fae5c;
+  --sc-tree-2: #96ca78;
+  --sc-tree-3: #f6b3c8;
+  --sc-crown-1: #f8bfd2;
+  --sc-crown-2: #f19ab8;
+  --sc-crown-3: #fde6ee;
+  --sc-crown-opacity: 1;
+  --sc-hill: #94c97d;
+  --sc-field-1: #a9d1d8;
+  --sc-field-2: #9dcb99;
+  --sc-levee: #74a865;
+  --sc-mtn-snow: 0.7;
   --sc-snowcap-opacity: 0;
 }
 
 [data-season="summer"] {
-  --sc-foliage-1: #74c477;
-  --sc-foliage-2: #3f9157;
-  --sc-foliage-3: #b4e394;
+  --sc-tree-1: #3f8a4a;
+  --sc-tree-2: #5aa957;
+  --sc-tree-3: #2e6b3a;
+  --sc-crown-1: #5aa957;
+  --sc-crown-2: #3f8a4a;
+  --sc-crown-3: #8fcf6d;
+  --sc-hill: #62a75a;
+  --sc-field-1: #70b960;
+  --sc-field-2: #5ba654;
+  --sc-levee: #47884a;
+  --sc-mtn-snow: 0;
 }
 
 [data-season="autumn"] {
-  --sc-foliage-1: #f39a45;
-  --sc-foliage-2: #df5d3e;
-  --sc-foliage-3: #f7c955;
+  --sc-tree-1: #e07b39;
+  --sc-tree-2: #c94a35;
+  --sc-tree-3: #e9b43e;
+  --sc-crown-1: #ee8a3c;
+  --sc-crown-2: #d1513a;
+  --sc-crown-3: #f5c451;
+  --sc-hill: #c59b4d;
+  --sc-field-1: #e7c35f;
+  --sc-field-2: #d7ac48;
+  --sc-levee: #a97a3a;
+  --sc-mtn-snow: 0.35;
 }
 
 [data-season="winter"] {
-  --sc-foliage-opacity: 0;
+  --sc-tree-1: #3b5d50;
+  --sc-tree-2: #f2f6fb;
+  --sc-tree-3: #c8d3df;
+  --sc-crown-opacity: 0;
+  --sc-hill: #e7eef6;
+  --sc-field-1: #eff4f9;
+  --sc-field-2: #dee7f1;
+  --sc-levee: #c2cedb;
+  --sc-mtn-snow: 1;
   --sc-snowcap-opacity: 1;
 }
 
@@ -611,6 +766,97 @@
   26% { opacity: 0.4; }
   100% { opacity: 0; }
 }
+
+/* Things happening outside */
+@keyframes ev-ltr {
+  from { transform: translateX(300px); }
+  to { transform: translateX(1300px); }
+}
+
+@keyframes ev-rtl {
+  from { transform: translateX(1300px); }
+  to { transform: translateX(300px); }
+}
+
+@keyframes ev-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+
+@keyframes ev-flap {
+  from { transform: scaleY(1); }
+  to { transform: scaleY(-0.6); }
+}
+
+@keyframes ev-star {
+  0% { transform: translateX(0); opacity: 0; }
+  12% { opacity: 1; }
+  100% { transform: translateX(240px); opacity: 0; }
+}
+
+@keyframes ev-wing {
+  from { transform: scaleX(1); }
+  to { transform: scaleX(0.2); }
+}
+
+@keyframes ev-flutter {
+  0%, 100% { transform: translateY(0); }
+  25% { transform: translateY(-16px); }
+  50% { transform: translateY(6px); }
+  75% { transform: translateY(-9px); }
+}
+
+.ev-ltr { animation: ev-ltr linear forwards; }
+.ev-rtl { animation: ev-rtl linear forwards; }
+.ev-bob { animation: ev-bob 3.4s ease-in-out infinite; }
+.ev-flap { animation: ev-flap 0.3s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: 50% 100%; }
+.ev-star { animation: ev-star ease-out forwards; }
+.ev-wing { animation: ev-wing 0.16s ease-in-out infinite alternate; transform-box: fill-box; }
+.ev-flutter { animation: ev-flutter 2.6s ease-in-out infinite; }
+
+/* Dust floating in the sunbeams */
+@keyframes sc-mote {
+  0%, 100% { transform: translate(0, 0); opacity: 0.2; }
+  25% { transform: translate(8px, -14px); opacity: 1; }
+  50% { transform: translate(-6px, -24px); opacity: 0.5; }
+  75% { transform: translate(-10px, -8px); opacity: 0.9; }
+}
+
+@keyframes sc-beam {
+  0%, 100% { opacity: 0.75; }
+  50% { opacity: 1; }
+}
+
+.sc-mote { animation: sc-mote 14s ease-in-out infinite; }
+
+/* Mochi */
+@keyframes sc-pose-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes sc-lick {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+@keyframes sc-roll {
+  0% { transform: translateX(0); }
+  30% { transform: translateX(28px); }
+  100% { transform: translateX(0); }
+}
+
+@keyframes sc-roll-spin {
+  0% { transform: rotate(0deg); }
+  30% { transform: rotate(150deg); }
+  100% { transform: rotate(0deg); }
+}
+
+.sc-pose-in { animation: sc-pose-in 0.35s ease-out; }
+.sc-lick { animation: sc-lick 0.42s ease-in-out infinite; }
+.sc-roll { animation: sc-roll 2.4s cubic-bezier(0.2, 0.8, 0.3, 1); }
+.sc-roll-spin { animation: sc-roll-spin 2.4s cubic-bezier(0.2, 0.8, 0.3, 1); }
+.sc-beam { animation: sc-beam 7s ease-in-out infinite; }
 
 .sc-float-up { animation: sc-float-up 1.6s ease-out forwards; }
 .sc-rustle { animation: sc-rustle 0.9s ease-out; }

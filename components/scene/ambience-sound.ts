@@ -337,6 +337,54 @@ function apply() {
 
 /* ------------------------------------------------------------------ */
 
+/** One-off sounds from outside, only while the ambience is playing. */
+export function ambienceOneShot(kind: "train") {
+  if (!graph || !running || kind !== "train") {
+    return;
+  }
+
+  const g = graph;
+  const { ctx } = g;
+  const start = ctx.currentTime;
+  const duration = 9;
+
+  // A distant rumble that swells and fades.
+  const length = Math.round(ctx.sampleRate * duration);
+  const buffer = ctx.createBuffer(1, length, ctx.sampleRate);
+  const data = buffer.getChannelData(0);
+
+  let last = 0;
+
+  for (let i = 0; i < length; i++) {
+    const white = Math.random() * 2 - 1;
+    last = (last + 0.02 * white) / 1.02;
+    data[i] = last * 3.5;
+  }
+
+  const source = ctx.createBufferSource();
+  source.buffer = buffer;
+
+  const filter = ctx.createBiquadFilter();
+  filter.type = "lowpass";
+  filter.frequency.value = 260;
+
+  const gain = ctx.createGain();
+  gain.gain.setValueAtTime(0.0001, start);
+  gain.gain.exponentialRampToValueAtTime(0.35, start + duration * 0.45);
+  gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+
+  source.connect(filter).connect(gain).connect(g.master);
+  source.start(start);
+
+  // Clack-clack of the wheels over the rail joints.
+  for (let t = 1.2; t < duration - 1.2; t += 0.62) {
+    const swell = Math.sin((t / duration) * Math.PI);
+
+    burst(g, 900, 0.05, 0.05 * swell, start + t);
+    burst(g, 820, 0.05, 0.04 * swell, start + t + 0.14);
+  }
+}
+
 export async function startAmbience(next: AmbienceState) {
   graph ??= createGraph();
   state = next;
