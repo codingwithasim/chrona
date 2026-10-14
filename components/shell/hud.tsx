@@ -26,6 +26,7 @@ import { useTimerStore } from "@/stores/timer-store";
 
 import { AmbienceMenu } from "./ambience-menu";
 import { LogoMark } from "./logo-mark";
+import { MusicPlayer } from "./music-player";
 import { SoundMixer } from "./sound-mixer";
 import { formatClock } from "./digits";
 
@@ -221,6 +222,8 @@ export function Hud() {
           <AmbienceMenu />
 
           <SoundMixer />
+
+          <MusicPlayer />
 
           <HudButton
             label="Watch the rain (Esc to return)"

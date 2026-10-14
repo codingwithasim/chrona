@@ -18,6 +18,7 @@ import { useShortcuts } from "@/hooks/use-shortcuts";
 import { toggleFullscreen } from "@/lib/fullscreen";
 import { useFocusStore } from "@/stores/focus-store";
 import { useMixerStore } from "@/stores/mixer-store";
+import { useMusicStore } from "@/stores/music-store";
 import { useNotesStore } from "@/stores/notes-store";
 import { useRoomStore } from "@/stores/room-store";
 
@@ -60,6 +61,8 @@ export function SceneController() {
     void usePomodoroStore.persist.rehydrate();
     void useStopwatchStore.persist.rehydrate();
     void useRoomStore.persist.rehydrate();
+    void useMusicStore.persist.rehydrate();
+    void useMusicStore.getState().load();
     void useAlarmStore.persist.rehydrate();
     void useWorldClockStore.persist.rehydrate();
     void useMixerStore.persist.rehydrate();

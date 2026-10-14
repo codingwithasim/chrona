@@ -6,6 +6,7 @@ import { useNow } from "@/hooks/use-now";
 import { playSfx } from "@/lib/sfx";
 import { playSound } from "@/lib/sounds";
 import type { Weather } from "@/lib/scene-time";
+import { useMusicStore } from "@/stores/music-store";
 import { useSceneStore } from "@/stores/scene-store";
 import { useSettingsStore } from "@/stores/settings-store";
 
@@ -278,28 +279,56 @@ const RADIO_TUNES = ["kalimba", "music-box", "marimba", "koto"] as const;
 /** A little radio that plays a tune when poked. */
 export function Radio() {
   const toneVolume = useSettingsStore((state) => state.toneVolume);
-  const [playing, setPlaying] = useState(false);
+  const [jingle, setJingle] = useState(false);
   const [notes, burst] = useParticles(2200);
+  // With your own music added, the radio plays it.
+  const hasMusic = useMusicStore((state) => state.tracks.length > 0);
+  const music = useMusicStore((state) => state.playing);
+  const playing = jingle || music;
 
   const body = box(0.98, 1.56, DESK.top, DESK.top + 0.32, 9.55, 9.82);
   const [gx, gy] = project([1.2, DESK.top + 0.16, 9.55]);
   const [dx, dy] = project([1.44, DESK.top + 0.22, 9.55]);
   const [ax, ay] = project([1.5, DESK.top + 0.32, 9.7]);
 
+  // A note drifts up now and then while your music plays.
+  const burstRef = useRef(burst);
+  useEffect(() => {
+    burstRef.current = burst;
+  });
+  useEffect(() => {
+    if (!music) {
+      return;
+    }
+
+    const id = window.setInterval(() => burstRef.current(gx, gy - 30, 1, 40), 2600);
+    return () => window.clearInterval(id);
+  }, [music, gx, gy]);
+
   return (
     <g
       className="sc-hit"
       onClick={() => {
-        if (playing) {
+        if (hasMusic) {
+          playSfx("click");
+          if (!music) {
+            burst(gx, gy - 30, 4, 50);
+          }
+          useMusicStore.getState().toggle();
           return;
         }
 
-        setPlaying(true);
+        if (jingle) {
+          return;
+        }
+
+        setJingle(true);
         playSound(pick(RADIO_TUNES), { volume: toneVolume * 0.6 });
         burst(gx, gy - 30, 4, 50);
-        window.setTimeout(() => setPlaying(false), 2600);
+        window.setTimeout(() => setJingle(false), 2600);
       }}
     >
+      <title>{hasMusic ? (music ? "Pause your music" : "Play your music") : "Radio"}</title>
       <line x1={ax} y1={ay} x2={ax + 26} y2={ay - 34} stroke="#9aa4ad" strokeWidth="1.2" />
       <path d={body.top} fill="#e9dfc9" />
       <path d={body.left} fill="#b9ad94" />

@@ -3,6 +3,7 @@
 import { Eye } from "lucide-react";
 
 import { AmbienceMenu } from "@/components/shell/ambience-menu";
+import { MusicPlayer } from "@/components/shell/music-player";
 import { SoundMixer } from "@/components/shell/sound-mixer";
 import { Button } from "@/components/ui/button";
 import { useSceneStore } from "@/stores/scene-store";
@@ -15,6 +16,7 @@ export function LandingControls() {
       <AmbienceMenu />
 
       <SoundMixer />
+      <MusicPlayer />
 
       <Button
         variant="ghost"
