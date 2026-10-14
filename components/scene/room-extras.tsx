@@ -2,8 +2,11 @@
 
 import { useEffect, useState } from "react";
 
+import { useNow } from "@/hooks/use-now";
+import { todayKey } from "@/lib/day-key";
 import { COFFEE_URL } from "@/lib/links";
 import { playSfx } from "@/lib/sfx";
+import { streakOf, useFocusStore } from "@/stores/focus-store";
 import { useResolvedScene } from "@/stores/scene-store";
 
 import { box, project, ROOM, scaleAt, type Vec3, WINDOW } from "./projection";
@@ -253,6 +256,69 @@ export function CoffeeCup() {
             />
           ))}
         </g>
+        </g>
+      </At>
+    </g>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* A tent calendar on the windowsill, showing today                    */
+/* ------------------------------------------------------------------ */
+
+const CALENDAR_AT: Vec3 = [0.35, WINDOW.bottom, B - 0.04];
+
+export function DeskCalendar() {
+  const now = useNow();
+  const speak = useSpeak();
+  const [poke, bump] = usePoke();
+  const days = useFocusStore((state) => state.days);
+  const [bx, by] = project(CALENDAR_AT);
+
+  const month = now?.toLocaleDateString("en", { month: "short" }).toUpperCase() ?? "";
+  const day = now ? String(now.getDate()) : "";
+  const weekday = now?.toLocaleDateString("en", { weekday: "short" }) ?? "";
+
+  function tell() {
+    const date = new Date();
+    const today = days.find((entry) => entry.date === todayKey(date));
+    const streak = streakOf(days, date);
+    const minutes = today?.minutes ?? 0;
+    const label = date.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" });
+
+    playSfx("rustle");
+    bump();
+    speak(
+      bx,
+      by - 60,
+      `${label}. ${minutes ? `${minutes} minutes of focus so far` : "No focus sessions yet today"}${streak > 1 ? `, and a ${streak}-day streak!` : "."}`
+    );
+  }
+
+  return (
+    <g className="sc-hit" onClick={tell}>
+      <At at={CALENDAR_AT}>
+        <ellipse cx="2" cy="1" rx="32" ry="4" fill="#000000" opacity="0.16" />
+        {/* The back leaf of the tent */}
+        <path d="M-26 0 L30 0 L26 -42 L-22 -42 Z" fill="#d9d1c3" />
+
+        <g key={poke} className={poke ? "sc-flutter" : undefined} style={pivot("50% 0%")}>
+          <path d="M-28 0 L28 0 L24 -44 L-24 -44 Z" fill="#fbf8f2" />
+          <path d="M-24 -44 H24 L22.6 -31 H-22.6 Z" fill="#c8665a" />
+          <text x="0" y="-34.6" textAnchor="middle" fontSize="8.4" fontWeight="600" fill="#fff6ee" letterSpacing="1.4" style={{ fontFamily: "var(--font-zen)" }}>
+            {month}
+          </text>
+          <text x="0" y="-11" textAnchor="middle" fontSize="20" fill="#3b2e3a" style={{ fontFamily: "var(--font-kiwi)" }}>
+            {day}
+          </text>
+          <text x="0" y="-3" textAnchor="middle" fontSize="6.4" fill="#8a7d74" style={{ fontFamily: "var(--font-zen)" }}>
+            {weekday}
+          </text>
+        </g>
+        {/* Binding rings */}
+        <g fill="#5b5560">
+          <circle cx="-12" cy="-44" r="2" />
+          <circle cx="12" cy="-44" r="2" />
         </g>
       </At>
     </g>

@@ -17,7 +17,7 @@ import {
   WindowUnit,
 } from "./room-architecture";
 import { Mochi } from "./cat/mochi";
-import { AirConditioner, CoffeeCup, CornerPlant } from "./room-extras";
+import { AirConditioner, CoffeeCup, CornerPlant, DeskCalendar } from "./room-extras";
 import { RoomDefs } from "./room-defs";
 import {
   Bed,
@@ -142,6 +142,7 @@ function RoomLayer({
         <SillPlant />
         <Candle />
         <CoffeeCup />
+        <DeskCalendar />
         <SillVase />
         <Persimmons />
         <TeruTeruBozu />

@@ -13,6 +13,7 @@ import { SceneController } from "@/components/scene/scene-controller";
 import { DialogueBox } from "@/components/shell/dialogue-box";
 import { GazeExit } from "@/components/shell/gaze-exit";
 import { NotesSheet } from "@/components/shell/notes-sheet";
+import { ShortcutsHelp } from "@/components/shell/shortcuts-help";
 import { AlarmWatcher } from "@/components/tools/alarms/alarm-watcher";
 import { ToolTicker } from "@/components/tools/tool-ticker";
 
@@ -94,6 +95,7 @@ export default function RootLayout({
           <DialogueBox />
           <GazeExit />
           <NotesSheet />
+          <ShortcutsHelp />
 
           <VercelAnalytics/>
           <ClarityAnalytics/>

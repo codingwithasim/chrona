@@ -10,6 +10,7 @@ import { ToolFrame } from "@/components/shell/tool-frame";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { requestNotifications } from "@/lib/notify";
+import { SHORTCUTS } from "@/lib/shortcuts";
 import { previewSound } from "@/lib/sounds";
 import { useSceneStore } from "@/stores/scene-store";
 import {
@@ -168,16 +169,7 @@ export function SettingsPanel() {
 
         <Section icon={Keyboard} title="Shortcuts" jp="ショートカット">
           <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
-            {[
-              ["Space", "Start or pause the timer, stopwatch or pomodoro"],
-              ["R", "Reset"],
-              ["L", "Lap (stopwatch)"],
-              ["S", "Skip to the next phase (pomodoro)"],
-              ["G", "Watch the rain"],
-              ["F", "Full screen"],
-              ["M", "Mute or unmute the sounds"],
-              ["Esc", "Back to the room"],
-            ].map(([key, description]) => (
+            {SHORTCUTS.map(([key, description]) => (
               <div key={key} className="contents">
                 <dt>
                   <kbd className="rounded-md bg-foreground/[0.06] px-2 py-0.5 font-sans text-xs">
