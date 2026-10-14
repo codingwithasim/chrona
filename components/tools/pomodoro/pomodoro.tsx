@@ -15,6 +15,7 @@ import {
   usePomodoroStore,
 } from "@/stores/pomodoro-store";
 
+import { BreakCompanion } from "./break-companion";
 import { CurrentTask } from "./current-task";
 import { PomodoroControls } from "./pomodoro-controls";
 
@@ -98,7 +99,7 @@ export function PomodoroTool() {
         </ProgressRing>
 
         <div data-compact-hide className="-my-3 flex max-w-full justify-center">
-          <CurrentTask />
+          {mode === "focus" ? <CurrentTask /> : <BreakCompanion cycle={cycle} />}
         </div>
 
         <PomodoroControls />
