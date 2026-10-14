@@ -22,6 +22,10 @@ type SceneStore = {
   volume: number;
   setVolume: (volume: number) => void;
 
+  /** Little sounds when you poke things in the room. */
+  sfxOn: boolean;
+  setSfxOn: (sfxOn: boolean) => void;
+
   lampOn: boolean;
   toggleLamp: () => void;
 
@@ -55,6 +59,9 @@ export const useSceneStore = create<SceneStore>()(
           volume: Math.min(1, Math.max(0, volume)),
         }),
 
+      sfxOn: true,
+      setSfxOn: (sfxOn) => set({ sfxOn }),
+
       lampOn: true,
       toggleLamp: () =>
         set((state) => ({ lampOn: !state.lampOn })),
@@ -72,6 +79,7 @@ export const useSceneStore = create<SceneStore>()(
       partialize: (state) => ({
         rain: state.rain,
         volume: state.volume,
+        sfxOn: state.sfxOn,
         lampOn: state.lampOn,
         hour24: state.hour24,
       }),

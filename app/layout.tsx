@@ -71,7 +71,10 @@ export default function RootLayout({
             <SceneController />
             <AlarmWatcher />
 
-            <div className="relative z-10 flex min-h-full flex-1 flex-col">
+            <div
+              data-passthrough
+              className="relative z-10 flex min-h-full flex-1 flex-col"
+            >
               {children}
             </div>
 

@@ -7,6 +7,7 @@ import {
   CloudLightning,
   CloudMoonRain,
   Lamp,
+  Sparkles,
   Volume2,
 } from "lucide-react";
 
@@ -32,6 +33,8 @@ export function AmbienceMenu() {
   const setSoundOn = useSceneStore((state) => state.setSoundOn);
   const volume = useSceneStore((state) => state.volume);
   const setVolume = useSceneStore((state) => state.setVolume);
+  const sfxOn = useSceneStore((state) => state.sfxOn);
+  const setSfxOn = useSceneStore((state) => state.setSfxOn);
   const lampOn = useSceneStore((state) => state.lampOn);
   const toggleLamp = useSceneStore((state) => state.toggleLamp);
 
@@ -132,6 +135,17 @@ export function AmbienceMenu() {
 
               <label className="flex items-center justify-between gap-3">
                 <span className="flex items-center gap-2 font-medium">
+                  <Sparkles className="size-4 text-lavender" />
+                  Sound effects
+                </span>
+                <Switch
+                  checked={sfxOn}
+                  onCheckedChange={setSfxOn}
+                />
+              </label>
+
+              <label className="flex items-center justify-between gap-3">
+                <span className="flex items-center gap-2 font-medium">
                   <Lamp className="size-4 text-honey" />
                   Desk lamp
                 </span>
@@ -143,8 +157,8 @@ export function AmbienceMenu() {
             </div>
 
             <p className="mt-4 rounded-xl bg-muted px-3 py-2 text-xs leading-5 text-muted-foreground">
-              Tip: press the eye button to hide everything and
-              just watch the rain. Try clicking the lamp and the cat.
+              Psst… almost everything in the room reacts when you click
+              it. Try the cat, the window and the little ghost doll.
             </p>
           </Popover.Popup>
         </Popover.Positioner>

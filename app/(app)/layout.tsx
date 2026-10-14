@@ -10,6 +10,7 @@ export default function AppLayout({
   return (
     <div
       data-ui
+      data-passthrough
       className="flex h-dvh w-full flex-col overflow-hidden"
     >
       <Hud showPanelTrigger />

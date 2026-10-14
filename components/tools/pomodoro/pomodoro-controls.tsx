@@ -1,6 +1,7 @@
 "use client";
 
-import { RotateCcw } from "lucide-react";
+import { Pause, Play, RotateCcw, SkipForward } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 
 type Props = {
@@ -8,7 +9,7 @@ type Props = {
   start: () => void;
   pause: () => void;
   reset: () => void;
-  setMode: (mode: "focus" | "shortBreak" | "longBreak") => void;
+  skip: () => void;
 };
 
 export function PomodoroControls({
@@ -16,20 +17,22 @@ export function PomodoroControls({
   start,
   pause,
   reset,
-  setMode,
+  skip,
 }: Props) {
   return (
-    <div className="flex gap-4">
-      <Button onClick={isRunning ? pause : start}>
+    <div className="flex flex-wrap justify-center gap-3">
+      <Button size="lg" onClick={isRunning ? pause : start}>
+        {isRunning ? <Pause /> : <Play />}
         {isRunning ? "Pause" : "Start"}
       </Button>
 
-      <Button onClick={() => setMode("focus")}>
-        Focus
+      <Button size="lg" variant="secondary" onClick={skip}>
+        <SkipForward />
+        Skip
       </Button>
 
-      <Button variant="outline" onClick={reset}>
-        <RotateCcw className="mr-2 h-4 w-4" />
+      <Button size="lg" variant="outline" onClick={reset}>
+        <RotateCcw />
         Reset
       </Button>
     </div>

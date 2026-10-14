@@ -1,13 +1,13 @@
 import { create } from "zustand";
 
+import type { PomodoroMode } from "@/components/tools/pomodoro/use-pomodoro";
+
 export type Tool =
   | "timer"
   | "stopwatch"
   | "pomodoro"
   | "world-clock"
   | "alarms";
-
-type PomodoroMode = "focus" | "shortBreak" | "longBreak";
 
 type Lap = {
   id: number;
@@ -16,16 +16,6 @@ type Lap = {
 };
 
 type UIState = {
-  // 👇 NEW: timer control bridge
-  timerActions?: {
-    setDuration?: (seconds: number) => void;
-    addTime?: (seconds: number) => void; // 👈 NEW
-    start?: () => void;
-    reset?: () => void;
-  };
-
-  setTimerActions: (actions: UIState["timerActions"]) => void;
-
   stopwatchLaps: Lap[];
 
   stopwatchActions?: {
@@ -61,10 +51,6 @@ type UIState = {
 };
 
 export const useUIStore = create<UIState>((set) => ({
-  timerActions: undefined,
-
-  setTimerActions: (actions) =>
-    set({ timerActions: actions }),
   stopwatchLaps: [],
   stopwatchActions: undefined,
 
@@ -89,5 +75,3 @@ export const useUIStore = create<UIState>((set) => ({
   setPomodoroActions: (actions) =>
     set({ pomodoroActions: actions }),
 }));
-
-  

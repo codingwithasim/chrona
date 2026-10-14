@@ -38,6 +38,8 @@ type Runner = {
   wobble: number;
 };
 
+export const LIGHTNING_EVENT = "chrona:lightning";
+
 const SETTINGS = {
   light: { density: 1 / 5200, slant: 0.12, runners: 4 },
   heavy: { density: 1 / 2000, slant: 0.22, runners: 9 },
@@ -187,28 +189,31 @@ export function RainCanvas({
     function draw(dt: number, now: number) {
       ctx.clearRect(0, 0, width, height);
 
-      if (!settings) {
-        return;
+      // Ambient lightning: night storms only.
+      if (
+        night &&
+        level === "heavy" &&
+        !reducedMotion &&
+        now > nextFlashAt
+      ) {
+        flash = 1;
+        nextFlashAt = now + 18000 + Math.random() * 30000;
       }
 
-      // Lightning: a soft double flicker, night storms only.
-      if (night && level === "heavy" && !reducedMotion) {
-        if (now > nextFlashAt) {
-          flash = 1;
-          nextFlashAt =
-            now + 18000 + Math.random() * 30000;
-        }
+      // A soft double flicker.
+      if (flash > 0) {
+        const flicker =
+          flash > 0.7 || (flash > 0.35 && flash < 0.5)
+            ? flash
+            : flash * 0.4;
 
-        if (flash > 0) {
-          const flicker =
-            flash > 0.7 || (flash > 0.35 && flash < 0.5)
-              ? flash
-              : flash * 0.4;
+        ctx.fillStyle = `rgba(225,232,255,${flicker * 0.4})`;
+        ctx.fillRect(0, 0, width, height);
+        flash = Math.max(0, flash - dt * 1.6);
+      }
 
-          ctx.fillStyle = `rgba(225,232,255,${flicker * 0.32})`;
-          ctx.fillRect(0, 0, width, height);
-          flash = Math.max(0, flash - dt * 1.6);
-        }
+      if (!settings) {
+        return;
       }
 
       const slant = settings.slant;
@@ -352,8 +357,14 @@ export function RainCanvas({
       }
     }
 
+    // Clicking the window summons lightning.
+    function onLightning() {
+      flash = 1;
+    }
+
     frame = requestAnimationFrame(loop);
 
+    window.addEventListener(LIGHTNING_EVENT, onLightning);
     window.addEventListener("resize", layout);
     document.addEventListener(
       "visibilitychange",
@@ -362,6 +373,7 @@ export function RainCanvas({
 
     return () => {
       cancelAnimationFrame(frame);
+      window.removeEventListener(LIGHTNING_EVENT, onLightning);
       window.removeEventListener("resize", layout);
       document.removeEventListener(
         "visibilitychange",

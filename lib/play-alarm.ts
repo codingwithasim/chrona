@@ -1,8 +1,16 @@
-let audio: HTMLAudioElement | null = null;
+const cache = new Map<string, HTMLAudioElement>();
 
-export function playAlarm() {
+export const SOUNDS = {
+  alarm: "/sounds/aud_01.wav",
+  chime: "/sounds/aud_02.mp3",
+} as const;
+
+export function playAlarm(src: string = SOUNDS.alarm) {
+  let audio = cache.get(src);
+
   if (!audio) {
-    audio = new Audio("/sounds/aud_01.wav");
+    audio = new Audio(src);
+    cache.set(src, audio);
   }
 
   audio.currentTime = 0;
