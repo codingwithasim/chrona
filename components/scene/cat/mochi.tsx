@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { type CSSProperties, useEffect, useRef, useState } from "react";
 
 import { playSfx } from "@/lib/sfx";
 import { useDialogueStore } from "@/stores/dialogue-store";
@@ -9,13 +9,21 @@ import {
   floatStyle,
   OUTSIDE_EVENT,
   pick,
+  pivot,
   useParticles,
   useSpeak,
 } from "../scene-shared";
-import { CatBrain, FLOOR_Y } from "./brain";
-import type { Pt } from "./geometry";
+import {
+  CatDefs,
+  type Eyes,
+  type Look,
+  LoafPose,
+  SitPose,
+  StretchPose,
+  WalkPose,
+} from "./art";
+import { type Activity, type ArtPose, CatBrain, FLOOR_Y, type Pt, SCALE } from "./brain";
 import { FieldMouse } from "./mouse";
-import { CatRig } from "./rig";
 
 /** Fire this event to send a mouse across the floor (handy for testing). */
 export const MOUSE_EVENT = "chrona:mouse";
@@ -34,16 +42,89 @@ const CAT_LINES = [
 /** How far around her she notices the pointer, in scene units. */
 const NOTICE = 520;
 
+type View = {
+  pose: ArtPose;
+  activity: Activity;
+  eyes: Eyes;
+  look: Look;
+  yawning: boolean;
+  earPoke: number;
+  legs: "still" | "walk" | "run";
+  zzz: Pt | null;
+};
+
+function viewOf(brain: CatBrain): View {
+  const { activity } = brain;
+
+  let eyes: Eyes = "open";
+
+  if (brain.happy) eyes = "happy";
+  else if (activity === "sleep" || activity === "groom") eyes = "closed";
+  else if (activity === "stretch" || activity === "yawn") eyes = "squint";
+  else if (brain.blinking) eyes = "closed";
+  else if (activity === "loaf") eyes = "half";
+
+  const gaze = brain.gaze();
+  const onTheMove = ["walk", "chase", "crouch", "pounce", "stand"].includes(activity);
+  let look: Look = onTheMove ? "left" : "viewer";
+
+  if (activity === "groom") {
+    look = "down";
+  } else if (activity === "look") {
+    look = "window";
+  } else if (gaze) {
+    const [gx, gy] = gaze;
+    if (gy < -0.45) look = "window";
+    else if (gy > 0.55) look = "down";
+    else if (gx < -0.3) look = "left";
+    else if (gx > 0.3) look = "right";
+    else look = "viewer";
+  }
+
+  return {
+    pose: brain.pose,
+    activity,
+    eyes,
+    look,
+    yawning: activity === "yawn" || activity === "stretch",
+    earPoke: brain.twitches,
+    legs: brain.legs,
+    zzz: activity === "sleep" ? brain.headSpot() : null,
+  };
+}
+
+const sameView = (a: View, b: View) =>
+  a.pose === b.pose &&
+  a.activity === b.activity &&
+  a.eyes === b.eyes &&
+  a.look === b.look &&
+  a.yawning === b.yawning &&
+  a.earPoke === b.earPoke &&
+  a.legs === b.legs &&
+  (a.zzz === null) === (b.zzz === null);
+
 /**
- * Mochi, drawn and animated by a small rig rather than React, so she
- * moves smoothly. React only handles clicks, hearts and speech.
+ * Mochi, the fluffy calico. Her brain runs every animation frame to
+ * move her around; React only re-renders when her pose or face changes.
  */
 export function Mochi({ yarnX, onBat }: { yarnX: number; onBat: () => void }) {
-  const container = useRef<SVGGElement | null>(null);
+  const root = useRef<SVGGElement | null>(null);
+  const mouseLayer = useRef<SVGGElement | null>(null);
   const brainRef = useRef<CatBrain | null>(null);
   const speak = useSpeak();
   const [hearts, burst] = useParticles();
   const pets = useRef(0);
+
+  const [view, setView] = useState<View>({
+    pose: "loaf",
+    activity: "sleep",
+    eyes: "closed",
+    look: "viewer",
+    yawning: false,
+    earPoke: 0,
+    legs: "still",
+    zzz: null,
+  });
 
   const latest = useRef({ speak, onBat });
 
@@ -52,9 +133,10 @@ export function Mochi({ yarnX, onBat }: { yarnX: number; onBat: () => void }) {
   });
 
   useEffect(() => {
-    const root = container.current;
+    const node = root.current;
+    const layer = mouseLayer.current;
 
-    if (!root) {
+    if (!node || !layer) {
       return;
     }
 
@@ -68,14 +150,14 @@ export function Mochi({ yarnX, onBat }: { yarnX: number; onBat: () => void }) {
     );
     brainRef.current = brain;
 
-    const rig = new CatRig(root);
     let mouse: FieldMouse | null = null;
+    let shown = viewOf(brain);
 
     /* Pointer: she watches it, and hunts it if you wiggle it on the floor */
     const pointer = { point: [0, 0] as Pt, at: -10, energy: 0, onFloor: false };
     let clock = 0;
 
-    const svg = root.ownerSVGElement;
+    const svg = node.ownerSVGElement;
 
     function onPointerMove(event: PointerEvent) {
       const matrix = svg?.getScreenCTM();
@@ -103,11 +185,9 @@ export function Mochi({ yarnX, onBat }: { yarnX: number; onBat: () => void }) {
     }
 
     function spawnMouse() {
-      if (mouse) {
-        return;
+      if (!mouse) {
+        mouse = new FieldMouse(layer!, Math.random() < 0.5);
       }
-
-      mouse = new FieldMouse(root!, Math.random() < 0.5);
     }
 
     function onOutside() {
@@ -123,7 +203,6 @@ export function Mochi({ yarnX, onBat }: { yarnX: number; onBat: () => void }) {
     let nextMouse = 70 + Math.random() * 80;
     let frame = 0;
     let last = performance.now();
-    let skip = 0;
 
     const tick = (now: number) => {
       const dt = Math.min(0.05, (now - last) / 1000);
@@ -144,15 +223,20 @@ export function Mochi({ yarnX, onBat }: { yarnX: number; onBat: () => void }) {
         mouse.draw();
 
         if (mouse.done) {
+          const hole = mouse.x < 800 ? "bookcase" : "bed";
           mouse.remove();
           mouse = null;
 
           if (brain.prey?.kind === "mouse") {
             brain.stopHunting();
-            brain.events.speak(brain.headSpot(), pick(["Mrrp?! It got away…", "Next time, mouse. Next time.", "*stares at the hole under the bed*"]));
+            brain.events.speak(
+              brain.headSpot(),
+              pick(["Mrrp?! It got away…", "Next time, mouse. Next time.", `*stares under the ${hole}*`])
+            );
           }
         } else {
           brain.hunt({ point: [mouse.x, FLOOR_Y], kind: "mouse" });
+          brain.interest = { point: [mouse.x, FLOOR_Y], strength: 1 };
         }
       }
 
@@ -173,15 +257,23 @@ export function Mochi({ yarnX, onBat }: { yarnX: number; onBat: () => void }) {
         }
 
         brain.interest = recent && near ? { point: pointer.point, strength: 0.85 } : null;
-      } else {
-        brain.interest = { point: [mouse.x, FLOOR_Y], strength: 1 };
       }
 
       brain.update(dt);
 
-      // Breathe at a gentler frame rate while she naps.
-      if (!brain.restful || skip++ % 3 === 0) {
-        rig.draw(brain.frame(dt));
+      /* Place her; this is cheap, so it happens every frame */
+      const facing = Math.abs(brain.facing) < 0.08 ? 0.08 * Math.sign(brain.facing || 1) : brain.facing;
+      node.setAttribute(
+        "transform",
+        `translate(${brain.x.toFixed(1)} ${(FLOOR_Y - brain.lift).toFixed(1)}) scale(${(facing * SCALE).toFixed(3)} ${SCALE})`
+      );
+
+      /* Redraw her only when her pose or face changes */
+      const next = viewOf(brain);
+
+      if (!sameView(next, shown)) {
+        shown = next;
+        setView(next);
       }
 
       frame = requestAnimationFrame(tick);
@@ -195,8 +287,8 @@ export function Mochi({ yarnX, onBat }: { yarnX: number; onBat: () => void }) {
       document.documentElement.removeEventListener("pointerleave", onPointerLeave);
       window.removeEventListener(MOUSE_EVENT, spawnMouse);
       window.removeEventListener(OUTSIDE_EVENT, onOutside);
+      mouse?.remove();
       brainRef.current = null;
-      root.replaceChildren();
     };
     // The yarn stays put; the brain is built once.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -222,20 +314,75 @@ export function Mochi({ yarnX, onBat }: { yarnX: number; onBat: () => void }) {
 
     const [x, y] = brain.pet();
     pets.current += 1;
-    burst(x, y - 46, 3, 60);
+    burst(x, y - 50, 3, 70);
     speak(
       x,
-      y - 50,
+      y - 56,
       pets.current % 10 === 0 ? `That's ${pets.current} pets! We're best friends now. 🐾` : pick(CAT_LINES)
     );
   }
 
+  const head = { eyes: view.eyes, look: view.look, yawning: view.yawning, earPoke: view.earPoke };
+
+  const legStyle = {
+    "--leg-speed": view.legs === "run" ? "0.42s" : "0.9s",
+    "--leg-play": view.legs === "still" ? "paused" : "running",
+  } as CSSProperties;
+
   return (
     <g>
-      <g ref={container} className="sc-hit" onClick={pet} />
+      <CatDefs />
+
+      <g ref={root} transform={`translate(820 ${FLOOR_Y}) scale(${SCALE} ${SCALE})`} style={legStyle}>
+        <g className="sc-hit" onClick={pet}>
+          <g key={view.pose} className="sc-pose-in">
+            {view.pose === "loaf" && <LoafPose {...head} sleeping={view.activity === "sleep"} />}
+            {view.pose === "sit" && <SitPose {...head} activity={view.activity} />}
+            {view.pose === "stretch" && <StretchPose earPoke={view.earPoke} />}
+            {view.pose === "walk" &&
+              (view.activity === "crouch" ? (
+                // Low to the ground, bottom wiggling before the pounce.
+                <g transform="scale(1.07 0.74)">
+                  <g className="sc-wiggle" style={pivot("0% 100%")}>
+                    <WalkPose {...head} />
+                  </g>
+                </g>
+              ) : view.activity === "pounce" ? (
+                <g transform="rotate(9)">
+                  <WalkPose {...head} />
+                </g>
+              ) : (
+                <WalkPose {...head} />
+              ))}
+          </g>
+        </g>
+      </g>
+
+      <g ref={mouseLayer} />
+
+      {view.zzz && (
+        <g fill="var(--lavender)" fontWeight="500" style={{ fontFamily: "var(--font-kiwi)", pointerEvents: "none" }}>
+          {[
+            { dx: 4, dy: -36, size: 16, char: "z" },
+            { dx: 8, dy: -40, size: 22, char: "z" },
+            { dx: 12, dy: -44, size: 28, char: "Z" },
+          ].map((z, index) => (
+            <text
+              key={index}
+              x={Math.round(view.zzz![0] + z.dx)}
+              y={Math.round(view.zzz![1] + z.dy)}
+              fontSize={z.size}
+              className="sc-zzz"
+              style={{ ...pivot("50% 50%"), animationDelay: `${index * 1.1}s`, opacity: 0 }}
+            >
+              {z.char}
+            </text>
+          ))}
+        </g>
+      )}
 
       {hearts.map((heart) => (
-        <g key={heart.id} transform={`translate(${heart.x} ${heart.y}) scale(1.6)`}>
+        <g key={heart.id} transform={`translate(${heart.x} ${heart.y}) scale(1.8)`}>
           <path
             d="M0 3 C0 -1 -6 -2 -6 2 C -6 6 0 9 0 11 C 0 9 6 6 6 2 C 6 -2 0 -1 0 3 Z"
             fill="var(--ember)"

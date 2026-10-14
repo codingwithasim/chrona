@@ -703,6 +703,47 @@
 .sc-mote { animation: sc-mote 14s ease-in-out infinite; }
 
 /* Mochi */
+@keyframes sc-tail {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(-5deg); }
+}
+
+@keyframes sc-breathe {
+  0%, 100% { transform: scaleY(1); }
+  50% { transform: scaleY(1.04); }
+}
+
+@keyframes sc-ear {
+  0%, 100% { transform: rotate(0deg); }
+  30% { transform: rotate(-16deg); }
+  60% { transform: rotate(9deg); }
+}
+
+@keyframes sc-pose-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes sc-leg {
+  0%, 100% { transform: rotate(16deg); }
+  50% { transform: rotate(-16deg); }
+}
+
+@keyframes sc-walk-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2.5px); }
+}
+
+@keyframes sc-lick {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+@keyframes sc-wiggle {
+  0%, 100% { transform: skewX(0deg); }
+  50% { transform: skewX(4deg); }
+}
+
 @keyframes sc-billow {
   0%, 100% { transform: skewX(0deg) scaleX(1); }
   25% { transform: skewX(3.5deg) scaleX(1.03); }
@@ -753,6 +794,21 @@
   100% { transform: rotate(0deg); }
 }
 
+.sc-tail { animation: sc-tail 3.2s ease-in-out infinite; }
+.sc-breathe { animation: sc-breathe 4s ease-in-out infinite; }
+.sc-ear { animation: sc-ear 0.5s ease-in-out; }
+.sc-pose-in { animation: sc-pose-in 0.35s ease-out; }
+.sc-lick { animation: sc-lick 0.42s ease-in-out infinite; }
+.sc-wiggle { animation: sc-wiggle 0.16s ease-in-out infinite; }
+/* Mochi's legs: the walk speed and pausing come from her root group. */
+.sc-leg {
+  animation: sc-leg var(--leg-speed, 0.9s) ease-in-out infinite;
+  animation-play-state: var(--leg-play, running);
+}
+.sc-walk-bob {
+  animation: sc-walk-bob calc(var(--leg-speed, 0.9s) / 2) ease-in-out infinite;
+  animation-play-state: var(--leg-play, running);
+}
 .sc-billow { animation: sc-billow 2.4s ease-in-out; }
 .sc-squish { animation: sc-squish 0.7s ease-out; }
 .sc-fluff { animation: sc-fluff 0.8s ease-out; }
