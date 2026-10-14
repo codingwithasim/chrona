@@ -57,12 +57,14 @@ export function LandingPage() {
       <main>
         {/* Hero: a few quiet words over the room */}
         <section className="relative mx-auto flex min-h-[calc(100dvh-5.5rem)] max-w-6xl flex-col items-center justify-center px-4 pb-10">
-          <div className="relative flex flex-col items-center text-center animate-in fade-in-0 duration-1000">
+          <div className="relative flex flex-col items-center text-center">
             {/* A soft halo so the words read over the scene, without a box */}
             <div
               aria-hidden="true"
-              className="absolute -inset-x-28 -inset-y-24 -z-10 bg-background/55 backdrop-blur-md [mask-image:radial-gradient(closest-side,black_45%,transparent)]"
+              className="absolute -inset-x-28 -inset-y-24 -z-10 bg-background/55 backdrop-blur-md [mask-image:radial-gradient(closest-side,black_45%,transparent)] ui-fade"
             />
+
+            <div className="flex flex-col items-center ui-fade">
 
             <p className="text-[11px] tracking-[0.6em] text-foreground/50">クロナ</p>
             <h1 className="mt-3 font-display text-6xl font-light leading-none tracking-wide text-foreground/90 sm:text-7xl">
@@ -84,6 +86,7 @@ export function LandingPage() {
               </Link>
 
               <WatchRainButton />
+            </div>
             </div>
           </div>
 

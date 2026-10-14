@@ -100,6 +100,7 @@ function ActiveChip({
   return (
     <Link
       href={href}
+      data-chrome
       className={cn(
         "panel flex h-8 items-center gap-2 rounded-full px-3 font-display text-[13px] transition-opacity duration-300 hover:opacity-100",
         paused ? "opacity-55" : "opacity-85"
@@ -185,9 +186,10 @@ function ActiveTools() {
   );
 }
 
-export function Logo({ className }: { className?: string }) {
+export function Logo({ className, ...props }: { className?: string; "data-chrome"?: boolean }) {
   return (
     <Link
+      {...props}
       href="/"
       className={cn(
         "group flex items-center gap-2 text-foreground/75 transition-colors duration-300 hover:text-foreground",
@@ -209,15 +211,14 @@ export function Hud() {
   return (
     <header
       data-ui
-      data-chrome
       className="relative z-20 flex h-16 shrink-0 items-center justify-between gap-2 px-4 sm:px-6"
     >
-      <Logo />
+      <Logo data-chrome />
 
       <div className="flex items-center gap-2">
         <ActiveTools />
 
-        <div className="panel flex items-center gap-0.5 rounded-full p-0.5">
+        <div data-chrome className="panel flex items-center gap-0.5 rounded-full p-0.5">
           <Clock />
 
           <AmbienceMenu />

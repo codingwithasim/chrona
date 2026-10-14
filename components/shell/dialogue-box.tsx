@@ -75,11 +75,11 @@ function DialogueContent({ message }: { message: DialogueMessage }) {
   return (
     <div
       role={message.tone === "alert" ? "alert" : "status"}
-      className="fixed inset-x-3 bottom-[calc(max(0.75rem,env(safe-area-inset-bottom))+5.25rem)] z-60 mx-auto max-w-xl animate-in fade-in-0 slide-in-from-bottom-4 lg:bottom-6"
+      className="fixed inset-x-3 bottom-[calc(max(0.75rem,env(safe-area-inset-bottom))+5.25rem)] z-60 mx-auto max-w-xl ui-rise lg:bottom-6"
     >
       <div
         className={cn(
-          "panel cursor-pointer px-5 pt-7 pb-4",
+          "panel cursor-pointer px-5 pt-7 pb-4 ui-fade",
           message.tone === "alert" && "ring-4 ring-primary/40"
         )}
         onClick={handleClick}

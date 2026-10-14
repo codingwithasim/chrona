@@ -552,10 +552,8 @@
     width: 96px;
     height: 24px;
     transform: translateX(-50%) rotate(-2.5deg);
-    background: rgb(255 255 255 / 0.5);
+    background: rgb(255 255 255 / 0.55);
     box-shadow: 0 1px 2px rgb(0 0 0 / 0.06);
-    -webkit-backdrop-filter: blur(2px);
-    backdrop-filter: blur(2px);
   }
 }
 
@@ -790,6 +788,16 @@
   50% { transform: skewX(4deg); }
 }
 
+@keyframes ui-rise {
+  from { transform: translateY(10px); }
+  to { transform: none; }
+}
+
+@keyframes ui-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
 @keyframes sc-billow {
   0%, 100% { transform: skewX(0deg) scaleX(1); }
   25% { transform: skewX(3.5deg) scaleX(1.03); }
@@ -855,6 +863,13 @@
   animation: sc-walk-bob calc(var(--leg-speed, 0.9s) / 2) ease-in-out infinite;
   animation-play-state: var(--leg-play, running);
 }
+/*
+ * Entrances for the interface. These animate only movement and
+ * opacity: tw-animate's animate-in also animates a filter, which stops
+ * any frosted glass inside from blurring until it has finished.
+ */
+.ui-rise { animation: ui-rise 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.ui-fade { animation: ui-fade 0.7s ease both; }
 .sc-billow { animation: sc-billow 2.4s ease-in-out; }
 .sc-squish { animation: sc-squish 0.7s ease-out; }
 .sc-fluff { animation: sc-fluff 0.8s ease-out; }

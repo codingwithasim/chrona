@@ -84,18 +84,23 @@ export function ToolFrame({
       <section
         data-panel={style}
         className={cn(
-          "animate-in fade-in-0 slide-in-from-bottom-2 duration-700",
+          // Only a slide here: fading (or filtering) a parent would stop
+          // the glass inside from blurring until the animation finished.
+          "ui-rise",
           placement === "side" ? OUTER[style] : "mx-auto my-auto w-full max-w-md py-4",
           className
         )}
       >
-        <div data-focus-panel className={INNER[style]}>
+        <div
+          data-focus-panel
+          className={cn(INNER[style], style !== "float" && "ui-fade")}
+        >
           {style === "float" && (
             // A soft frosted glow behind the time, with no edges.
             <div
               aria-hidden="true"
               data-halo
-              className="pointer-events-none absolute -inset-x-12 -inset-y-14 -z-10 bg-white/30 backdrop-blur-[3px] [mask-image:radial-gradient(closest-side,black_50%,transparent)] dark:bg-transparent dark:backdrop-blur-none"
+              className="pointer-events-none absolute -inset-x-12 -inset-y-14 -z-10 bg-white/30 backdrop-blur-[3px] [mask-image:radial-gradient(closest-side,black_50%,transparent)] ui-fade dark:bg-transparent dark:backdrop-blur-none"
             />
           )}
 
@@ -108,7 +113,7 @@ export function ToolFrame({
               <div data-recede>{tools}</div>
             </>
           ) : (
-            <>
+            <div className={cn(style === "float" && "ui-fade")}>
               <header
                 data-recede
                 className={cn(
@@ -120,7 +125,7 @@ export function ToolFrame({
                 {tools}
               </header>
               {children}
-            </>
+            </div>
           )}
         </div>
       </section>
