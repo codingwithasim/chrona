@@ -605,6 +605,7 @@
 /* A cream paper note, taped up, with its own ink colours. */
 @utility memo {
   position: relative;
+  --background: #f6efe0;
   --foreground: #2f2b33;
   --muted-foreground: #7a7266;
   --primary: #4a505e;
