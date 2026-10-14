@@ -16,6 +16,7 @@ import { FaLinkedinIn, FaXTwitter } from "react-icons/fa6";
 
 import { ToolFrame } from "@/components/shell/tool-frame";
 import { Button } from "@/components/ui/button";
+import { COFFEE_URL } from "@/lib/links";
 import { cn } from "@/lib/utils";
 import { say } from "@/stores/dialogue-store";
 
@@ -89,9 +90,6 @@ const socialLinks = [
     icon: Mail,
   },
 ];
-
-/** Where the coffee link goes. */
-export const COFFEE_URL = "https://buymeacoffee.com/codingwithasim";
 
 export function FeedbackForm() {
   const [type, setType] = useState<FeedbackType>("bug");

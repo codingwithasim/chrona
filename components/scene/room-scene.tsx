@@ -17,7 +17,7 @@ import {
   WindowUnit,
 } from "./room-architecture";
 import { Mochi } from "./cat/mochi";
-import { AirConditioner, CornerPlant } from "./room-extras";
+import { AirConditioner, CoffeeCup, CornerPlant } from "./room-extras";
 import { RoomDefs } from "./room-defs";
 import {
   Bed,
@@ -141,6 +141,7 @@ function RoomLayer({
         <WindowUnit onKnock={onKnock} />
         <SillPlant />
         <Candle />
+        <CoffeeCup />
         <SillVase />
         <Persimmons />
         <TeruTeruBozu />

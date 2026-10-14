@@ -11,6 +11,7 @@ import {
 import { AnalyticsSettingsButton } from "@/components/analytics/analytics-settings-button";
 import { Logo } from "@/components/shell/hud";
 import { buttonVariants } from "@/components/ui/button";
+import { COFFEE_URL } from "@/lib/links";
 import { navigation } from "@/lib/navigation";
 
 import { LandingControls, WatchRainButton } from "./landing-controls";
@@ -162,6 +163,9 @@ export function LandingPage() {
             <Link href="/settings" className="hover:text-foreground">
               Settings
             </Link>
+            <a href={COFFEE_URL} target="_blank" rel="noreferrer" className="hover:text-foreground">
+              Buy me a coffee ☕
+            </a>
             <AnalyticsSettingsButton />
           </span>
         </div>

@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from "react";
 
+import { COFFEE_URL } from "@/lib/links";
 import { playSfx } from "@/lib/sfx";
 import { useResolvedScene } from "@/stores/scene-store";
 
-import { box, project, ROOM, scaleAt, type Vec3 } from "./projection";
+import { box, project, ROOM, scaleAt, type Vec3, WINDOW } from "./projection";
 import { C } from "./room-palette";
 import { pivot, usePoke, useSpeak } from "./scene-shared";
 
@@ -166,6 +167,94 @@ export function AirConditioner() {
           })}
         </g>
       )}
+    </g>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Buy me a coffee: a takeaway cup on the windowsill                   */
+/* ------------------------------------------------------------------ */
+
+const CUP_AT: Vec3 = [-1.55, WINDOW.bottom, B - 0.04];
+
+export function CoffeeCup() {
+  const speak = useSpeak();
+  const [poke, bump] = usePoke();
+  const [bx, by] = project(CUP_AT);
+
+  function open() {
+    playSfx("sip");
+    bump();
+    window.open(COFFEE_URL, "_blank", "noopener,noreferrer");
+    speak(bx, by - 60, "A coffee for the developer? Thank you so much! ☕");
+  }
+
+  return (
+    <g
+      className="sc-hit"
+      role="link"
+      tabIndex={0}
+      aria-label="Buy me a coffee (opens in a new tab)"
+      onClick={open}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          open();
+        }
+      }}
+    >
+      <title>Buy me a coffee ☕</title>
+      <At at={CUP_AT}>
+        <g transform="scale(1.25)">
+        <ellipse cx="1" cy="1" rx="15" ry="3" fill="#000000" opacity="0.16" />
+
+        {/* A little folded card, so you know what the cup is for */}
+        <g transform="translate(15 0)">
+          <ellipse cx="36" cy="1" rx="36" ry="2.4" fill="#000000" opacity="0.14" />
+          <path d="M1 0 L5 -17 H67 L71 0 Z" fill="#f1e2c7" stroke="#cdb48c" strokeWidth="0.7" strokeLinejoin="round" />
+          <path d="M5 -17 H67 L68 -14.5 H4.4 Z" fill="#e2cda8" />
+          <text
+            x="36"
+            y="-5.6"
+            textAnchor="middle"
+            fontSize="7"
+            fill="#5a4030"
+            style={{ fontFamily: "var(--font-kiwi)" }}
+          >
+            buy me a coffee
+          </text>
+        </g>
+
+        <g key={poke} className={poke ? "sc-sip" : undefined} style={pivot("50% 100%")}>
+          {/* Paper cup */}
+          <path d="M-11 -36 H11 L8 0 H-8 Z" fill="#fbf7f0" />
+          <path d="M-11 -36 H-5 L-3.5 0 H-8 Z" fill="#ffffff" opacity="0.7" />
+          <path d="M5 -36 H11 L8 0 H4 Z" fill="#e8e1d4" opacity="0.8" />
+
+          {/* Kraft sleeve with a little heart */}
+          <path d="M-10.2 -26 H10.2 L9.2 -12 H-9.2 Z" fill="#c0895a" />
+          <path d="M-10.2 -26 H10.2 L10 -24.6 H-10 Z" fill="#a8744a" />
+          <path d="M0 -15.6 C -4.4 -18.4 -4.2 -22 -1.6 -22 C -0.8 -22 -0.2 -21.4 0 -20.8 C 0.2 -21.4 0.8 -22 1.6 -22 C 4.2 -22 4.4 -18.4 0 -15.6 Z" fill="#fff4e4" />
+
+          {/* Lid */}
+          <rect x="-12.5" y="-40" width="25" height="5" rx="2.5" fill="#5b4334" />
+          <path d="M-9 -40 Q 0 -45 9 -40 Z" fill="#6c5040" />
+          <ellipse cx="3.5" cy="-41.6" rx="2" ry="0.8" fill="#2f2219" />
+        </g>
+
+        {/* Steam */}
+        <g fill="none" stroke="#ffffff" strokeWidth="1.8" strokeLinecap="round" opacity="0.6">
+          {[-3, 3].map((x, index) => (
+            <path
+              key={x}
+              d={`M${x} -46 c -3 -4 3 -7 0 -11 c -3 -4 2 -7 0 -10`}
+              className="sc-steam"
+              style={{ animationDelay: `${index * 1.3}s`, ...pivot("50% 100%") }}
+            />
+          ))}
+        </g>
+        </g>
+      </At>
     </g>
   );
 }
