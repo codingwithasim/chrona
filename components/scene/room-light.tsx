@@ -94,36 +94,54 @@ const strength = (time: TimeOfDay) =>
 
 /* ------------------------------------------------------------------ */
 
-/** Window-shaped patches of sun (or moon) on the floor, desk and walls. */
-export function LightPatches() {
+/**
+ * Window-shaped patches of sun (or moon) on the floor or the desk top. The floor patch is drawn
+ * before anything standing on the floor, so the chair and the cat
+ * stand in it rather than being painted over.
+ */
+export function LightPatches({ surface }: { surface: "floor" | "desk" }) {
   return (
     <g style={{ mixBlendMode: "screen" }}>
       <defs>
-        <clipPath id="rm-clip-desk">
-          <path d={DESK_CLIP} />
-        </clipPath>
-        {TIMES.map((time) => (
-          <clipPath key={time} id={`rm-clip-floor-${time}`}>
-            <path d={LIGHT[time].floorClip} />
+        {surface === "desk" ? (
+          <clipPath id="rm-clip-desk">
+            <path d={DESK_CLIP} />
           </clipPath>
-        ))}
+        ) : (
+          TIMES.map((time) => (
+            <clipPath key={time} id={`rm-clip-floor-${time}`}>
+              <path d={LIGHT[time].floorClip} />
+            </clipPath>
+          ))
+        )}
       </defs>
 
       {TIMES.map((time) => {
         const shape = LIGHT[time];
 
         return (
-          <g key={time} style={{ opacity: strength(time), transition: "opacity 1.5s ease" }} fill="var(--rm-glow)">
-            <g clipPath={`url(#rm-clip-floor-${time})`}>
-              {shape.floor.map((points, index) => (
-                <path key={index} d={pathOf(points)} />
-              ))}
-            </g>
-            <g clipPath="url(#rm-clip-desk)">
-              {shape.desk.map((points, index) => (
-                <path key={index} d={pathOf(points)} />
-              ))}
-            </g>
+          <g
+            key={time}
+            style={{
+              // The floor patch sits under the room's tint, so it is lifted to match.
+              opacity: surface === "floor" ? `calc(${strength(time)} * var(--rm-floor-boost, 1))` : strength(time),
+              transition: "opacity 1.5s ease",
+            }}
+            fill="var(--rm-glow)"
+          >
+            {surface === "floor" ? (
+              <g clipPath={`url(#rm-clip-floor-${time})`}>
+                {shape.floor.map((points, index) => (
+                  <path key={index} d={pathOf(points)} />
+                ))}
+              </g>
+            ) : (
+              <g clipPath="url(#rm-clip-desk)">
+                {shape.desk.map((points, index) => (
+                  <path key={index} d={pathOf(points)} />
+                ))}
+              </g>
+            )}
           </g>
         );
       })}

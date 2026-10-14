@@ -16,7 +16,7 @@ import {
   RoomShell,
   WindowUnit,
 } from "./room-architecture";
-import { Cat } from "./room-cat";
+import { Mochi } from "./cat/mochi";
 import { RoomDefs } from "./room-defs";
 import {
   Bed,
@@ -161,15 +161,16 @@ function RoomLayer({
         <Plush />
         <Dresser />
         <Rug />
+        <LightPatches surface="floor" />
         <FloorClutter />
         <Chair />
         <YarnBall kick={yarnKick} offsetX={YARN_OFFSET} />
-        <Cat yarnX={YARN_X} onBat={() => setYarnKick((value) => value + 1)} />
+        <Mochi yarnX={YARN_X} onBat={() => setYarnKick((value) => value + 1)} />
 
         {/* Light, applied like a painter would */}
         <AmbientTint />
         <WindowGlow />
-        <LightPatches />
+        <LightPatches surface="desk" />
         <LightShafts />
         {time && <DustMotes time={time} />}
         <LampLight />

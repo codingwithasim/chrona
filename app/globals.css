@@ -247,6 +247,7 @@
   --rm-ambient: #f3d9c9;
   --rm-ambient-opacity: 0.32;
   --rm-glow: #ffe2c0;
+  --rm-floor-boost: 1.08;
   --rm-patch-morning: 1;
   --rm-patch-day: 0;
   --rm-light: 0.55;
@@ -305,6 +306,7 @@
   --rm-ambient: #d98a52;
   --rm-ambient-opacity: 0.52;
   --rm-glow: #ffb466;
+  --rm-floor-boost: 1.3;
   --rm-patch-evening: 1;
   --rm-patch-day: 0;
   --rm-light: 0.7;
@@ -364,6 +366,7 @@
   --rm-ambient: #1d2f6b;
   --rm-ambient-opacity: 0.84;
   --rm-glow: #8fb0ff;
+  --rm-floor-boost: 3.2;
   --rm-patch-night: 1;
   --rm-patch-day: 0;
   --rm-light: 0.17;
@@ -560,16 +563,6 @@
   100% { transform: translateY(-46px) scaleX(1.5); opacity: 0; }
 }
 
-@keyframes sc-tail {
-  0%, 100% { transform: rotate(0deg); }
-  50% { transform: rotate(-5deg); }
-}
-
-@keyframes sc-breathe {
-  0%, 100% { transform: scaleY(1); }
-  50% { transform: scaleY(1.04); }
-}
-
 @keyframes sc-zzz {
   0% { transform: translate(0, 0) scale(0.6); opacity: 0; }
   30% { opacity: 1; }
@@ -604,8 +597,6 @@
 .sc-curtain { animation: sc-curtain 9s ease-in-out infinite; }
 .sc-twinkle { animation: sc-twinkle 2.8s ease-in-out infinite; }
 .sc-steam { animation: sc-steam 3.6s ease-out infinite; }
-.sc-tail { animation: sc-tail 3.2s ease-in-out infinite; }
-.sc-breathe { animation: sc-breathe 4s ease-in-out infinite; }
 .sc-zzz { animation: sc-zzz 3.2s ease-out infinite; }
 .sc-blink-light { animation: sc-blink-light 3s linear infinite; }
 .sc-neon { animation: sc-neon 7s linear infinite; }
@@ -634,12 +625,6 @@
   35% { transform: rotate(-18deg); }
   55% { transform: rotate(11deg); }
   75% { transform: rotate(-5deg); }
-}
-
-@keyframes sc-ear {
-  0%, 100% { transform: rotate(0deg); }
-  30% { transform: rotate(-16deg); }
-  60% { transform: rotate(9deg); }
 }
 
 @keyframes sc-puff {
@@ -718,11 +703,6 @@
 .sc-mote { animation: sc-mote 14s ease-in-out infinite; }
 
 /* Mochi */
-@keyframes sc-pose-in {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
 @keyframes sc-billow {
   0%, 100% { transform: skewX(0deg) scaleX(1); }
   25% { transform: skewX(3.5deg) scaleX(1.03); }
@@ -761,21 +741,6 @@
   70% { transform: scaleX(1.03); }
 }
 
-@keyframes sc-leg {
-  0%, 100% { transform: rotate(16deg); }
-  50% { transform: rotate(-16deg); }
-}
-
-@keyframes sc-walk-bob {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-2.5px); }
-}
-
-@keyframes sc-lick {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-3px); }
-}
-
 @keyframes sc-roll {
   0% { transform: translateX(0); }
   30% { transform: translateX(28px); }
@@ -788,16 +753,12 @@
   100% { transform: rotate(0deg); }
 }
 
-.sc-pose-in { animation: sc-pose-in 0.35s ease-out; }
-.sc-leg { animation: sc-leg 0.9s ease-in-out infinite; }
 .sc-billow { animation: sc-billow 2.4s ease-in-out; }
 .sc-squish { animation: sc-squish 0.7s ease-out; }
 .sc-fluff { animation: sc-fluff 0.8s ease-out; }
 .sc-sip { animation: sc-sip 1.8s ease-in-out; }
 .sc-flutter { animation: sc-flutter 1.1s ease-out; }
 .sc-swivel { animation: sc-swivel 1.1s ease-in-out; }
-.sc-walk-bob { animation: sc-walk-bob 0.45s ease-in-out infinite; }
-.sc-lick { animation: sc-lick 0.42s ease-in-out infinite; }
 .sc-roll { animation: sc-roll 2.4s cubic-bezier(0.2, 0.8, 0.3, 1); }
 .sc-roll-spin { animation: sc-roll-spin 2.4s cubic-bezier(0.2, 0.8, 0.3, 1); }
 .sc-beam { animation: sc-beam 7s ease-in-out infinite; }
@@ -805,7 +766,6 @@
 .sc-float-up { animation: sc-float-up 1.6s ease-out forwards; }
 .sc-rustle { animation: sc-rustle 0.9s ease-out; }
 .sc-swing { animation: sc-swing 1.8s ease-out; }
-.sc-ear { animation: sc-ear 0.5s ease-in-out; }
 .sc-puff { animation: sc-puff 1.2s ease-out forwards; }
 .sc-room-flash { animation: sc-room-flash 1.1s ease-out forwards; }
 
