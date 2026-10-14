@@ -13,6 +13,10 @@ export const SCALE = 0.86;
 
 /** Where she can wander along the rug (scene x). */
 const RANGE: Pt = [470, 1060];
+
+/** Her bed on the rug; she curls up a little right of her middle. */
+export const BED_X = 600;
+export const BED_SPOT = BED_X + 8;
 const WALK_SPEED = 56;
 const CHASE_SPEED = 160;
 
@@ -115,7 +119,7 @@ export type CatEvents = {
 };
 
 export class CatBrain {
-  x = 820;
+  x = BED_SPOT;
   /** 1 faces left (as drawn), -1 faces right; in between while turning. */
   facing = 1;
   lift = 0;
@@ -239,7 +243,19 @@ export class CatBrain {
       next = "stand";
     }
 
+    // Naps happen in her bed: wander over to it first.
+    if (next === "sleep" && !this.inBed) {
+      this.queue = [{ activity: "loaf" }, { activity: "sleep" }];
+      this.start("walk", BED_SPOT);
+      return;
+    }
+
     this.start(next);
+  }
+
+  /** Curled up in her bed. */
+  get inBed() {
+    return (this.activity === "sleep" || this.activity === "loaf") && Math.abs(this.x - BED_SPOT) < 16;
   }
 
   /* ---------------------------------------------------------------- */

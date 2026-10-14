@@ -22,7 +22,7 @@ import {
   StretchPose,
   WalkPose,
 } from "./art";
-import { type Activity, type ArtPose, CatBrain, FLOOR_Y, type Pt, SCALE } from "./brain";
+import { type Activity, type ArtPose, BED_X, CatBrain, FLOOR_Y, type Pt, SCALE } from "./brain";
 import { FieldMouse } from "./mouse";
 
 /** Fire this event to send a mouse across the floor (handy for testing). */
@@ -39,10 +39,81 @@ const CAT_LINES = [
   "Is it snack time? It's always snack time.",
 ];
 
+/* ------------------------------------------------------------------ */
+/* Her bed: a round knitted cushion on the rug                         */
+/* ------------------------------------------------------------------ */
+
+const BED = { cx: BED_X, cy: FLOOR_Y - 30, rx: 128, ry: 28, innerRx: 98, innerRy: 15, wall: 26 };
+
+function CatBedBack() {
+  const { cx, cy, rx, ry, innerRx, innerRy, wall } = BED;
+
+  return (
+    <g style={{ pointerEvents: "none" }}>
+      <ellipse cx={cx} cy={cy + wall + 6} rx={rx + 10} ry={ry * 0.5} fill="url(#sc-drop-shadow)" />
+      {/* Outer wall and top of the rim */}
+      <ellipse cx={cx} cy={cy + wall} rx={rx} ry={ry} fill="#c9b49a" />
+      <ellipse cx={cx} cy={cy} rx={rx} ry={ry} fill="#e6d6bf" />
+      {/* The hollow, a little darker and soft */}
+      <ellipse cx={cx} cy={cy + 4} rx={innerRx} ry={innerRy} fill="#cdb89c" />
+      <ellipse cx={cx} cy={cy + 7} rx={innerRx - 8} ry={innerRy - 5} fill="#d8c5aa" />
+      {/* Knit stitches along the back of the rim */}
+      <g fill="none" stroke="#cbb595" strokeWidth="1.3" strokeLinecap="round" opacity="0.8">
+        {Array.from({ length: 13 }, (_, i) => {
+          const a = Math.PI + (i + 0.5) * (Math.PI / 13);
+          const x = cx + Math.cos(a) * (rx + innerRx) / 2;
+          const y = cy + Math.sin(a) * (ry + innerRy) / 2;
+          return <path key={i} d={`M${(x - 3).toFixed(1)} ${(y - 2).toFixed(1)} l3 3 l3 -3`} />;
+        })}
+      </g>
+    </g>
+  );
+}
+
+/** The front of the rim, drawn over her when she is curled up inside. */
+function CatBedFront() {
+  const { cx, cy, rx, ry, innerRx, innerRy, wall } = BED;
+  const d = [
+    `M${cx - rx} ${cy}`,
+    `L${cx - rx} ${cy + wall}`,
+    `A${rx} ${ry} 0 0 0 ${cx + rx} ${cy + wall}`,
+    `L${cx + rx} ${cy}`,
+    `A${rx} ${ry} 0 0 0 ${cx + innerRx} ${cy + 4}`,
+    `A${innerRx} ${innerRy} 0 0 1 ${cx - innerRx} ${cy + 4}`,
+    `A${rx} ${ry} 0 0 0 ${cx - rx} ${cy}`,
+    "Z",
+  ].join(" ");
+  const top = [
+    `M${cx - rx} ${cy}`,
+    `A${rx} ${ry} 0 0 0 ${cx + rx} ${cy}`,
+    `A${rx} ${ry} 0 0 0 ${cx + innerRx} ${cy + 4}`,
+    `A${innerRx} ${innerRy} 0 0 1 ${cx - innerRx} ${cy + 4}`,
+    `A${rx} ${ry} 0 0 0 ${cx - rx} ${cy}`,
+    "Z",
+  ].join(" ");
+
+  return (
+    <g style={{ pointerEvents: "none" }}>
+      <path d={d} fill="#c9b49a" />
+      <path d={top} fill="#e6d6bf" />
+      <path d={`M${cx - innerRx + 6} ${cy + 9} A${innerRx} ${innerRy} 0 0 0 ${cx + innerRx - 6} ${cy + 9}`} fill="none" stroke="#bfa889" strokeWidth="2" opacity="0.6" />
+      <g fill="none" stroke="#cbb595" strokeWidth="1.3" strokeLinecap="round" opacity="0.8">
+        {Array.from({ length: 13 }, (_, i) => {
+          const a = (i + 0.5) * (Math.PI / 13);
+          const x = cx + Math.cos(a) * (rx + innerRx) / 2;
+          const y = cy + 2 + Math.sin(a) * (ry + innerRy) / 2;
+          return <path key={i} d={`M${(x - 3).toFixed(1)} ${(y - 2).toFixed(1)} l3 3 l3 -3`} />;
+        })}
+      </g>
+    </g>
+  );
+}
+
 /** How far around her she notices the pointer, in scene units. */
 const NOTICE = 520;
 
 type View = {
+  inBed: boolean;
   pose: ArtPose;
   activity: Activity;
   eyes: Eyes;
@@ -82,6 +153,7 @@ function viewOf(brain: CatBrain): View {
   }
 
   return {
+    inBed: brain.inBed,
     pose: brain.pose,
     activity,
     eyes,
@@ -94,6 +166,7 @@ function viewOf(brain: CatBrain): View {
 }
 
 const sameView = (a: View, b: View) =>
+  a.inBed === b.inBed &&
   a.pose === b.pose &&
   a.activity === b.activity &&
   a.eyes === b.eyes &&
@@ -116,6 +189,7 @@ export function Mochi({ yarnX, onBat }: { yarnX: number; onBat: () => void }) {
   const pets = useRef(0);
 
   const [view, setView] = useState<View>({
+    inBed: true,
     pose: "loaf",
     activity: "sleep",
     eyes: "closed",
@@ -332,8 +406,9 @@ export function Mochi({ yarnX, onBat }: { yarnX: number; onBat: () => void }) {
   return (
     <g>
       <CatDefs />
+      <CatBedBack />
 
-      <g ref={root} transform={`translate(820 ${FLOOR_Y}) scale(${SCALE} ${SCALE})`} style={legStyle}>
+      <g ref={root} transform={`translate(${BED_X + 8} ${FLOOR_Y}) scale(${SCALE} ${SCALE})`} style={legStyle}>
         <g className="sc-hit" onClick={pet}>
           <g key={view.pose} className="sc-pose-in">
             {view.pose === "loaf" && <LoafPose {...head} sleeping={view.activity === "sleep"} />}
@@ -357,6 +432,8 @@ export function Mochi({ yarnX, onBat }: { yarnX: number; onBat: () => void }) {
           </g>
         </g>
       </g>
+
+      {view.inBed && <CatBedFront />}
 
       <g ref={mouseLayer} />
 
