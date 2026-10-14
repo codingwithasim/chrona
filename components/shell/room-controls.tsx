@@ -8,6 +8,7 @@ import {
   Lamp,
   Leaf,
   type LucideIcon,
+  MapPin,
   Moon,
   Snowflake,
   Sparkles,
@@ -19,7 +20,10 @@ import {
   Wand2,
 } from "lucide-react";
 
+import { useState } from "react";
+
 import { Switch } from "@/components/ui/switch";
+import { locate } from "@/lib/live-weather";
 import {
   type SeasonSetting,
   seasonLabels,
@@ -54,7 +58,8 @@ const seasonOptions: Option<SeasonSetting>[] = [
   { value: "winter", ...seasonLabels.winter, icon: TreePine },
 ];
 
-const weatherOptions: Option<Weather>[] = [
+const weatherOptions: Option<Weather | "live">[] = [
+  { value: "live", label: "Live", jp: "いま", icon: MapPin },
   { value: "clear", ...weatherLabels.clear, icon: Cloud },
   { value: "drizzle", ...weatherLabels.drizzle, icon: CloudDrizzle },
   { value: "storm", ...weatherLabels.storm, icon: CloudLightning },
@@ -126,6 +131,29 @@ export function RoomControls() {
   const setSeason = useSceneStore((state) => state.setSeason);
   const weather = useSceneStore((state) => state.weather);
   const setWeather = useSceneStore((state) => state.setWeather);
+  const liveWeather = useSceneStore((state) => state.liveWeather);
+  const setLiveWeather = useSceneStore((state) => state.setLiveWeather);
+  const [locating, setLocating] = useState(false);
+  const [noLocation, setNoLocation] = useState(false);
+
+  async function pickWeather(value: Weather | "live") {
+    setNoLocation(false);
+
+    if (value !== "live") {
+      setWeather(value);
+      return;
+    }
+
+    setLocating(true);
+
+    try {
+      setLiveWeather(true, await locate());
+    } catch {
+      setNoLocation(true);
+    } finally {
+      setLocating(false);
+    }
+  }
 
   const sfxOn = useSceneStore((state) => state.sfxOn);
   const setSfxOn = useSceneStore((state) => state.setSfxOn);
@@ -150,13 +178,30 @@ export function RoomControls() {
         color="var(--ember)"
       />
 
-      <Segmented
-        label="Weather · てんき"
-        options={weatherOptions}
-        value={weather}
-        onChange={setWeather}
-        color="var(--sky)"
-      />
+      <div className="space-y-2">
+        <Segmented
+          label="Weather · てんき"
+          options={weatherOptions}
+          value={liveWeather ? "live" : weather}
+          onChange={(value) => void pickWeather(value)}
+          color="var(--sky)"
+        />
+
+        {locating ? (
+          <p className="text-[11px] text-muted-foreground">Finding the weather near you…</p>
+        ) : noLocation ? (
+          <p className="text-[11px] leading-4 text-destructive">
+            Couldn&apos;t get your location. You can allow it in your browser&apos;s site settings.
+          </p>
+        ) : (
+          liveWeather && (
+            <p className="text-[11px] leading-4 text-muted-foreground">
+              Matching the weather near you: {weatherLabels[weather].label.toLowerCase()} right now.
+              Uses your rough location, shared only with Open-Meteo.
+            </p>
+          )
+        )}
+      </div>
 
       <div className="space-y-3">
         <label className="flex items-center justify-between gap-3 text-[13px]">

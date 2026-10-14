@@ -16,6 +16,7 @@ import { useWorldClockStore } from "@/stores/world-clock-store";
 
 import { useShortcuts } from "@/hooks/use-shortcuts";
 import { toggleFullscreen } from "@/lib/fullscreen";
+import { fetchWeather } from "@/lib/live-weather";
 import { useFocusStore } from "@/stores/focus-store";
 import { useMixerStore } from "@/stores/mixer-store";
 import { useMusicStore } from "@/stores/music-store";
@@ -44,6 +45,40 @@ export function SceneController() {
   const setGaze = useSceneStore((state) => state.setGaze);
 
   const setSoundOn = useSceneStore((state) => state.setSoundOn);
+  const liveWeather = useSceneStore((state) => state.liveWeather);
+  const place = useSceneStore((state) => state.place);
+
+  // Following the real weather: check now, then every half hour.
+  useEffect(() => {
+    if (!hydrated || !liveWeather || !place) {
+      return;
+    }
+
+    let cancelled = false;
+    let retry = 0;
+    const update = (again: boolean) =>
+      fetchWeather(place)
+        .then((weather) => {
+          if (!cancelled && useSceneStore.getState().liveWeather) {
+            useSceneStore.getState().applyLiveWeather(weather);
+          }
+        })
+        .catch(() => {
+          // Offline or busy: keep the last weather we knew, try once more soon.
+          if (again && !cancelled) {
+            retry = window.setTimeout(() => void update(false), 2 * 60_000);
+          }
+        });
+
+    void update(true);
+    const id = window.setInterval(() => void update(true), 30 * 60_000);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(id);
+      window.clearTimeout(retry);
+    };
+  }, [hydrated, liveWeather, place]);
 
   useShortcuts({
     g: () => setGaze(!gaze),

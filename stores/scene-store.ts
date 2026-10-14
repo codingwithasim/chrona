@@ -5,6 +5,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 import { useNow } from "@/hooks/use-now";
+import type { Place } from "@/lib/live-weather";
 import {
   isDarkTime,
   resolveSeason,
@@ -27,8 +28,16 @@ type SceneStore = {
   setSeason: (season: SeasonSetting) => void;
 
   weather: Weather;
+  /** Pick the weather yourself (this stops following the real one). */
   setWeather: (weather: Weather) => void;
   cycleWeather: () => Weather;
+
+  /** Follow the real weather where you are (opt-in). */
+  liveWeather: boolean;
+  /** Rounded to ~10 km, and only kept on this device. */
+  place: Place | null;
+  setLiveWeather: (liveWeather: boolean, place?: Place) => void;
+  applyLiveWeather: (weather: Weather) => void;
 
   /**
    * Ambient audio. Not persisted: browsers only
@@ -69,7 +78,7 @@ export const useSceneStore = create<SceneStore>()(
       setSeason: (season) => set({ season }),
 
       weather: "drizzle",
-      setWeather: (weather) => set({ weather }),
+      setWeather: (weather) => set({ weather, liveWeather: false }),
       cycleWeather: () => {
         const next =
           WEATHER_CYCLE[
@@ -77,9 +86,15 @@ export const useSceneStore = create<SceneStore>()(
               WEATHER_CYCLE.length
           ];
 
-        set({ weather: next });
+        set({ weather: next, liveWeather: false });
         return next;
       },
+
+      liveWeather: false,
+      place: null,
+      setLiveWeather: (liveWeather, place) =>
+        set((state) => ({ liveWeather, place: place ?? state.place })),
+      applyLiveWeather: (weather) => set({ weather }),
 
       soundOn: false,
       setSoundOn: (soundOn) => set({ soundOn }),
@@ -115,6 +130,8 @@ export const useSceneStore = create<SceneStore>()(
         timeOfDay: state.timeOfDay,
         season: state.season,
         weather: state.weather,
+        liveWeather: state.liveWeather,
+        place: state.place,
         volume: state.volume,
         natureOn: state.natureOn,
         sfxOn: state.sfxOn,
