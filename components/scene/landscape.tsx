@@ -505,8 +505,7 @@ export function Landscape({
           strokeWidth="1.2"
           opacity="0.6"
         />
-        <path d={MOUNTAIN_FOREST.patches} style={{ fill: shadeOf("var(--sc-mtn-mid)", 14), opacity: 0.55 }} />
-        <path d={MOUNTAIN_FOREST.ridge} style={{ fill: shadeOf("var(--sc-mtn-mid)", 14) }} />
+        <path d={MOUNTAIN_FOREST.ridge} style={{ fill: shadeOf("var(--sc-mtn-mid)", 10), opacity: 0.7 }} />
 
         {/* Valley mist */}
         <rect

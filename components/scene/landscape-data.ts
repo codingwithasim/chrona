@@ -54,16 +54,24 @@ function forest(hill: Hill, seed: number): Tree[] {
     return (roll < 0.5 ? 1 : roll < 0.85 ? 2 : 3) as 1 | 2 | 3;
   };
 
-  // A bumpy canopy along the ridge, with the odd cedar poking through.
-  for (let x = hill.x0 + 18; x < hill.x1 - 14; x += 7 + random() * 6) {
+  // Mostly open meadow: a couple of groves along the ridge, and the
+  // odd lone tree between them.
+  const span = hill.x1 - hill.x0;
+  const groves = Array.from({ length: 2 }, () => {
+    const from = hill.x0 + 30 + random() * (span - 120);
+    return [from, from + span * (0.12 + random() * 0.1)] as const;
+  });
+
+  for (let x = hill.x0 + 18; x < hill.x1 - 14; x += 9 + random() * 7) {
     const top = hillTop(hill, x);
     const height = hill.base - top;
+    const inGrove = groves.some(([from, to]) => x >= from && x <= to);
 
-    if (height < 10) {
+    if (height < 10 || (!inGrove && random() > 0.06)) {
       continue;
     }
 
-    const cedar = random() < 0.22;
+    const cedar = random() < 0.15;
     const r = 5 + random() * 4 + height * 0.035;
 
     trees.push({
@@ -75,17 +83,17 @@ function forest(hill: Hill, seed: number): Tree[] {
     });
   }
 
-  // Woods on the slopes: dark stands of cedar, or round broadleaf groves.
-  for (let cluster = 0; cluster < 5; cluster++) {
-    const cx = hill.x0 + 40 + random() * (hill.x1 - hill.x0 - 80);
+  // One small wood down the slope.
+  for (let cluster = 0; cluster < 1; cluster++) {
+    const cx = hill.x0 + 50 + random() * (span - 100);
     const top = hillTop(hill, cx);
-    const cy = top + 14 + random() * Math.max(6, hill.base - top - 30);
-    const cedar = random() < 0.5;
-    const count = cedar ? 11 : 7;
+    const cy = top + 16 + random() * Math.max(6, hill.base - top - 34);
+    const cedar = random() < 0.4;
+    const count = cedar ? 6 : 4;
 
     for (let i = 0; i < count; i++) {
-      const x = cx + (random() - 0.5) * (cedar ? 38 : 46);
-      const y = Math.max(hillTop(hill, x) + 10, cy + (random() - 0.5) * 18);
+      const x = cx + (random() - 0.5) * (cedar ? 26 : 32);
+      const y = Math.max(hillTop(hill, x) + 10, cy + (random() - 0.5) * 12);
 
       if (y < hill.base - 6) {
         trees.push({
@@ -153,26 +161,22 @@ function ridgeLine(segments: P[][]) {
   };
 }
 
-/**
- * A band of tiny conifers following a line, as one path. With `taper`,
- * the band swells in the middle and thins at the ends, like a grove.
- */
+/** A band of tiny conifers following a line, as one path. */
 function treeline(
   lineY: (x: number) => number,
   x0: number,
   x1: number,
   random: () => number,
-  { offset, height, depth, taper = false }: { offset: number; height: number; depth: number; taper?: boolean }
+  { offset, height, depth }: { offset: number; height: number; depth: number }
 ) {
   const tops: string[] = [];
   const bottom: string[] = [];
 
   for (let x = x0; x <= x1; x += 2.6 + random() * 2.6) {
-    const swell = taper ? Math.sin((Math.PI * (x - x0)) / (x1 - x0)) : 1;
     const base = lineY(x) + offset;
-    const h = height * (0.45 + random() * 0.75) * (0.4 + 0.6 * swell);
+    const h = height * (0.45 + random() * 0.75);
     tops.push(`${round(x - 1.4)} ${round(base)} L${round(x)} ${round(base - h)} L${round(x + 1.4)} ${round(base)}`);
-    bottom.push(`${round(x)} ${round(base + depth * swell)}`);
+    bottom.push(`${round(x)} ${round(base + depth)}`);
   }
 
   return `M${tops.join(" L")} L${bottom.reverse().join(" L")} Z`;
@@ -181,20 +185,9 @@ function treeline(
 const midRidge = ridgeLine(MID_RIDGE);
 const ridgeRandom = mulberry32(57);
 
-/** Conifers along the mountain ridge, and patches of woods on its face. */
+/** A fine line of conifers along the mountain ridge. */
 export const MOUNTAIN_FOREST = {
-  ridge: treeline(midRidge, 444, 1158, ridgeRandom, { offset: 2.5, height: 7, depth: 7 }),
-  patches: Array.from({ length: 16 }, () => {
-    const x0 = 450 + ridgeRandom() * 660;
-    const length = 18 + ridgeRandom() * 46;
-    const drop = 9 + ridgeRandom() * 30;
-    return treeline((x) => midRidge(x) + drop, x0, x0 + length, ridgeRandom, {
-      offset: 0,
-      height: 3.6,
-      depth: 3 + ridgeRandom() * 6,
-      taper: true,
-    });
-  }).join(" "),
+  ridge: treeline(midRidge, 444, 1158, ridgeRandom, { offset: 2.5, height: 4.5, depth: 6 }),
 };
 
 /** Where the little torii gate stands, on the right hill. */
