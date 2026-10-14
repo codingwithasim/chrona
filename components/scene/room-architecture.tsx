@@ -26,7 +26,7 @@ const PLANK_WIDTH = 0.42;
 
 const PLANKS = (() => {
   const random = mulberry32(17);
-  const planks: Array<{ d: string; fill: string; seams: string[] }> = [];
+  const planks: Array<{ d: string; fill: string; seams: string[]; grain: string[] }> = [];
   const tones = [C.floorA, C.floorB, C.floorC];
 
   for (let x = L; x < R - 0.001; x += PLANK_WIDTH) {
@@ -38,10 +38,26 @@ const PLANKS = (() => {
       seams.push(poly([x, F, z], [x1, F, z], [x1, F, z - 0.015], [x, F, z - 0.015]));
     }
 
+    // Fine grain running along each board, gently wavering.
+    const grain: string[] = [];
+    for (let g = 0; g < 3; g++) {
+      const base = x + (x1 - x) * (0.2 + g * 0.3 + random() * 0.1);
+      const phase = random() * 6;
+      const points: string[] = [];
+
+      for (let z = B; z >= N; z -= 0.35) {
+        const [px, py] = project([base + Math.sin(z * 1.7 + phase) * 0.025, F, z]);
+        points.push(`${px.toFixed(1)} ${py.toFixed(1)}`);
+      }
+
+      grain.push(`M${points.join(" L")}`);
+    }
+
     planks.push({
       d: poly([x, F, B], [x1, F, B], [x1, F, N], [x, F, N]),
       fill: tones[Math.floor(random() * tones.length)],
       seams,
+      grain,
     });
   }
 
@@ -83,6 +99,11 @@ export function RoomShell() {
           {plank.seams.map((seam, seamIndex) => (
             <path key={seamIndex} d={seam} fill={C.seam} opacity="0.5" />
           ))}
+          <g fill="none" stroke={C.seam} strokeWidth="0.7" opacity="0.14">
+            {plank.grain.map((line, lineIndex) => (
+              <path key={lineIndex} d={line} />
+            ))}
+          </g>
         </g>
       ))}
       <g stroke={C.seam} strokeWidth="1" opacity="0.4">
@@ -109,8 +130,57 @@ export function RoomShell() {
         <line x1={bx0} y1={by0} x2={bx1} y2={by0} />
       </g>
 
+      {/* Ambient shadow in the corners, where light reaches less */}
+      <SoftCorners />
+
       {/* Keep the window hole free of the room's tint */}
       <rect x={gx0} y={gy0} width={gx1 - gx0} height={gy1 - gy0} fill="none" />
+    </g>
+  );
+}
+
+/** Soft, painterly shadow where walls meet each other and the ceiling. */
+function SoftCorners() {
+  const [lx, ty] = project([L, T, B]);
+  const [rx, by] = project([R, F, B]);
+  const [lxNear] = project([L, T, B - 1.2]);
+  const [rxNear] = project([R, T, B - 1.2]);
+  const shade = "#1e2633";
+
+  return (
+    <g style={{ pointerEvents: "none" }}>
+      <defs>
+        <linearGradient id="rm-corner-left" gradientUnits="userSpaceOnUse" x1={lx} y1="0" x2={lx + 90} y2="0">
+          <stop offset="0" stopColor={shade} stopOpacity="0.16" />
+          <stop offset="1" stopColor={shade} stopOpacity="0" />
+        </linearGradient>
+        <linearGradient id="rm-corner-right" gradientUnits="userSpaceOnUse" x1={rx} y1="0" x2={rx - 90} y2="0">
+          <stop offset="0" stopColor={shade} stopOpacity="0.16" />
+          <stop offset="1" stopColor={shade} stopOpacity="0" />
+        </linearGradient>
+        <linearGradient id="rm-corner-ceiling" gradientUnits="userSpaceOnUse" x1="0" y1={ty} x2="0" y2={ty + 70}>
+          <stop offset="0" stopColor={shade} stopOpacity="0.14" />
+          <stop offset="1" stopColor={shade} stopOpacity="0" />
+        </linearGradient>
+        <linearGradient id="rm-side-left" gradientUnits="userSpaceOnUse" x1={lx} y1="0" x2={lxNear} y2="0">
+          <stop offset="0" stopColor={shade} stopOpacity="0.14" />
+          <stop offset="1" stopColor={shade} stopOpacity="0" />
+        </linearGradient>
+        <linearGradient id="rm-side-right" gradientUnits="userSpaceOnUse" x1={rx} y1="0" x2={rxNear} y2="0">
+          <stop offset="0" stopColor={shade} stopOpacity="0.14" />
+          <stop offset="1" stopColor={shade} stopOpacity="0" />
+        </linearGradient>
+      </defs>
+
+      {/* Back wall, along both corners and under the ceiling */}
+      <rect x={lx} y={ty} width="90" height={by - ty} fill="url(#rm-corner-left)" />
+      <rect x={rx - 90} y={ty} width="90" height={by - ty} fill="url(#rm-corner-right)" />
+      <rect x={lx} y={ty} width={rx - lx} height="70" fill="url(#rm-corner-ceiling)" />
+
+      {/* Side walls, darkest at the back corner */}
+      <path d={poly([L, T, B], [L, F, B], [L, F, B - 1.2], [L, T, B - 1.2])} fill="url(#rm-side-left)" />
+      <path d={poly([R, T, B], [R, F, B], [R, F, B - 1.2], [R, T, B - 1.2])} fill="url(#rm-side-right)" />
+      <path d={poly([L, T, B], [R, T, B], [R, T, B - 1.2], [L, T, B - 1.2])} fill={shade} opacity="0.06" />
     </g>
   );
 }

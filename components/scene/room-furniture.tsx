@@ -286,6 +286,7 @@ export function Bed() {
       }}
     >
       <path d={poly([2.7, F, 6.1], [5, F, 6.1], [5, F, 6.6], [2.7, F, 6.6])} fill="#000000" opacity="0.15" />
+      <path d={poly([2.45, F, 6.15], [2.76, F, 6.15], [2.76, F, 9.75], [2.55, F, 9.75])} fill="#1e2633" opacity="0.12" />
 
       <path d={headboard.front} fill={C.woodFront} />
       <path d={headboard.left} fill={C.woodSide} />
@@ -480,6 +481,8 @@ export function Bookcase() {
 
   return (
     <g className="sc-hit" onClick={pullOut}>
+      {/* Contact shadow on the floor along the front of the case */}
+      <path d={poly([CASE.x1, F, CASE.z0 - 0.1], [CASE.x1 + 0.3, F, CASE.z0 - 0.1], [CASE.x1 + 0.2, F, CASE.z1], [CASE.x1, F, CASE.z1])} fill="#1e2633" opacity="0.13" />
       <path d={back} fill={C.woodDark} />
       <path d={farSide.front} fill={C.woodSide} />
 

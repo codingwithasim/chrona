@@ -39,6 +39,7 @@ import {
   LampLight,
   LightPatches,
   LightShafts,
+  Vignette,
   WallLight,
   WindowGlow,
 } from "./room-light";
@@ -175,6 +176,7 @@ function RoomLayer({
         {time && <DustMotes time={time} />}
         <LampLight />
         <Atmosphere />
+        <Vignette />
 
         {bubble && <SpeechBubble key={bubble.id} bubble={bubble} />}
       </svg>

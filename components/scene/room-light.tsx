@@ -371,6 +371,19 @@ export function LampLight() {
   );
 }
 
+/** A gentle darkening towards the edges, like a painter would add. */
+export function Vignette() {
+  return (
+    <g style={{ pointerEvents: "none" }}>
+      <radialGradient id="rm-vignette" cx="800" cy="470" r="900" gradientUnits="userSpaceOnUse">
+        <stop offset="0.55" stopColor="#141a26" stopOpacity="0" />
+        <stop offset="1" stopColor="#141a26" stopOpacity="0.22" />
+      </radialGradient>
+      <rect x="0" y="0" width="1600" height="1000" fill="url(#rm-vignette)" />
+    </g>
+  );
+}
+
 /** Color grading, and darkness when the lamp is switched off. */
 export function Atmosphere() {
   const lampOn = useSceneStore((state) => state.lampOn);
