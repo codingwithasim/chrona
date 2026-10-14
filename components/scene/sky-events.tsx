@@ -14,7 +14,7 @@ import { announceOutside, type OutsideEventKind } from "./scene-shared";
  * flutter by in the warm months.
  */
 
-type EventKind = OutsideEventKind | "car" | "bike";
+export type EventKind = OutsideEventKind | "car" | "bike";
 
 export type SkyEvent = {
   id: number;
@@ -312,9 +312,53 @@ function Butterfly({ event }: { event: SkyEvent }) {
   );
 }
 
+/** Fire this to make something happen outside right away. */
+export const SUMMON_EVENT = "chrona:summon";
+
+export function summonOutside(kind: EventKind) {
+  window.dispatchEvent(new CustomEvent<EventKind>(SUMMON_EVENT, { detail: kind }));
+}
+
 /** Schedules everything that happens outside, for the current scene. */
 export function useOutsideEvents(scene: ResolvedScene | null) {
   const [events, setEvents] = useState<SkyEvent[]>([]);
+
+  // Asked for by name (from the room menu): no dice roll, just happens.
+  useEffect(() => {
+    const timers = new Set<number>();
+
+    function onSummon(event: Event) {
+      const kind = (event as CustomEvent<EventKind>).detail;
+      const rule = RULES.find((item) => item.kind === kind);
+
+      if (!rule) {
+        return;
+      }
+
+      const sky: SkyEvent = { id: ++eventId, kind, ...rule.make() };
+      setEvents((list) => [...list, sky]);
+
+      if (kind !== "car" && kind !== "bike") {
+        announceOutside(kind);
+      }
+
+      if (kind === "train") {
+        ambienceOneShot("train");
+      }
+
+      const id = window.setTimeout(() => {
+        timers.delete(id);
+        setEvents((list) => list.filter((item) => item.id !== sky.id));
+      }, sky.duration * 1000 + 300);
+      timers.add(id);
+    }
+
+    window.addEventListener(SUMMON_EVENT, onSummon);
+    return () => {
+      window.removeEventListener(SUMMON_EVENT, onSummon);
+      timers.forEach((id) => window.clearTimeout(id));
+    };
+  }, []);
 
   const time = scene?.time;
   const season = scene?.season;

@@ -7,7 +7,7 @@ import { playSfx } from "@/lib/sfx";
 import { useResolvedScene } from "@/stores/scene-store";
 
 import { Landscape } from "./landscape";
-import { RainCanvas, triggerSky } from "./rain-canvas";
+import { RainCanvas, type SkyEventKind, triggerSky } from "./rain-canvas";
 import type { TimeOfDay } from "@/lib/scene-time";
 
 import {
@@ -71,6 +71,9 @@ import { SpeakContext, svgProps } from "./scene-shared";
  */
 
 type Bubble = { id: number; x: number; y: number; text: string };
+
+/** Fire this (optionally with "lightning", "firework" or "gust") to knock on the window. */
+export const KNOCK_EVENT = "chrona:knock";
 
 /** The yarn ball's spot on the rug, nudged left of the tool card. */
 const YARN_OFFSET = -120;
@@ -271,14 +274,16 @@ export function RoomScene() {
   const [flashKey, setFlashKey] = useState(0);
 
   /** Clicking the window does something different in every weather. */
-  function knock() {
-    if (scene.weather === "clear") {
+  function knock(kind?: SkyEventKind) {
+    const what = kind ?? (scene.weather === "clear" ? "firework" : scene.weather === "snow" ? "gust" : "lightning");
+
+    if (what === "firework") {
       triggerSky("firework");
       window.setTimeout(() => playSfx("firework"), 900);
       return;
     }
 
-    if (scene.weather === "snow") {
+    if (what === "gust") {
       triggerSky("gust");
       playSfx("rustle");
       return;
@@ -290,6 +295,17 @@ export function RoomScene() {
     // Light travels faster than sound.
     window.setTimeout(() => playSfx("thunder"), 280);
   }
+
+  // The room menu can knock too, asking for something in particular.
+  const knockRef = useRef(knock);
+  useEffect(() => {
+    knockRef.current = knock;
+  });
+  useEffect(() => {
+    const onKnock = (event: Event) => knockRef.current((event as CustomEvent<SkyEventKind | undefined>).detail);
+    window.addEventListener(KNOCK_EVENT, onKnock);
+    return () => window.removeEventListener(KNOCK_EVENT, onKnock);
+  }, []);
 
   return (
     <div
@@ -307,7 +323,7 @@ export function RoomScene() {
         />
       )}
 
-      <RoomLayer onKnock={knock} time={mounted ? scene.time : null} />
+      <RoomLayer onKnock={() => knock()} time={mounted ? scene.time : null} />
 
       {flashKey > 0 && (
         <div
