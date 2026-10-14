@@ -29,7 +29,7 @@ import {
 
 const phases: Record<DayPhase, { icon: typeof Sun; color: string; label: string }> = {
   night: { icon: Moon, color: "var(--lavender)", label: "Night" },
-  dawn: { icon: Sunrise, color: "var(--sakura)", label: "Sunrise" },
+  dawn: { icon: Sunrise, color: "var(--ember)", label: "Sunrise" },
   day: { icon: Sun, color: "var(--honey)", label: "Daytime" },
   dusk: { icon: Sunset, color: "#f59e5b", label: "Sunset" },
 };

@@ -47,7 +47,7 @@ export const pomodoroModes: Record<
   PomodoroMode,
   { label: string; jp: string; color: string }
 > = {
-  focus: { label: "Focus", jp: "集中", color: "var(--sakura)" },
+  focus: { label: "Focus", jp: "集中", color: "var(--ember)" },
   shortBreak: { label: "Short break", jp: "小休憩", color: "var(--mint)" },
   longBreak: { label: "Long break", jp: "長休憩", color: "var(--sky)" },
 };

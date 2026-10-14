@@ -157,7 +157,7 @@ export const CLOUDS: Cloud[] = [
   {
     id: "a",
     cx: 640,
-    cy: 262,
+    cy: 300,
     scale: 1,
     drift: 120,
     puffs: [
@@ -168,7 +168,7 @@ export const CLOUDS: Cloud[] = [
   {
     id: "b",
     cx: 985,
-    cy: 228,
+    cy: 268,
     scale: 0.9,
     drift: 150,
     puffs: [
@@ -179,7 +179,7 @@ export const CLOUDS: Cloud[] = [
   {
     id: "c",
     cx: 860,
-    cy: 330,
+    cy: 352,
     scale: 0.55,
     drift: 90,
     puffs: [[-60, 10, 26], [-24, -10, 34], [18, -4, 32], [52, 12, 22], [0, 14, 30]],

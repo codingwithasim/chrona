@@ -43,7 +43,7 @@ export function TimerPresets() {
     <div className="space-y-6">
       <section className="space-y-3">
         <p className="flex items-center gap-2 text-xs font-bold tracking-wider text-muted-foreground uppercase">
-          <Hourglass className="size-4 text-sakura" />
+          <Hourglass className="size-4 text-ember" />
           Presets
         </p>
 
@@ -53,7 +53,7 @@ export function TimerPresets() {
               <button
                 type="button"
                 onClick={() => setDuration(preset.duration, preset.label)}
-                className="flex w-full flex-col items-start rounded-xl border border-border bg-card/70 px-3 py-2 text-left transition-all hover:-translate-y-0.5 hover:border-sakura hover:shadow-cel-sm"
+                className="flex w-full flex-col items-start rounded-xl border border-border bg-card/70 px-3 py-2 text-left transition-all hover:-translate-y-0.5 hover:border-ember hover:shadow-cel-sm"
               >
                 <span className="truncate text-sm font-bold">
                   {preset.label}

@@ -154,7 +154,7 @@ export function RoomControls() {
         options={seasonOptions}
         value={season}
         onChange={setSeason}
-        color="var(--sakura)"
+        color="var(--ember)"
       />
 
       <Segmented

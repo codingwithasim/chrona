@@ -1,0 +1,641 @@
+"use client";
+
+import { useNow } from "@/hooks/use-now";
+import { playSfx } from "@/lib/sfx";
+
+import {
+  box,
+  DESK,
+  poly,
+  project,
+  ROOM,
+  scaleAt,
+  type Vec3,
+} from "./projection";
+import { C } from "./room-palette";
+import { mulberry32, pick, pivot, usePoke, useSpeak } from "./scene-shared";
+
+const { floor: F, back: B } = ROOM;
+
+function line(a: Vec3, b: Vec3) {
+  const [x1, y1] = project(a);
+  const [x2, y2] = project(b);
+  return { x1, y1, x2, y2 };
+}
+
+/* ------------------------------------------------------------------ */
+/* Desk                                                                */
+/* ------------------------------------------------------------------ */
+
+const DESK_GRAIN = (() => {
+  const random = mulberry32(31);
+  const lines: Array<{ a: Vec3; b: Vec3; opacity: number }> = [];
+
+  for (let i = 0; i < 14; i++) {
+    const z = DESK.front + 0.05 + random() * (DESK.back - DESK.front - 0.1);
+    const x0 = DESK.left + random() * 1.5;
+    const x1 = DESK.right - random() * 1.5;
+
+    lines.push({ a: [x0, DESK.top, z], b: [x1, DESK.top, z], opacity: 0.08 + random() * 0.12 });
+  }
+
+  return lines;
+})();
+
+export function Desk() {
+  const top = box(DESK.left, DESK.right, DESK.top - DESK.thickness, DESK.top, DESK.front, DESK.back);
+  const drawers = box(1.65, 2.95, F + 0.12, DESK.top - DESK.thickness, DESK.front + 0.03, DESK.back - 0.05);
+  const drawerFront = (y0: number, y1: number) =>
+    poly([1.72, y0, DESK.front + 0.02], [2.88, y0, DESK.front + 0.02], [2.88, y1, DESK.front + 0.02], [1.72, y1, DESK.front + 0.02]);
+
+  const legs: Array<[number, number]> = [
+    [DESK.left + 0.08, DESK.left + 0.18],
+    [1.55, 1.65],
+  ];
+
+  return (
+    <g>
+      {/* Shadow under the desk, on the wall and floor */}
+      <path d={poly([DESK.left, F, B], [DESK.right, F, B], [DESK.right, DESK.top, B], [DESK.left, DESK.top, B])} fill="#1d2433" opacity="0.28" />
+      <path d={poly([DESK.left - 0.1, F, DESK.front - 0.2], [DESK.right + 0.1, F, DESK.front - 0.2], [DESK.right, F, B], [DESK.left, F, B])} fill="#1d2433" opacity="0.3" />
+
+      {/* Legs */}
+      {legs.map(([x0, x1]) => {
+        const leg = box(x0, x1, F, DESK.top - DESK.thickness, DESK.front + 0.05, DESK.front + 0.15);
+        return (
+          <g key={x0}>
+            <path d={leg.front} fill={C.woodFront} />
+            <path d={x0 < 0 ? leg.right : leg.left} fill={C.woodSide} />
+          </g>
+        );
+      })}
+
+      {/* Drawer unit */}
+      <path d={drawers.left} fill={C.woodSide} />
+      <path d={drawers.front} fill={C.woodFront} />
+      {[
+        [-1.5, -1.95],
+        [-1.98, -2.36],
+      ].map(([y1, y0]) => {
+        const [hx, hy] = project([2.3, (y0 + y1) / 2, DESK.front]);
+        return (
+          <g key={y0}>
+            <path d={drawerFront(y0, y1)} fill="#d2a970" />
+            <path d={drawerFront(y0, y1)} fill="none" stroke={C.woodDark} strokeWidth="1" opacity="0.4" />
+            <rect x={hx - 9} y={hy - 2} width="18" height="4" rx="2" fill="#8a6a44" />
+            <rect x={hx - 9} y={hy - 2} width="18" height="1.4" rx="0.7" fill="#ffffff" opacity="0.4" />
+          </g>
+        );
+      })}
+
+      {/* Top */}
+      <path d={top.top} fill={C.woodTop} />
+      <path d={top.top} fill="url(#rm-desk-top)" />
+      <g stroke={C.woodDark} strokeLinecap="round">
+        {DESK_GRAIN.map((grain, index) => (
+          <line key={index} {...line(grain.a, grain.b)} strokeWidth="0.8" opacity={grain.opacity} />
+        ))}
+      </g>
+      <path d={top.front} fill={C.woodFront} />
+      <line {...line([DESK.left, DESK.top, DESK.front], [DESK.right, DESK.top, DESK.front])} stroke="#ffffff" strokeWidth="1.2" opacity="0.5" />
+      <path d={top.left} fill={C.woodSide} />
+      <path d={top.right} fill={C.woodSide} />
+    </g>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Chair                                                               */
+/* ------------------------------------------------------------------ */
+
+export function Chair() {
+  const [poke, bump] = usePoke();
+
+  const z = 7.5;
+  const s = scaleAt(z);
+  const [cx] = project([-1.9, 0, z]);
+  const [, topY] = project([0, 0.15, z]);
+  const [, bottomY] = project([0, -1.12, z]);
+  const [, seatY] = project([0, -1.28, z]);
+  const [, baseY] = project([0, -2.32, z]);
+
+  const half = 0.48 * s;
+
+  return (
+    <g
+      className="sc-hit"
+      onClick={() => {
+        playSfx("click");
+        bump();
+      }}
+    >
+      <ellipse cx={cx} cy={baseY + 20} rx={half * 1.25} ry="12" fill="url(#rm-drop-shadow)" />
+
+      <g key={poke} className={poke ? "sc-rustle" : undefined} style={pivot("50% 100%")}>
+        {/* Star base and casters */}
+        <g stroke="#30353f" strokeWidth="7" strokeLinecap="round">
+          {[-1, -0.45, 0.45, 1].map((t) => (
+            <line key={t} x1={cx} y1={baseY} x2={cx + t * half * 1.05} y2={baseY + 14 + Math.abs(t) * -4} />
+          ))}
+          <line x1={cx} y1={baseY} x2={cx} y2={baseY + 18} />
+        </g>
+        {[-1, -0.45, 0.45, 1, 0].map((t) => (
+          <circle key={t} cx={cx + t * half * 1.05} cy={baseY + 16 + (t === 0 ? 4 : Math.abs(t) * -4)} r="4.5" fill="#1f232b" />
+        ))}
+
+        {/* Gas lift */}
+        <rect x={cx - 5} y={seatY} width="10" height={baseY - seatY} fill="#7e8794" />
+        <rect x={cx - 5} y={seatY} width="3" height={baseY - seatY} fill="#ffffff" opacity="0.3" />
+
+        {/* Seat peeking out behind the backrest */}
+        <ellipse cx={cx} cy={seatY} rx={half * 1.05} ry="13" fill="#3a404c" />
+
+        {/* Armrests */}
+        {[-1, 1].map((side) => (
+          <g key={side}>
+            <rect x={cx + side * (half + 6) - 4} y={seatY - 48} width="8" height="46" rx="3" fill="#30353f" />
+            <rect x={cx + side * (half + 6) - 14} y={seatY - 52} width="28" height="8" rx="4" fill="#3a404c" />
+          </g>
+        ))}
+
+        {/* Backrest */}
+        <rect x={cx - half} y={topY} width={half * 2} height={bottomY - topY} rx={half * 0.45} fill="#454c59" />
+        <rect x={cx - half + 7} y={topY + 7} width={half * 2 - 14} height={bottomY - topY - 14} rx={half * 0.38} fill="#566070" />
+        <g stroke="#3d4450" strokeWidth="1" opacity="0.5">
+          {Array.from({ length: 9 }, (_, index) => (
+            <line
+              key={index}
+              x1={cx - half + 12}
+              y1={topY + 18 + index * ((bottomY - topY - 30) / 8)}
+              x2={cx + half - 12}
+              y2={topY + 18 + index * ((bottomY - topY - 30) / 8)}
+            />
+          ))}
+        </g>
+        <path
+          d={`M${cx - half + 10} ${topY + 20} Q ${cx - half + 4} ${(topY + bottomY) / 2} ${cx - half + 12} ${bottomY - 20}`}
+          stroke="#ffffff"
+          strokeWidth="3"
+          fill="none"
+          opacity="0.15"
+        />
+      </g>
+    </g>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Rug                                                                 */
+/* ------------------------------------------------------------------ */
+
+export function Rug() {
+  const x0 = -2.5;
+  const x1 = 2.5;
+  const z0 = 5.3;
+  const z1 = 8.25;
+  const y = F + 0.005;
+  const inset = (d: number) => poly([x0 + d, y, z1 - d], [x1 - d, y, z1 - d], [x1 - d, y, z0 + d], [x0 + d, y, z0 + d]);
+
+  return (
+    <g>
+      <path d={inset(-0.02)} fill="#000000" opacity="0.12" />
+      <path d={inset(0)} fill={C.rugBorder} />
+      <path d={inset(0.16)} fill={C.rug} />
+      <path d={inset(0.16)} fill="url(#rm-rug-shade)" />
+      <path d={inset(0.34)} fill="none" stroke={C.rugBorder} strokeWidth="2" opacity="0.6" />
+      <path d={inset(0.42)} fill="none" stroke={C.rugBorder} strokeWidth="1" opacity="0.45" />
+
+      {/* A simple diamond motif */}
+      <path
+        d={poly([0, y, 7.7], [1.2, y, 6.8], [0, y, 5.9], [-1.2, y, 6.8])}
+        fill="none"
+        stroke={C.rugBorder}
+        strokeWidth="1.5"
+        opacity="0.4"
+      />
+
+      {/* Fringe along the far edge */}
+      <g stroke={C.rug} strokeWidth="1.2" opacity="0.9">
+        {Array.from({ length: 30 }, (_, index) => {
+          const x = x0 + 0.1 + (index * (x1 - x0 - 0.2)) / 29;
+          return <line key={index} {...line([x, y, z1], [x, y, z1 + 0.12])} />;
+        })}
+      </g>
+    </g>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Bed                                                                 */
+/* ------------------------------------------------------------------ */
+
+export function Bed() {
+  const [poke, bump] = usePoke();
+
+  const frame = box(2.75, 5, F, -1.95, 6.2, 9.75);
+  const mattress = box(2.8, 5, -1.95, -1.62, 6.25, 9.7);
+  const headboard = box(2.75, 5, F, -0.55, 9.75, 9.92);
+
+  const blanketTop = poly([2.78, -1.6, 6.22], [5, -1.6, 6.22], [5, -1.58, 8.4], [2.78, -1.58, 8.4]);
+  const blanketSide = poly([2.78, -1.6, 6.22], [2.78, -1.58, 8.4], [2.76, -2.08, 8.2], [2.76, -2.12, 6.2]);
+  const blanketFront = poly([2.78, -1.6, 6.22], [5, -1.6, 6.22], [5, -2.1, 6.18], [2.76, -2.12, 6.18]);
+  const fold = poly([2.78, -1.57, 8.4], [5, -1.57, 8.4], [5, -1.57, 8.75], [2.78, -1.57, 8.75]);
+
+  const pillow = (x0: number, x1: number) => {
+    const [ax, ay] = project([x0, -1.3, 9.45]);
+    const [bx, by] = project([x1, -1.62, 9.15]);
+    return { x: ax, y: ay, w: bx - ax, h: by - ay };
+  };
+
+  return (
+    <g
+      className="sc-hit"
+      onClick={() => {
+        playSfx("rustle");
+        bump();
+      }}
+    >
+      <path d={poly([2.7, F, 6.1], [5, F, 6.1], [5, F, 6.6], [2.7, F, 6.6])} fill="#000000" opacity="0.15" />
+
+      <path d={headboard.front} fill={C.woodFront} />
+      <path d={headboard.left} fill={C.woodSide} />
+      <path d={frame.left} fill={C.woodSide} />
+      <path d={frame.front} fill={C.woodFront} />
+
+      <path d={mattress.top} fill={C.sheet} />
+      <path d={mattress.left} fill={C.sheetShade} />
+      <path d={mattress.front} fill="#dde3e9" />
+
+      <g key={poke} className={poke ? "sc-hop" : undefined} style={pivot("50% 100%")}>
+        {[[3.05, 3.95], [4.05, 4.95]].map(([x0, x1]) => {
+          const p = pillow(x0, x1);
+          return (
+            <g key={x0}>
+              <rect x={p.x} y={p.y} width={p.w} height={p.h} rx={p.h * 0.45} fill="#f4f6f8" />
+              <rect x={p.x} y={p.y + p.h * 0.55} width={p.w} height={p.h * 0.45} rx={p.h * 0.3} fill="#d9e0e7" />
+              <path d={`M${p.x + p.w * 0.2} ${p.y + p.h * 0.3} Q ${p.x + p.w * 0.5} ${p.y + p.h * 0.45} ${p.x + p.w * 0.8} ${p.y + p.h * 0.3}`} stroke="#c6ced8" strokeWidth="1.2" fill="none" />
+            </g>
+          );
+        })}
+      </g>
+
+      {/* Blanket, draped over the side */}
+      <path d={fold} fill="#f2f4f6" />
+      <path d={blanketTop} fill={C.fabric} />
+      <path d={blanketSide} fill={C.fabricDark} />
+      <path d={blanketFront} fill="#5672a0" />
+      <g stroke="#3f5880" strokeWidth="1.5" fill="none" opacity="0.5" strokeLinecap="round">
+        {[
+          [[3.4, -1.59, 6.6], [3.9, -1.59, 7.6]],
+          [[4.2, -1.59, 6.5], [4.6, -1.59, 7.9]],
+          [[2.77, -1.75, 6.8], [2.77, -2.0, 7.2]],
+        ].map(([a, b], index) => (
+          <line key={index} {...line(a as Vec3, b as Vec3)} />
+        ))}
+      </g>
+    </g>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Bookcase                                                            */
+/* ------------------------------------------------------------------ */
+
+const SHELF_LEVELS = [-2.38, -1.45, -0.52, 0.41, 1.34];
+const CASE = { x0: -5, x1: -4.35, z0: 7.1, z1: 9.7, top: 1.98 };
+
+const BOOKS = (() => {
+  const random = mulberry32(53);
+  const books: Array<{ d: string; band: string; color: string }> = [];
+
+  SHELF_LEVELS.forEach((level, shelfIndex) => {
+    let z = CASE.z0 + 0.12;
+
+    while (z < CASE.z1 - 0.2) {
+      // Leave a gap now and then.
+      if (random() < 0.08) {
+        z += 0.25 + random() * 0.3;
+        continue;
+      }
+
+      const width = 0.08 + random() * 0.1;
+      const height = 0.48 + random() * 0.32 - (shelfIndex === 0 ? 0 : 0.05);
+      const x = CASE.x1 - 0.06;
+      const y0 = level + 0.04;
+
+      books.push({
+        d: poly([x, y0, z], [x, y0 + height, z], [x, y0 + height, z + width], [x, y0, z + width]),
+        band: poly([x, y0 + height * 0.78, z], [x, y0 + height * 0.84, z], [x, y0 + height * 0.84, z + width], [x, y0 + height * 0.78, z + width]),
+        color: C.books[Math.floor(random() * C.books.length)],
+      });
+
+      z += width + 0.005;
+    }
+  });
+
+  return books;
+})();
+
+const BOOK_LINES = [
+  "“All that is gold does not glitter.”",
+  "A book about clouds. You've read it three times.",
+  "“The sea has no end.” Bookmarked on page 42.",
+  "A recipe book. Mostly onigiri.",
+  "Poems for rainy days. Very fitting.",
+];
+
+export function Bookcase() {
+  const speak = useSpeak();
+  const [poke, bump] = usePoke();
+
+  const back = poly([CASE.x0 + 0.02, F + 0.02, CASE.z0], [CASE.x0 + 0.02, CASE.top, CASE.z0], [CASE.x0 + 0.02, CASE.top, CASE.z1], [CASE.x0 + 0.02, F + 0.02, CASE.z1]);
+  const side = box(CASE.x0, CASE.x1, F, CASE.top, CASE.z0 - 0.06, CASE.z0);
+  const farSide = box(CASE.x0, CASE.x1, F, CASE.top, CASE.z1, CASE.z1 + 0.06);
+
+  const [bubbleX, bubbleY] = project([-4.4, 1.9, 8.3]);
+
+  return (
+    <g
+      className="sc-hit"
+      onClick={() => {
+        playSfx("rustle");
+        bump();
+        speak(bubbleX + 60, bubbleY, `📖 ${pick(BOOK_LINES)}`);
+      }}
+    >
+      <path d={back} fill={C.woodDark} />
+      <path d={farSide.front} fill={C.woodSide} />
+
+      <g key={poke} className={poke ? "sc-rustle" : undefined} style={pivot("50% 100%")}>
+        {BOOKS.map((book, index) => (
+          <g key={index}>
+            <path d={book.d} fill={book.color} />
+            <path d={book.band} fill="#f3e7c8" opacity="0.55" />
+          </g>
+        ))}
+      </g>
+      <g fill="#000000" opacity="0.18">
+        {BOOKS.map((book, index) => (index % 3 === 0 ? <path key={index} d={book.d} /> : null))}
+      </g>
+
+      {SHELF_LEVELS.map((level) => {
+        const board = box(CASE.x0, CASE.x1, level - 0.05, level, CASE.z0, CASE.z1);
+        return (
+          <g key={level}>
+            {level < 0 ? <path d={board.top} fill={C.woodTop} /> : null}
+            <path d={board.right} fill={C.woodFront} />
+          </g>
+        );
+      })}
+      <path d={box(CASE.x0, CASE.x1, CASE.top - 0.06, CASE.top, CASE.z0, CASE.z1).right} fill={C.woodFront} />
+      <path d={box(CASE.x0, CASE.x1, CASE.top - 0.06, CASE.top, CASE.z0, CASE.z1).bottom} fill={C.woodSide} />
+
+      <path d={side.front} fill={C.woodFront} />
+      <path d={side.right} fill={C.woodSide} />
+    </g>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Dresser with flowers                                                */
+/* ------------------------------------------------------------------ */
+
+export function Dresser() {
+  const body = box(-5, -4.15, F, -1.15, 5.4, 6.9);
+  const drawer = (y0: number, y1: number) =>
+    poly([-4.14, y0, 5.5], [-4.14, y1, 5.5], [-4.14, y1, 6.8], [-4.14, y0, 6.8]);
+
+  const [vx, vy] = project([-4.6, -1.15, 6.4]);
+  const s = scaleAt(6.4);
+
+  return (
+    <g>
+      <path d={body.top} fill={C.woodTop} />
+      <path d={body.right} fill={C.woodFront} />
+      <path d={body.front} fill={C.woodSide} />
+      {[[-1.55, -1.25], [-1.95, -1.6], [-2.35, -2.0]].map(([y0, y1]) => {
+        const [hx, hy] = project([-4.14, (y0 + y1) / 2, 6.15]);
+        return (
+          <g key={y0}>
+            <path d={drawer(y0, y1)} fill="#cfa46c" stroke={C.woodDark} strokeWidth="1" strokeOpacity="0.35" />
+            <ellipse cx={hx} cy={hy} rx="3" ry="5" fill="#8a6a44" />
+          </g>
+        );
+      })}
+
+      {/* A vase of white flowers */}
+      <g>
+        <path
+          d={`M${vx - 0.09 * s} ${vy} C ${vx - 0.14 * s} ${vy - 0.12 * s} ${vx - 0.1 * s} ${vy - 0.28 * s} ${vx - 0.05 * s} ${vy - 0.32 * s} L ${vx + 0.05 * s} ${vy - 0.32 * s} C ${vx + 0.1 * s} ${vy - 0.28 * s} ${vx + 0.14 * s} ${vy - 0.12 * s} ${vx + 0.09 * s} ${vy} Z`}
+          fill="#6e88b8"
+        />
+        <path d={`M${vx - 0.08 * s} ${vy - 0.04 * s} C ${vx - 0.12 * s} ${vy - 0.14 * s} ${vx - 0.08 * s} ${vy - 0.26 * s} ${vx - 0.04 * s} ${vy - 0.3 * s}`} stroke="#ffffff" strokeWidth="2" fill="none" opacity="0.4" />
+        {[[-0.16, -0.5], [-0.04, -0.62], [0.1, -0.54], [0.2, -0.44], [-0.24, -0.4], [0.02, -0.46]].map(([dx, dy], index) => (
+          <g key={index}>
+            <line x1={vx} y1={vy - 0.3 * s} x2={vx + dx * s} y2={vy + dy * s} stroke={C.plantDark} strokeWidth="1.5" />
+            {[0, 72, 144, 216, 288].map((angle) => (
+              <ellipse
+                key={angle}
+                cx={vx + dx * s}
+                cy={vy + dy * s - 4}
+                rx="3"
+                ry="4.5"
+                fill="#fbfaf6"
+                transform={`rotate(${angle} ${vx + dx * s} ${vy + dy * s})`}
+              />
+            ))}
+            <circle cx={vx + dx * s} cy={vy + dy * s} r="2" fill="#e7c95a" />
+          </g>
+        ))}
+      </g>
+    </g>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Wall shelf above the bed                                            */
+/* ------------------------------------------------------------------ */
+
+const WALL_SHELF_BOOKS = (() => {
+  const random = mulberry32(61);
+  const books: Array<{ d: string; color: string }> = [];
+  let z = 6.75;
+
+  while (z < 8.45) {
+    const width = 0.08 + random() * 0.09;
+    const height = 0.4 + random() * 0.25;
+
+    books.push({
+      d: poly([4.66, 0.46, z], [4.66, 0.46 + height, z], [4.66, 0.46 + height, z + width], [4.66, 0.46, z + width]),
+      color: C.books[Math.floor(random() * C.books.length)],
+    });
+
+    z += width + 0.01;
+  }
+
+  return books;
+})();
+
+export function WallShelf() {
+  const board = box(4.6, 5, 0.4, 0.46, 6.6, 8.6);
+
+  return (
+    <g>
+      {WALL_SHELF_BOOKS.map((book, index) => (
+        <path key={index} d={book.d} fill={book.color} />
+      ))}
+      <path d={board.bottom} fill={C.woodSide} />
+      <path d={board.left} fill={C.woodFront} />
+    </g>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Things on the back wall                                             */
+/* ------------------------------------------------------------------ */
+
+export function Painting() {
+  const z = B - 0.02;
+  const [x0, y0] = project([-4.25, 1.6, z]);
+  const [x1, y1] = project([-3.45, 0.4, z]);
+  const w = x1 - x0;
+  const h = y1 - y0;
+
+  return (
+    <g>
+      <rect x={x0 + 4} y={y0 + 6} width={w} height={h} fill={C.shadow} />
+      <rect x={x0} y={y0} width={w} height={h} fill="#a27a52" />
+      <rect x={x0 + 5} y={y0 + 5} width={w - 10} height={h - 10} fill={C.paper} />
+      <rect x={x0 + 10} y={y0 + 10} width={w - 20} height={h - 20} fill="#9fc6e6" />
+      <rect x={x0 + 10} y={y0 + 10 + (h - 20) * 0.55} width={w - 20} height={(h - 20) * 0.45} fill="#d7e8ef" />
+      <g fill="#ffffff">
+        <circle cx={x0 + w * 0.42} cy={y0 + h * 0.36} r={w * 0.11} />
+        <circle cx={x0 + w * 0.56} cy={y0 + h * 0.31} r={w * 0.14} />
+        <circle cx={x0 + w * 0.68} cy={y0 + h * 0.37} r={w * 0.1} />
+        <rect x={x0 + w * 0.32} y={y0 + h * 0.36} width={w * 0.44} height={w * 0.08} />
+      </g>
+      <path
+        d={`M${x0 + 10} ${y0 + h * 0.72} C ${x0 + w * 0.3} ${y0 + h * 0.62} ${x0 + w * 0.6} ${y0 + h * 0.66} ${x1 - 10} ${y0 + h * 0.6} V${y1 - 10} H${x0 + 10} Z`}
+        fill="#6f9f63"
+      />
+      <path d={`M${x0 + 10} ${y0 + h * 0.82} C ${x0 + w * 0.4} ${y0 + h * 0.74} ${x0 + w * 0.7} ${y0 + h * 0.8} ${x1 - 10} ${y0 + h * 0.74} V${y1 - 10} H${x0 + 10} Z`} fill="#5a8a50" />
+    </g>
+  );
+}
+
+export function WallClock() {
+  const now = useNow();
+  const speak = useSpeak();
+  const [poke, bump] = usePoke();
+
+  const [cx, cy] = project([4.05, 1.55, B - 0.02]);
+  const r = 0.32 * scaleAt(B);
+
+  const hours = now ? now.getHours() % 12 : 10;
+  const minutes = now ? now.getMinutes() : 10;
+  const seconds = now ? now.getSeconds() : 0;
+
+  function tellTime() {
+    const date = new Date();
+    const h = date.getHours();
+    const m = date.getMinutes();
+    const english = date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+
+    playSfx("chime");
+    bump();
+    speak(cx, cy - r - 6, `It's ${english} · ${h < 12 ? "午前" : "午後"}${h % 12 || 12}時${m}分`);
+  }
+
+  return (
+    <g className="sc-hit" onClick={tellTime}>
+      <g key={poke} className={poke ? "sc-rustle" : undefined} style={pivot("50% 0%")}>
+        <circle cx={cx + 3} cy={cy + 4} r={r} fill={C.shadow} />
+        <circle cx={cx} cy={cy} r={r} fill="#8a6a4a" />
+        <circle cx={cx} cy={cy} r={r * 0.84} fill="#fbfaf6" />
+        {Array.from({ length: 12 }, (_, index) => {
+          const angle = (index * Math.PI) / 6;
+          const inner = index % 3 === 0 ? r * 0.62 : r * 0.7;
+          return (
+            <line
+              key={index}
+              x1={(cx + Math.sin(angle) * inner).toFixed(2)}
+              y1={(cy - Math.cos(angle) * inner).toFixed(2)}
+              x2={(cx + Math.sin(angle) * r * 0.76).toFixed(2)}
+              y2={(cy - Math.cos(angle) * r * 0.76).toFixed(2)}
+              stroke="#4a4540"
+              strokeWidth={index % 3 === 0 ? 1.8 : 0.9}
+            />
+          );
+        })}
+        <g strokeLinecap="round">
+          <line x1={cx} y1={cy} x2={cx} y2={cy - r * 0.42} stroke="#33302c" strokeWidth="2.6" transform={`rotate(${(hours + minutes / 60) * 30} ${cx} ${cy})`} />
+          <line x1={cx} y1={cy} x2={cx} y2={cy - r * 0.62} stroke="#33302c" strokeWidth="1.8" transform={`rotate(${(minutes + seconds / 60) * 6} ${cx} ${cy})`} />
+          <line x1={cx} y1={cy + r * 0.12} x2={cx} y2={cy - r * 0.68} stroke="#c45a3a" strokeWidth="0.9" transform={`rotate(${seconds * 6} ${cx} ${cy})`} />
+        </g>
+        <circle cx={cx} cy={cy} r="2.2" fill="#c45a3a" />
+        <path d={`M${cx - r * 0.6} ${cy - r * 0.2} A ${r * 0.66} ${r * 0.66} 0 0 1 ${cx - r * 0.1} ${cy - r * 0.64}`} stroke="#ffffff" strokeWidth="3" fill="none" opacity="0.5" strokeLinecap="round" />
+      </g>
+    </g>
+  );
+}
+
+const TIPS = [
+  "Drink some water! 💧",
+  "Stand up and stretch for a minute.",
+  "One task at a time~",
+  "Rest is part of the work.",
+  "Write down the next tiny step.",
+  "You're doing better than you think.",
+];
+
+export function Corkboard() {
+  const speak = useSpeak();
+  const [poke, bump] = usePoke();
+
+  const z = B - 0.02;
+  const [x0, y0] = project([3.45, 0.75, z]);
+  const [x1, y1] = project([4.75, -0.35, z]);
+  const w = x1 - x0;
+  const h = y1 - y0;
+
+  const notes = [
+    { x: 0.08, y: 0.12, w: 0.26, h: 0.3, color: "#f4e7a8", rotate: -4 },
+    { x: 0.4, y: 0.1, w: 0.22, h: 0.36, color: "#fbfaf6", rotate: 3 },
+    { x: 0.68, y: 0.16, w: 0.24, h: 0.28, color: "#cfe3f0", rotate: -2 },
+    { x: 0.14, y: 0.56, w: 0.3, h: 0.3, color: "#d9ead3", rotate: 2 },
+    { x: 0.56, y: 0.56, w: 0.32, h: 0.32, color: "#f6dcc6", rotate: -3 },
+  ];
+
+  return (
+    <g
+      className="sc-hit"
+      onClick={() => {
+        playSfx("rustle");
+        bump();
+        speak(x0 + w / 2, y0 - 4, `📌 ${pick(TIPS)}`);
+      }}
+    >
+      <rect x={x0 + 3} y={y0 + 5} width={w} height={h} fill={C.shadow} />
+      <rect x={x0} y={y0} width={w} height={h} rx="2" fill="#a27a52" />
+      <rect x={x0 + 4} y={y0 + 4} width={w - 8} height={h - 8} fill="#c8a072" />
+      <g key={poke} className={poke ? "sc-rustle" : undefined} style={pivot("50% 0%")}>
+        {notes.map((note, index) => {
+          const nx = x0 + 4 + note.x * (w - 8);
+          const ny = y0 + 4 + note.y * (h - 8);
+          const nw = note.w * (w - 8);
+          const nh = note.h * (h - 8);
+          return (
+            <g key={index} transform={`rotate(${note.rotate} ${nx + nw / 2} ${ny + nh / 2})`}>
+              <rect x={nx} y={ny} width={nw} height={nh} fill={note.color} />
+              <g stroke="#7a7066" strokeWidth="0.7" opacity="0.5">
+                <line x1={nx + 3} y1={ny + nh * 0.35} x2={nx + nw - 3} y2={ny + nh * 0.35} />
+                <line x1={nx + 3} y1={ny + nh * 0.55} x2={nx + nw - 6} y2={ny + nh * 0.55} />
+              </g>
+              <circle cx={nx + nw / 2} cy={ny + 3} r="2" fill="#c45a3a" />
+            </g>
+          );
+        })}
+      </g>
+    </g>
+  );
+}

@@ -31,7 +31,7 @@ const feedbackTypes = [
     jp: "バグ",
     description: "Something broke",
     icon: Bug,
-    color: "var(--sakura)",
+    color: "var(--ember)",
   },
   {
     value: "improvement",
@@ -97,7 +97,7 @@ function Envelope() {
       <rect x="6" y="14" width="148" height="90" rx="10" fill="var(--card)" stroke="var(--ink)" strokeWidth="3" />
       <path d="M8 20 L80 66 L152 20" fill="none" stroke="var(--ink)" strokeWidth="3" strokeLinejoin="round" />
       <path d="M8 100 L62 56 M152 100 L98 56" stroke="var(--ink)" strokeWidth="2.5" opacity="0.5" />
-      <circle cx="80" cy="66" r="13" fill="var(--sakura)" stroke="var(--ink)" strokeWidth="2.5" />
+      <circle cx="80" cy="66" r="13" fill="var(--ember)" stroke="var(--ink)" strokeWidth="2.5" />
       <path d="M80 72 C 72 66 74 60 78 61 C 79 61 80 62 80 63 C 80 62 81 61 82 61 C 86 60 88 66 80 72 Z" fill="#fff" />
     </svg>
   );

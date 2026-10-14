@@ -8,28 +8,54 @@ import { useResolvedScene } from "@/stores/scene-store";
 
 import { Landscape } from "./landscape";
 import { RainCanvas, triggerSky } from "./rain-canvas";
+import type { TimeOfDay } from "@/lib/scene-time";
+
+import {
+  CurtainsAndLights,
+  PendantLamp,
+  RoomShell,
+  WindowUnit,
+} from "./room-architecture";
 import { Cat } from "./room-cat";
 import { RoomDefs } from "./room-defs";
 import {
-  BigPlant,
-  Books,
+  Bed,
+  Bookcase,
+  Chair,
+  Corkboard,
   Desk,
-  Lamp,
-  Mug,
-  Notebook,
-  Pencil,
-  YarnBall,
-} from "./room-desk";
+  Dresser,
+  Painting,
+  Rug,
+  WallClock,
+  WallShelf,
+} from "./room-furniture";
 import {
+  AmbientTint,
   Atmosphere,
   DustMotes,
   LampLight,
-  SunBeams,
-  SunPatch,
-  WindowBloom,
+  LightPatches,
+  LightShafts,
+  WallLight,
+  WindowGlow,
 } from "./room-light";
-import { Corkboard, Painting, Shelf, Wall, WallClock } from "./room-wall";
-import { Curtains, FairyLights, Sill, WindowFrame } from "./room-window";
+import {
+  Candle,
+  DeskLamp,
+  FlipClock,
+  Furin,
+  Mug,
+  Notebook,
+  PenCup,
+  Persimmons,
+  Radio,
+  SillPlant,
+  SillVase,
+  Succulent,
+  TeruTeruBozu,
+  YarnBall,
+} from "./room-props";
 import { SpeakContext, svgProps } from "./scene-shared";
 
 /*
@@ -66,7 +92,13 @@ function SpeechBubble({ bubble }: { bubble: Bubble }) {
   );
 }
 
-function RoomLayer({ onKnock }: { onKnock: () => void }) {
+function RoomLayer({
+  onKnock,
+  time,
+}: {
+  onKnock: () => void;
+  time: TimeOfDay | null;
+}) {
   const [bubble, setBubble] = useState<Bubble | null>(null);
   const bubbleTimer = useRef<number | null>(null);
   const [yarnKick, setYarnKick] = useState(0);
@@ -90,32 +122,48 @@ function RoomLayer({ onKnock }: { onKnock: () => void }) {
       <svg {...svgProps} style={{ pointerEvents: "none" }}>
         <RoomDefs />
 
-        <Wall />
+        {/* The room, from the back wall forward */}
+        <RoomShell />
+        <WallLight />
         <Painting />
-        <Shelf />
         <WallClock />
         <Corkboard />
 
-        <WindowFrame onKnock={onKnock} />
-        <Sill />
-        <Curtains />
-        <FairyLights />
+        <WindowUnit onKnock={onKnock} />
+        <SillPlant />
+        <Candle />
+        <SillVase />
+        <Persimmons />
+        <TeruTeruBozu />
+        <Furin />
+        <CurtainsAndLights />
+        <PendantLamp />
+
+        <Bookcase />
+        <WallShelf />
 
         <Desk />
-        <SunPatch />
-
+        <PenCup />
+        <Succulent />
+        <Radio />
+        <FlipClock />
+        <DeskLamp />
         <Notebook />
-        <Pencil />
         <Mug />
-        <Books />
+
+        <Bed />
+        <Dresser />
+        <Rug />
+        <Chair />
         <YarnBall kick={yarnKick} />
-        <BigPlant />
-        <Lamp />
         <Cat onBat={() => setYarnKick((value) => value + 1)} />
 
-        <SunBeams />
-        <DustMotes />
-        <WindowBloom />
+        {/* Light, applied like a painter would */}
+        <AmbientTint />
+        <WindowGlow />
+        <LightPatches />
+        <LightShafts />
+        {time && <DustMotes time={time} />}
         <LampLight />
         <Atmosphere />
 
@@ -238,7 +286,7 @@ export function RoomScene() {
         />
       )}
 
-      <RoomLayer onKnock={knock} />
+      <RoomLayer onKnock={knock} time={mounted ? scene.time : null} />
 
       {flashKey > 0 && (
         <div

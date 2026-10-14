@@ -661,7 +661,7 @@ export function Cat({ onBat }: { onBat: () => void }) {
         <g key={heart.id} transform={`translate(${heart.x} ${heart.y}) scale(1.8)`}>
           <path
             d="M0 3 C0 -1 -6 -2 -6 2 C -6 6 0 9 0 11 C 0 9 6 6 6 2 C 6 -2 0 -1 0 3 Z"
-            fill="var(--sakura)"
+            fill="var(--ember)"
             className="sc-float-up"
             style={floatStyle(heart.delay)}
           />

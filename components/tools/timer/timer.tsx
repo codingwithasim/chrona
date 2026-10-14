@@ -166,7 +166,7 @@ export function TimerTool() {
         ) : (
           <ProgressRing
             value={progress}
-            color="var(--sakura)"
+            color="var(--ember)"
             className="w-[min(76vw,20rem)]"
           >
             <button

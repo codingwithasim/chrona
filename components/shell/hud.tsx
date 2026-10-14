@@ -174,7 +174,7 @@ function ActiveTools() {
         <ActiveChip
           href="/timer"
           icon={Hourglass}
-          color="var(--sakura)"
+          color="var(--ember)"
           paused={timerStatus === "paused"}
         >
           {formatClock(timerRemaining)}

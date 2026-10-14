@@ -77,7 +77,7 @@ export function LapList({ laps, limit, className }: LapListProps) {
             className={cn(
               "grid grid-cols-3 items-center rounded-xl border border-transparent bg-card/50 px-3 py-2",
               lap.split === fastest && "border-mint/70",
-              lap.split === slowest && "border-sakura/70"
+              lap.split === slowest && "border-ember/70"
             )}
           >
             <span className="flex items-center gap-1.5 text-sm font-bold">
@@ -88,7 +88,7 @@ export function LapList({ laps, limit, className }: LapListProps) {
                 </span>
               )}
               {lap.split === slowest && (
-                <span className="rounded-full bg-sakura px-1.5 text-[10px] text-[#1b1530]">
+                <span className="rounded-full bg-ember px-1.5 text-[10px] text-[#1b1530]">
                   slow
                 </span>
               )}

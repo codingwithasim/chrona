@@ -1,98 +1,250 @@
 "use client";
 
+import type { TimeOfDay } from "@/lib/scene-time";
 import { useSceneStore } from "@/stores/scene-store";
 
-import { DESK_Y, mulberry32 } from "./scene-shared";
+import {
+  castPanes,
+  DESK,
+  GLASS_RECT,
+  hull,
+  LIGHT_DIRECTION,
+  panes,
+  pathOf,
+  type Plane,
+  type Point,
+  poly,
+  project,
+  ROOM,
+  type Vec3,
+} from "./projection";
+import { LAMP_BULB } from "./room-props";
+import { mulberry32 } from "./scene-shared";
 
-const rayStrength = "calc(var(--sc-ray-opacity) * var(--sc-ray-weather))";
+const TIMES: TimeOfDay[] = ["morning", "day", "evening", "night"];
 
-/** Sunlight through the window, landing on the desk with the mullions' shadows. */
-export function SunPatch() {
-  const top = DESK_Y + 4;
-  const bottom = 902;
-  const mid = 840;
+const { left: L, right: R, floor: F, ceiling: T, back: B, near: N } = ROOM;
 
-  // Each pane of the window, projected onto the desk.
-  const panes = [
-    [500, 790, 430, 786],
-    [810, 1100, 814, 1180],
-  ];
+/* ------------------------------------------------------------------ */
+/* Geometry, computed once per time of day                             */
+/* ------------------------------------------------------------------ */
 
+type LightShape = {
+  floor: Point[][];
+  desk: Point[][];
+  leftWall: Point[][];
+  rightWall: Point[][];
+  shafts: Point[][];
+  floorClip: string;
+  shaftFrom: Point;
+  shaftTo: Point;
+};
+
+function centerOf(points: Point[]): Point {
+  const sum = points.reduce((acc, [x, y]) => [acc[0] + x, acc[1] + y], [0, 0]);
+  return [sum[0] / points.length, sum[1] / points.length];
+}
+
+function lightFor(time: TimeOfDay): LightShape {
+  const light = LIGHT_DIRECTION[time];
+
+  const floorPlane: Plane = { axis: "y", value: F };
+  const floor = castPanes(light, floorPlane);
+
+  // The desk throws a shadow: only light passing over it reaches the floor.
+  const t = (F - DESK.top) / light[1];
+  const shadowZ = DESK.front + light[2] * t;
+
+  const shafts = panes()
+    .map((pane, index) => {
+      const window = pane.map((corner) => project(corner));
+      const ground = floor[index];
+      return ground ? hull([...window, ...ground]) : null;
+    })
+    .filter((shape): shape is Point[] => shape !== null);
+
+  const glassCenter: Point = [GLASS_RECT.x + GLASS_RECT.w / 2, GLASS_RECT.y + GLASS_RECT.h / 2];
+
+  return {
+    floor,
+    desk: castPanes(light, { axis: "y", value: DESK.top }),
+    leftWall: light[0] < 0 ? castPanes(light, { axis: "x", value: L }) : [],
+    rightWall: light[0] > 0 ? castPanes(light, { axis: "x", value: R }) : [],
+    shafts,
+    floorClip: poly([L, F, Math.min(shadowZ, B)], [R, F, Math.min(shadowZ, B)], [R, F, N], [L, F, N]),
+    shaftFrom: glassCenter,
+    shaftTo: floor.length ? centerOf(floor.flat()) : [glassCenter[0], 1000],
+  };
+}
+
+const LIGHT = Object.fromEntries(TIMES.map((time) => [time, lightFor(time)])) as Record<TimeOfDay, LightShape>;
+
+const DESK_CLIP = poly(
+  [DESK.left, DESK.top, DESK.front],
+  [DESK.right, DESK.top, DESK.front],
+  [DESK.right, DESK.top, B],
+  [DESK.left, DESK.top, B]
+);
+
+const LEFT_WALL_CLIP = poly([L, T, B], [L, F, B], [L, F, N], [L, T, N]);
+const RIGHT_WALL_CLIP = poly([R, T, B], [R, F, B], [R, F, N], [R, T, N]);
+
+const strength = (time: TimeOfDay) =>
+  `calc(var(--rm-patch-${time}) * var(--rm-light) * var(--sc-ray-weather))`;
+
+/* ------------------------------------------------------------------ */
+
+/** Window-shaped patches of sun (or moon) on the floor, desk and walls. */
+export function LightPatches() {
   return (
-    <g
-      style={{
-        opacity: `calc(var(--sc-sunpatch-opacity) * var(--sc-ray-weather))`,
-        transform: "skewX(var(--sc-ray-skew))",
-        transformOrigin: `800px ${top}px`,
-        mixBlendMode: "screen",
-        transition: "opacity 1.5s ease",
-      }}
-    >
-      {panes.map(([x1, x2, x3, x4]) => (
-        <g key={x1}>
-          <path
-            d={`M${x1} ${top} L${x2} ${top} L${x2 - (x2 - x4) * 0.5} ${mid - 4} L${x1 - (x1 - x3) * 0.5} ${mid - 4} Z`}
-            fill="url(#sc-sunpatch)"
-          />
-          <path
-            d={`M${x1 - (x1 - x3) * 0.55} ${mid + 4} L${x2 - (x2 - x4) * 0.55} ${mid + 4} L${x4} ${bottom} L${x3} ${bottom} Z`}
-            fill="url(#sc-sunpatch)"
-          />
+    <g style={{ mixBlendMode: "screen" }}>
+      <defs>
+        <clipPath id="rm-clip-desk">
+          <path d={DESK_CLIP} />
+        </clipPath>
+        {TIMES.map((time) => (
+          <clipPath key={time} id={`rm-clip-floor-${time}`}>
+            <path d={LIGHT[time].floorClip} />
+          </clipPath>
+        ))}
+      </defs>
+
+      {TIMES.map((time) => {
+        const shape = LIGHT[time];
+
+        return (
+          <g key={time} style={{ opacity: strength(time), transition: "opacity 1.5s ease" }} fill="var(--rm-glow)">
+            <g clipPath={`url(#rm-clip-floor-${time})`}>
+              {shape.floor.map((points, index) => (
+                <path key={index} d={pathOf(points)} />
+              ))}
+            </g>
+            <g clipPath="url(#rm-clip-desk)">
+              {shape.desk.map((points, index) => (
+                <path key={index} d={pathOf(points)} />
+              ))}
+            </g>
+          </g>
+        );
+      })}
+    </g>
+  );
+}
+
+/**
+ * Low sun lands on the side walls. Drawn with the walls, before the
+ * furniture, so bookcases and beds stand in front of it.
+ */
+export function WallLight() {
+  return (
+    <g style={{ mixBlendMode: "screen" }}>
+      <defs>
+        <clipPath id="rm-clip-left">
+          <path d={LEFT_WALL_CLIP} />
+        </clipPath>
+        <clipPath id="rm-clip-right">
+          <path d={RIGHT_WALL_CLIP} />
+        </clipPath>
+      </defs>
+      {TIMES.map((time) => {
+        const shape = LIGHT[time];
+
+        if (!shape.leftWall.length && !shape.rightWall.length) {
+          return null;
+        }
+
+        return (
+          <g key={time} style={{ opacity: strength(time), transition: "opacity 1.5s ease" }} fill="var(--rm-glow)">
+            <g clipPath="url(#rm-clip-left)" opacity="0.75">
+              {shape.leftWall.map((points, index) => (
+                <path key={index} d={pathOf(points)} />
+              ))}
+            </g>
+            <g clipPath="url(#rm-clip-right)" opacity="0.75">
+              {shape.rightWall.map((points, index) => (
+                <path key={index} d={pathOf(points)} />
+              ))}
+            </g>
+          </g>
+        );
+      })}
+    </g>
+  );
+}
+
+/** Soft shafts of light from the window down to the floor. */
+export function LightShafts() {
+  return (
+    <g style={{ mixBlendMode: "screen" }} filter="url(#rm-soften)">
+      <defs>
+        <filter id="rm-soften" x="-10%" y="-10%" width="120%" height="120%">
+          <feGaussianBlur stdDeviation="10" />
+        </filter>
+        {TIMES.map((time) => {
+          const shape = LIGHT[time];
+          return (
+            <linearGradient
+              key={time}
+              id={`rm-shaft-${time}`}
+              gradientUnits="userSpaceOnUse"
+              x1={shape.shaftFrom[0]}
+              y1={shape.shaftFrom[1]}
+              x2={shape.shaftTo[0]}
+              y2={shape.shaftTo[1]}
+            >
+              <stop offset="0" stopColor="var(--rm-glow)" stopOpacity="0.05" />
+              <stop offset="0.3" stopColor="var(--rm-glow)" stopOpacity="0.3" />
+              <stop offset="1" stopColor="var(--rm-glow)" stopOpacity="0" />
+            </linearGradient>
+          );
+        })}
+      </defs>
+
+      {TIMES.map((time) => (
+        <g
+          key={time}
+          style={{
+            opacity: `calc(var(--rm-patch-${time}) * var(--rm-shaft) * var(--sc-ray-weather))`,
+            transition: "opacity 1.5s ease",
+          }}
+        >
+          {LIGHT[time].shafts.map((points, index) => (
+            <path key={index} d={pathOf(points)} fill={`url(#rm-shaft-${time})`} />
+          ))}
         </g>
       ))}
     </g>
   );
 }
 
-const BEAMS = [
-  "M500 210 L556 210 L626 906 L470 906 Z",
-  "M612 170 L700 170 L790 906 L610 906 Z",
-  "M752 250 L790 250 L862 906 L786 906 Z",
-  "M846 176 L962 176 L1068 906 L878 906 Z",
-  "M1006 226 L1060 226 L1130 906 L1036 906 Z",
-];
+/** Dust drifting in the light, for the current time of day. */
+export function DustMotes({ time }: { time: TimeOfDay }) {
+  const light = LIGHT_DIRECTION[time];
+  const random = mulberry32(time.length * 97);
+  const glassPanes = panes();
 
-/** God rays: soft shafts of light falling into the room. */
-export function SunBeams() {
+  const motes = Array.from({ length: 18 }, (_, index) => {
+    const pane = glassPanes[Math.floor(random() * glassPanes.length)];
+    const [a, , c] = [pane[0], pane[1], pane[2]];
+    const start: Vec3 = [
+      a[0] + random() * (c[0] - a[0]),
+      a[1] + random() * (c[1] - a[1]),
+      a[2],
+    ];
+    const t = 0.6 + random() * 3.2;
+    const point: Vec3 = [start[0] + light[0] * t, start[1] + light[1] * t, start[2] + light[2] * t];
+
+    if (point[1] < F || point[2] < N) {
+      return null;
+    }
+
+    const [x, y] = project(point);
+    return { id: index, x, y, r: 0.7 + random() * 1.4, delay: -random() * 14, duration: 10 + random() * 8 };
+  }).filter(Boolean) as Array<{ id: number; x: number; y: number; r: number; delay: number; duration: number }>;
+
   return (
-    <g
-      style={{
-        opacity: rayStrength,
-        transform: "skewX(var(--sc-ray-skew))",
-        transformOrigin: "800px 150px",
-        mixBlendMode: "screen",
-        transition: "opacity 1.5s ease",
-      }}
-    >
-      {BEAMS.map((d, index) => (
-        <path key={index} d={d} fill="url(#sc-beam)" opacity={0.55 + (index % 3) * 0.15} />
-      ))}
-    </g>
-  );
-}
-
-const moteRandom = mulberry32(5);
-
-const MOTES = Array.from({ length: 18 }, (_, index) => ({
-  id: index,
-  x: 520 + moteRandom() * 560,
-  y: 420 + moteRandom() * 440,
-  r: 0.8 + moteRandom() * 1.6,
-  delay: -moteRandom() * 14,
-  duration: 10 + moteRandom() * 8,
-}));
-
-/** Dust floating in the sunbeams. */
-export function DustMotes() {
-  return (
-    <g
-      style={{
-        opacity: `calc(var(--sc-mote-opacity) * var(--sc-ray-weather))`,
-        transform: "skewX(var(--sc-ray-skew))",
-        transformOrigin: "800px 150px",
-      }}
-    >
-      {MOTES.map((mote) => (
+    <g style={{ opacity: "calc(var(--rm-light) * var(--sc-ray-weather) * 1.4)" }}>
+      {motes.map((mote) => (
         <circle
           key={mote.id}
           cx={mote.x}
@@ -100,62 +252,93 @@ export function DustMotes() {
           r={mote.r}
           fill="#fffaf0"
           className="sc-mote"
-          style={{
-            animationDelay: `${mote.delay}s`,
-            animationDuration: `${mote.duration}s`,
-          }}
+          style={{ animationDelay: `${mote.delay}s`, animationDuration: `${mote.duration}s` }}
         />
       ))}
     </g>
   );
 }
 
-/** A soft glow around the bright window. */
-export function WindowBloom() {
+/* ------------------------------------------------------------------ */
+
+const ROOM_MASK = `M0 0 H1600 V1000 H0 Z M${GLASS_RECT.x} ${GLASS_RECT.y} V${GLASS_RECT.y + GLASS_RECT.h} H${GLASS_RECT.x + GLASS_RECT.w} V${GLASS_RECT.y} Z`;
+
+/** The time of day's ambient light, tinting the room (not the view). */
+export function AmbientTint() {
   return (
-    <rect
-      width="1600"
-      height="1000"
-      fill="url(#sc-bloom)"
-      style={{ opacity: "var(--sc-bloom)", mixBlendMode: "screen", transition: "opacity 1.5s ease" }}
+    <path
+      d={ROOM_MASK}
+      fillRule="evenodd"
+      fill="var(--rm-ambient)"
+      style={{
+        opacity: "var(--rm-ambient-opacity)",
+        mixBlendMode: "multiply",
+        transition: "opacity 1.5s ease, fill 1.5s ease",
+      }}
     />
+  );
+}
+
+export function WindowGlow() {
+  const cx = GLASS_RECT.x + GLASS_RECT.w / 2;
+  const cy = GLASS_RECT.y + GLASS_RECT.h / 2;
+
+  return (
+    <g style={{ mixBlendMode: "screen", opacity: "var(--sc-bloom)" }}>
+      <radialGradient id="rm-window-glow" cx={cx} cy={cy} r="620" gradientUnits="userSpaceOnUse">
+        <stop offset="0" stopColor="var(--rm-glow)" stopOpacity="0.7" />
+        <stop offset="1" stopColor="var(--rm-glow)" stopOpacity="0" />
+      </radialGradient>
+      <path d={ROOM_MASK} fillRule="evenodd" fill="url(#rm-window-glow)" />
+    </g>
   );
 }
 
 export function LampLight() {
   const lampOn = useSceneStore((state) => state.lampOn);
+  const [bx, by] = project(LAMP_BULB);
+  const [px, py] = project([1.45, DESK.top, 9.2]);
 
   return (
     <g
       style={{
-        opacity: lampOn ? "var(--sc-lamp-glow-opacity)" : 0,
+        opacity: lampOn ? "var(--rm-lamp)" : 0,
         transition: "opacity 600ms ease",
         mixBlendMode: "screen",
       }}
     >
-      <rect width="1600" height="1000" fill="url(#sc-lamp-glow)" />
-      <path d="M382 680 L456 641 L700 878 L320 892 Z" fill="url(#sc-lamp-cone)" />
+      <radialGradient id="rm-lamp-room" cx={bx} cy={by} r="520" gradientUnits="userSpaceOnUse">
+        <stop offset="0" stopColor="#ffc983" stopOpacity="0.55" />
+        <stop offset="0.35" stopColor="#ffb36b" stopOpacity="0.2" />
+        <stop offset="1" stopColor="#ffb36b" stopOpacity="0" />
+      </radialGradient>
+      <radialGradient id="rm-lamp-pool" cx={px} cy={py} r="150" gradientUnits="userSpaceOnUse" gradientTransform={`translate(${px} ${py}) scale(1 0.32) translate(${-px} ${-py})`}>
+        <stop offset="0" stopColor="#ffe6b0" stopOpacity="0.9" />
+        <stop offset="1" stopColor="#ffe6b0" stopOpacity="0" />
+      </radialGradient>
+      <path d={ROOM_MASK} fillRule="evenodd" fill="url(#rm-lamp-room)" />
+      <ellipse cx={px} cy={py} rx="150" ry="48" fill="url(#rm-lamp-pool)" />
     </g>
   );
 }
 
-/** Color grading and darkness, applied last. */
+/** Color grading, and darkness when the lamp is switched off. */
 export function Atmosphere() {
   const lampOn = useSceneStore((state) => state.lampOn);
 
   return (
     <g>
-      <rect
-        width="1600"
-        height="1000"
+      <path
+        d={ROOM_MASK}
+        fillRule="evenodd"
         fill="var(--sc-grade)"
         style={{ opacity: "var(--sc-grade-opacity)", mixBlendMode: "soft-light" }}
       />
-      <rect
-        width="1600"
-        height="1000"
-        fill="#05031a"
-        style={{ opacity: lampOn ? 0 : "var(--sc-dark-room)", transition: "opacity 600ms ease" }}
+      <path
+        d={ROOM_MASK}
+        fillRule="evenodd"
+        fill="#05081a"
+        style={{ opacity: lampOn ? 0 : "var(--rm-dark)", transition: "opacity 600ms ease" }}
       />
     </g>
   );

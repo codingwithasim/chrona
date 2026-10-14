@@ -80,7 +80,7 @@ export function LandingPage() {
             </p>
 
             <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-              <Button size="lg" render={<Link href="/timer" />}>
+              <Button size="lg" nativeButton={false} render={<Link href="/timer" />}>
                 Enter the room
                 <ArrowRight />
               </Button>

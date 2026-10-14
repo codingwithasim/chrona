@@ -19,7 +19,11 @@ import {
   mulberry32,
   svgProps,
 } from "./scene-shared";
+import { GLASS_RECT } from "./projection";
 import { SkyEvents } from "./sky-events";
+
+/** The painted landscape is taller than the window; show its lower part. */
+const VIEW_SHIFT = -68;
 
 const RAIL_Y = 552;
 
@@ -293,10 +297,15 @@ export function Landscape({
         </linearGradient>
 
         <clipPath id="sc-glass-clip">{glassRect()}</clipPath>
+        <clipPath id="sc-window-clip">
+          <rect x={GLASS_RECT.x} y={GLASS_RECT.y} width={GLASS_RECT.w} height={GLASS_RECT.h} />
+        </clipPath>
       </defs>
 
       <rect width="1600" height="1000" fill="var(--sc-wall-2)" />
 
+      <g clipPath="url(#sc-window-clip)">
+      <g transform={`translate(0 ${VIEW_SHIFT})`}>
       <g clipPath="url(#sc-glass-clip)">
         {glassRect({ fill: "url(#sc-sky)" })}
 
@@ -314,11 +323,11 @@ export function Landscape({
             />
           ))}
 
-          <circle cx="1040" cy="196" r="120" fill="url(#sc-moon-halo)" />
-          <circle cx="1040" cy="196" r="30" fill="#fff4d8" />
-          <circle cx="1030" cy="190" r="6" fill="#efdfb8" />
-          <circle cx="1050" cy="205" r="4.5" fill="#efdfb8" />
-          <circle cx="1046" cy="182" r="2.5" fill="#efdfb8" />
+          <circle cx="1040" cy="272" r="120" fill="url(#sc-moon-halo)" />
+          <circle cx="1040" cy="272" r="26" fill="#fff4d8" />
+          <circle cx="1031" cy="266" r="5" fill="#efdfb8" />
+          <circle cx="1049" cy="280" r="4" fill="#efdfb8" />
+          <circle cx="1045" cy="259" r="2.2" fill="#efdfb8" />
         </g>
 
         {/* Suns, with crepuscular rays at dawn and dusk */}
@@ -328,9 +337,9 @@ export function Landscape({
           <circle cx="590" cy="362" r="28" fill="#ffe4c0" />
         </g>
         <g style={{ opacity: "var(--sc-sun-day)" }}>
-          <SunRays cx={1010} cy={205} length={380} />
-          <circle cx="1010" cy="205" r="150" fill="url(#sc-sun-halo)" />
-          <circle cx="1010" cy="205" r="28" fill="#fffbe8" />
+          <SunRays cx={1012} cy={282} length={380} />
+          <circle cx="1012" cy="282" r="150" fill="url(#sc-sun-halo)" />
+          <circle cx="1012" cy="282" r="26" fill="#fffbe8" />
         </g>
         <g style={{ opacity: "var(--sc-sun-evening)" }}>
           <SunRays cx={790} cy={366} length={460} />
@@ -510,8 +519,17 @@ export function Landscape({
 
         {scene && <SkyEvents scene={scene} railY={RAIL_Y} />}
       </g>
+      </g>
+      </g>
 
-      <rect ref={glassRef} x={GLASS.x} y={GLASS.y} width={GLASS.w} height={GLASS.h} fill="none" />
+      <rect
+        ref={glassRef}
+        x={GLASS_RECT.x}
+        y={GLASS_RECT.y}
+        width={GLASS_RECT.w}
+        height={GLASS_RECT.h}
+        fill="none"
+      />
     </svg>
   );
 }

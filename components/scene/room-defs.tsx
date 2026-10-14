@@ -2,176 +2,113 @@
 export function RoomDefs() {
   return (
     <defs>
-      <linearGradient id="sc-wall" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stopColor="var(--sc-wall-1)" />
-        <stop offset="1" stopColor="var(--sc-wall-2)" />
+      <linearGradient id="rm-ceiling-shade" x1="0" y1="1" x2="0" y2="0">
+        <stop offset="0" stopColor="#ffffff" stopOpacity="0.2" />
+        <stop offset="1" stopColor="#1e2633" stopOpacity="0.25" />
       </linearGradient>
 
-      <pattern id="sc-stripes" width="40" height="40" patternUnits="userSpaceOnUse">
-        <rect width="20" height="40" fill="var(--sc-stripe)" />
-        <circle cx="30" cy="10" r="1.2" fill="var(--sc-stripe)" />
-        <circle cx="30" cy="30" r="1.2" fill="var(--sc-stripe)" />
-      </pattern>
+      <linearGradient id="rm-left-shade" x1="1" y1="0" x2="0" y2="0">
+        <stop offset="0" stopColor="#ffffff" stopOpacity="0.08" />
+        <stop offset="1" stopColor="#1e2633" stopOpacity="0.28" />
+      </linearGradient>
 
-      <radialGradient id="sc-window-light" cx="800" cy="380" r="620" gradientUnits="userSpaceOnUse">
-        <stop offset="0" stopColor="var(--sc-wall-light)" />
-        <stop offset="1" stopColor="var(--sc-wall-light)" stopOpacity="0" />
+      <linearGradient id="rm-right-shade" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stopColor="#ffffff" stopOpacity="0.04" />
+        <stop offset="1" stopColor="#1e2633" stopOpacity="0.3" />
+      </linearGradient>
+
+      <radialGradient id="rm-back-light" cx="800" cy="360" r="640" gradientUnits="userSpaceOnUse">
+        <stop offset="0" stopColor="#ffffff" stopOpacity="0.28" />
+        <stop offset="1" stopColor="#ffffff" stopOpacity="0" />
       </radialGradient>
 
-      <linearGradient id="sc-corner-left" x1="0" y1="0" x2="1" y2="0">
-        <stop offset="0" stopColor="var(--sc-shadow)" />
-        <stop offset="1" stopColor="var(--sc-shadow)" stopOpacity="0" />
+      <linearGradient id="rm-floor-shade" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stopColor="#1e1410" stopOpacity="0.28" />
+        <stop offset="0.5" stopColor="#1e1410" stopOpacity="0" />
+        <stop offset="1" stopColor="#1e1410" stopOpacity="0.2" />
       </linearGradient>
 
-      <linearGradient id="sc-corner-right" x1="1" y1="0" x2="0" y2="0">
-        <stop offset="0" stopColor="var(--sc-shadow)" />
-        <stop offset="1" stopColor="var(--sc-shadow)" stopOpacity="0" />
+      <linearGradient id="rm-contact-back" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stopColor="#1e2633" stopOpacity="0.35" />
+        <stop offset="1" stopColor="#1e2633" stopOpacity="0" />
       </linearGradient>
 
-      <linearGradient id="sc-ceiling" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stopColor="var(--sc-shadow)" />
-        <stop offset="1" stopColor="var(--sc-shadow)" stopOpacity="0" />
-      </linearGradient>
-
-      <linearGradient id="sc-wood" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0" stopColor="var(--sc-frame-light)" />
-        <stop offset="0.5" stopColor="var(--sc-frame)" />
-        <stop offset="1" stopColor="var(--sc-frame-dark)" />
-      </linearGradient>
-
-      <linearGradient id="sc-plank" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stopColor="var(--sc-desk-2)" />
-        <stop offset="1" stopColor="var(--sc-desk-1)" />
-      </linearGradient>
-
-      <linearGradient id="sc-curtain" x1="0" y1="0" x2="1" y2="0">
-        <stop offset="0" stopColor="var(--sc-curtain-2)" />
-        <stop offset="0.16" stopColor="var(--sc-curtain-1)" />
-        <stop offset="0.3" stopColor="var(--sc-curtain-2)" />
-        <stop offset="0.46" stopColor="var(--sc-curtain-3)" />
-        <stop offset="0.6" stopColor="var(--sc-curtain-1)" />
-        <stop offset="0.78" stopColor="var(--sc-curtain-2)" />
-        <stop offset="0.9" stopColor="var(--sc-curtain-1)" />
-        <stop offset="1" stopColor="var(--sc-curtain-3)" />
-      </linearGradient>
-
-      <linearGradient id="sc-curtain-glow" x1="1" y1="0" x2="0" y2="0">
-        <stop offset="0" stopColor="var(--sc-ray-color)" stopOpacity="0.55" />
-        <stop offset="0.5" stopColor="var(--sc-ray-color)" stopOpacity="0" />
-      </linearGradient>
-
-      <linearGradient id="sc-desk" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stopColor="var(--sc-desk-1)" />
-        <stop offset="1" stopColor="var(--sc-desk-2)" />
-      </linearGradient>
-
-      <linearGradient id="sc-desk-edge" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stopColor="var(--sc-desk-2)" />
-        <stop offset="0.25" stopColor="var(--sc-desk-edge)" />
-        <stop offset="1" stopColor="var(--sc-desk-front)" />
-      </linearGradient>
-
-      <linearGradient id="sc-fog" x1="0" y1="0" x2="0" y2="1">
+      <linearGradient id="rm-glass-fog" x1="0" y1="0" x2="0" y2="1">
         <stop offset="0.7" stopColor="#ffffff" stopOpacity="0" />
         <stop offset="1" stopColor="#ffffff" stopOpacity="0.1" />
       </linearGradient>
 
-      <linearGradient id="sc-glass-inner" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stopColor="#000000" stopOpacity="0.25" />
-        <stop offset="1" stopColor="#000000" stopOpacity="0" />
-      </linearGradient>
-
-      <linearGradient id="sc-contact" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stopColor="var(--sc-shadow)" stopOpacity="0" />
-        <stop offset="1" stopColor="var(--sc-shadow)" />
-      </linearGradient>
-
-      <radialGradient id="sc-drop-shadow">
-        <stop offset="0" stopColor="var(--sc-shadow)" />
-        <stop offset="1" stopColor="var(--sc-shadow)" stopOpacity="0" />
-      </radialGradient>
-
-      <radialGradient id="sc-lamp-glow" cx="440" cy="760" r="430" gradientUnits="userSpaceOnUse">
-        <stop offset="0" stopColor="#ffc983" stopOpacity="0.55" />
-        <stop offset="0.45" stopColor="#ffb36b" stopOpacity="0.18" />
-        <stop offset="1" stopColor="#ffb36b" stopOpacity="0" />
-      </radialGradient>
-
-      <linearGradient id="sc-lamp-cone" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stopColor="#ffe2a8" stopOpacity="0.5" />
-        <stop offset="1" stopColor="#ffe2a8" stopOpacity="0" />
-      </linearGradient>
-
-      <linearGradient id="sc-beam" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stopColor="var(--sc-ray-color)" stopOpacity="0" />
-        <stop offset="0.35" stopColor="var(--sc-ray-color)" stopOpacity="0.32" />
-        <stop offset="0.75" stopColor="var(--sc-ray-color)" stopOpacity="0.16" />
-        <stop offset="1" stopColor="var(--sc-ray-color)" stopOpacity="0" />
-      </linearGradient>
-
-      <linearGradient id="sc-sunpatch" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stopColor="var(--sc-sunpatch)" stopOpacity="0.9" />
-        <stop offset="1" stopColor="var(--sc-sunpatch)" stopOpacity="0.15" />
-      </linearGradient>
-
-      <radialGradient id="sc-bloom" cx="800" cy="380" r="560" gradientUnits="userSpaceOnUse">
-        <stop offset="0" stopColor="var(--sc-ray-color)" stopOpacity="0.55" />
-        <stop offset="1" stopColor="var(--sc-ray-color)" stopOpacity="0" />
-      </radialGradient>
-
-      <radialGradient id="sc-frost" cx="0.5" cy="0.5" r="0.75">
+      <radialGradient id="rm-frost" cx="0.5" cy="0.5" r="0.75">
         <stop offset="0.55" stopColor="#ffffff" stopOpacity="0" />
         <stop offset="1" stopColor="#ffffff" stopOpacity="0.6" />
       </radialGradient>
 
-      {/* Ceramic cylinder shading for the mug */}
-      <linearGradient id="sc-mug-body" x1="0" y1="0" x2="1" y2="0">
-        <stop offset="0" stopColor="var(--sc-mug)" />
-        <stop offset="0.22" stopColor="#ffffff" stopOpacity="0.9" />
-        <stop offset="0.34" stopColor="var(--sc-mug)" />
-        <stop offset="0.85" stopColor="var(--sc-mug)" />
-        <stop offset="1" stopColor="#7a4a5c" />
+      <linearGradient id="rm-sill-shadow" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stopColor="#1e2633" stopOpacity="0.3" />
+        <stop offset="1" stopColor="#1e2633" stopOpacity="0" />
       </linearGradient>
 
-      <radialGradient id="sc-tea" cx="0.4" cy="0.4" r="0.7">
-        <stop offset="0" stopColor="#c48a5c" />
-        <stop offset="1" stopColor="var(--sc-tea)" />
+      {/* Sheer curtains: soft vertical folds */}
+      <linearGradient id="rm-sheer" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stopColor="#ffffff" stopOpacity="0.62" />
+        <stop offset="0.15" stopColor="#eef2f6" stopOpacity="0.42" />
+        <stop offset="0.3" stopColor="#ffffff" stopOpacity="0.68" />
+        <stop offset="0.48" stopColor="#e6ecf2" stopOpacity="0.4" />
+        <stop offset="0.64" stopColor="#ffffff" stopOpacity="0.66" />
+        <stop offset="0.8" stopColor="#e9eef3" stopOpacity="0.44" />
+        <stop offset="1" stopColor="#ffffff" stopOpacity="0.6" />
+      </linearGradient>
+
+      <linearGradient id="rm-sheer-glow" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stopColor="var(--rm-glow)" stopOpacity="0.5" />
+        <stop offset="1" stopColor="var(--rm-glow)" stopOpacity="0.15" />
+      </linearGradient>
+
+      <linearGradient id="rm-desk-top" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stopColor="#1e1410" stopOpacity="0.12" />
+        <stop offset="1" stopColor="#ffffff" stopOpacity="0.12" />
+      </linearGradient>
+
+      <radialGradient id="rm-drop-shadow">
+        <stop offset="0" stopColor="#141a26" stopOpacity="0.45" />
+        <stop offset="1" stopColor="#141a26" stopOpacity="0" />
       </radialGradient>
 
-      <linearGradient id="sc-metal" x1="0" y1="0" x2="1" y2="1">
+      <radialGradient id="rm-rug-shade" cx="0.5" cy="0.5" r="0.7">
+        <stop offset="0" stopColor="#ffffff" stopOpacity="0.15" />
+        <stop offset="1" stopColor="#3a2c1e" stopOpacity="0.15" />
+      </radialGradient>
+
+      <linearGradient id="rm-mug" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stopColor="#86ad97" />
+        <stop offset="0.25" stopColor="#d6ebdf" />
+        <stop offset="0.4" stopColor="#9cc2ad" />
+        <stop offset="0.85" stopColor="#86ad97" />
+        <stop offset="1" stopColor="#5e8270" />
+      </linearGradient>
+
+      <linearGradient id="rm-glass" x1="0" y1="0" x2="1" y2="1">
         <stop offset="0" stopColor="#ffffff" stopOpacity="0.55" />
-        <stop offset="0.5" stopColor="#ffffff" stopOpacity="0" />
-        <stop offset="1" stopColor="#000000" stopOpacity="0.2" />
+        <stop offset="1" stopColor="#ffffff" stopOpacity="0.1" />
       </linearGradient>
 
-      <linearGradient id="sc-page-left" x1="0" y1="0" x2="1" y2="0">
-        <stop offset="0" stopColor="var(--sc-paper)" />
-        <stop offset="0.85" stopColor="var(--sc-paper)" />
-        <stop offset="1" stopColor="#c9b8a8" />
-      </linearGradient>
-
-      <linearGradient id="sc-page-right" x1="1" y1="0" x2="0" y2="0">
-        <stop offset="0" stopColor="var(--sc-paper)" />
-        <stop offset="0.85" stopColor="var(--sc-paper)" />
-        <stop offset="1" stopColor="#c9b8a8" />
-      </linearGradient>
-
+      {/* Used by Mochi */}
       <radialGradient id="sc-fur" cx="0.35" cy="0.3" r="0.8">
-        <stop offset="0" stopColor="#ffffff" stopOpacity="0.55" />
+        <stop offset="0" stopColor="#ffffff" stopOpacity="0.5" />
         <stop offset="0.6" stopColor="#ffffff" stopOpacity="0" />
-        <stop offset="1" stopColor="#5a3a3a" stopOpacity="0.14" />
+        <stop offset="1" stopColor="#4a3a3a" stopOpacity="0.14" />
       </radialGradient>
 
-      <radialGradient id="sc-glass-ball" cx="0.3" cy="0.3" r="0.8">
-        <stop offset="0" stopColor="#ffffff" stopOpacity="0.6" />
-        <stop offset="1" stopColor="#ffffff" stopOpacity="0.05" />
+      <radialGradient id="sc-drop-shadow">
+        <stop offset="0" stopColor="#141a26" stopOpacity="0.45" />
+        <stop offset="1" stopColor="#141a26" stopOpacity="0" />
       </radialGradient>
 
       {/* Soft halo when hovering something clickable */}
       <filter id="sc-hover-glow" x="-30%" y="-30%" width="160%" height="160%">
         <feMorphology in="SourceAlpha" operator="dilate" radius="2" result="thick" />
-        <feGaussianBlur in="thick" stdDeviation="5" result="blur" />
-        <feFlood floodColor="#fff1c2" floodOpacity="0.85" />
+        <feGaussianBlur in="thick" stdDeviation="4" result="blur" />
+        <feFlood floodColor="#fff4d6" floodOpacity="0.85" />
         <feComposite in2="blur" operator="in" result="glow" />
         <feMerge>
           <feMergeNode in="glow" />

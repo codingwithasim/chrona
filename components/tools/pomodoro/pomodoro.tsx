@@ -27,7 +27,7 @@ function Tomato({ filled }: { filled: boolean }) {
         cx="12"
         cy="13.5"
         r="8.5"
-        fill={filled ? "var(--sakura)" : "transparent"}
+        fill={filled ? "var(--ember)" : "transparent"}
         stroke="var(--ink)"
         strokeWidth="1.6"
         strokeDasharray={filled ? undefined : "2.4 2"}

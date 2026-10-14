@@ -20,6 +20,9 @@ const zenMaru = Zen_Maru_Gothic({
   weight: ["400", "500", "700", "900"],
   variable: "--font-zen",
   display: "swap",
+  // Japanese fonts ship hundreds of unicode-range slices; let the
+  // browser fetch only the ones a page actually uses.
+  preload: false,
 });
 
 const kiwi = Kiwi_Maru({
@@ -27,6 +30,7 @@ const kiwi = Kiwi_Maru({
   weight: ["300", "400", "500"],
   variable: "--font-kiwi",
   display: "swap",
+  preload: false,
 });
 
 export const metadata: Metadata = rootMetadata;
