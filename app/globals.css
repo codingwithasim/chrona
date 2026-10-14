@@ -882,6 +882,20 @@
 
 .sc-float-up { animation: sc-float-up 1.6s ease-out forwards; }
 .sc-rustle { animation: sc-rustle 0.9s ease-out; }
+
+/* The star lamp's stars: only after dark, and only while it's on. */
+.sc-starfield { opacity: 0; transition: opacity 2.5s ease; }
+[data-tod="night"] .sc-starfield[data-on="true"] { opacity: 0.8; }
+[data-tod="evening"] .sc-starfield[data-on="true"] { opacity: 0.35; }
+.sc-star-drift { animation: sc-star-drift 180s ease-in-out infinite alternate; }
+.sc-starlamp-glow { opacity: 0; transition: opacity 0.6s ease; }
+[data-tod="night"] .sc-starlamp-glow[data-on="true"],
+[data-tod="evening"] .sc-starlamp-glow[data-on="true"] { opacity: 0.9; }
+
+@keyframes sc-star-drift {
+  from { transform: rotate(-2.5deg); }
+  to { transform: rotate(2.5deg); }
+}
 .sc-swing { animation: sc-swing 1.8s ease-out; }
 .sc-puff { animation: sc-puff 1.2s ease-out forwards; }
 .sc-room-flash { animation: sc-room-flash 1.1s ease-out forwards; }

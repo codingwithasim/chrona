@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { createContext, type ReactNode, useContext } from "react";
 
 import { LINE, mulberry32, pivot } from "../scene-shared";
 
@@ -20,6 +20,31 @@ const SHADE = "var(--sc-cat-shade)";
 const PINK = "#f4a7b6";
 
 const r1 = (value: number) => Math.round(value * 10) / 10;
+
+/** Things she's wearing, earned as the room grows. */
+export const CatWear = createContext({ bell: false });
+
+/** A red collar with a little gold bell, sitting under her chin. */
+function Collar() {
+  return (
+    <g>
+      <path
+        d="M-26 32 Q 0 50 26 32 L 26 39 Q 0 57 -26 39 Z"
+        fill="#c8553d"
+        stroke={LINE}
+        strokeOpacity="0.6"
+        strokeWidth="1.4"
+        strokeLinejoin="round"
+      />
+      <g transform="translate(0 52)">
+        <circle r="6.2" fill="#f2c14e" stroke={LINE} strokeOpacity="0.6" strokeWidth="1.3" />
+        <path d="M-5.6 0.4 H5.6" stroke="#9a6a1c" strokeWidth="1.1" />
+        <circle cy="2.8" r="1.2" fill="#7a5214" />
+        <circle cx="-2.2" cy="-2.4" r="1.5" fill="#ffffff" opacity="0.7" />
+      </g>
+    </g>
+  );
+}
 
 /* ------------------------------------------------------------------ */
 /* Fur                                                                 */
@@ -309,8 +334,12 @@ export function Head({
   licking?: boolean;
   earPoke: number;
 }) {
+  const { bell } = useContext(CatWear);
+
   return (
     <g>
+      {bell && <Collar />}
+
       {/* Ears, with tufts of fur inside */}
       <g key={earPoke} className={earPoke ? "sc-ear" : undefined} style={pivot("50% 100%")}>
         <path d="M-40 -12 Q -43 -46 -33 -56 Q -20 -50 -6 -32 Z" fill={PATCH} stroke={LINE} strokeOpacity="0.7" strokeWidth="2" strokeLinejoin="round" />

@@ -19,6 +19,7 @@ import {
 import { Mochi } from "./cat/mochi";
 import { AirConditioner, CoffeeCup, CornerPlant, DeskCalendar } from "./room-extras";
 import { RoomDefs } from "./room-defs";
+import { Polaroid, Pothos, StarField, StarLamp } from "./room-unlocks";
 import {
   Bed,
   Bookcase,
@@ -136,6 +137,7 @@ function RoomLayer({
         <Painting />
         <WallClock />
         <Corkboard />
+        <Polaroid />
         <AirConditioner />
 
         <WindowUnit onKnock={onKnock} />
@@ -148,6 +150,7 @@ function RoomLayer({
         <TeruTeruBozu />
         <Furin />
         <CurtainsAndLights />
+        <Pothos />
         <PendantLamp />
 
         <Bookcase />
@@ -164,6 +167,7 @@ function RoomLayer({
         <Mug />
 
         <Bed />
+        <StarLamp />
         <Plush />
         <Dresser />
         <Rug />
@@ -181,6 +185,7 @@ function RoomLayer({
         {time && <DustMotes time={time} />}
         <LampLight />
         <Atmosphere />
+        <StarField />
         <Vignette />
 
         {bubble && <SpeechBubble key={bubble.id} bubble={bubble} />}

@@ -5,6 +5,7 @@ import { Check, Wind } from "lucide-react";
 
 import { useNow } from "@/hooks/use-now";
 import { useFocusStore } from "@/stores/focus-store";
+import { useRoomStore } from "@/stores/room-store";
 
 const SUGGESTIONS = [
   "Stand up and stretch your arms over your head.",
@@ -113,7 +114,8 @@ function SessionNote() {
 /** During a break: a small idea for resting, and an offer to breathe. */
 export function BreakCompanion({ cycle }: { cycle: number }) {
   const [breathing, setBreathing] = useState(false);
-  const suggestion = SUGGESTIONS[cycle % SUGGESTIONS.length];
+  const name = useRoomStore((state) => state.catName.trim() || "Mochi");
+  const suggestion = SUGGESTIONS[cycle % SUGGESTIONS.length].replace("Mochi", name);
 
   if (breathing) {
     return <Breathing onDone={() => setBreathing(false)} />;

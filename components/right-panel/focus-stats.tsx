@@ -1,9 +1,12 @@
 "use client";
 
 import { useNow } from "@/hooks/use-now";
+import { useRoomUnlocks } from "@/hooks/use-room";
 import { todayKey } from "@/lib/day-key";
+import { formatHours, nextUnlock, unlockTitle } from "@/lib/unlocks";
 import { recentDays, streakOf, useFocusStore } from "@/stores/focus-store";
 import { usePomodoroStore } from "@/stores/pomodoro-store";
+import { useRoomStore } from "@/stores/room-store";
 
 function formatMinutes(minutes: number) {
   if (minutes < 60) {
@@ -23,6 +26,9 @@ export function FocusStats() {
   const setDailyGoal = useFocusStore((state) => state.setDailyGoal);
   // Sessions counted before the history existed still show for today.
   const pomodoroToday = usePomodoroStore((state) => state.stats);
+  const { minutes: lifetime } = useRoomUnlocks();
+  const catName = useRoomStore((state) => state.catName.trim() || "Mochi");
+  const next = nextUnlock(lifetime);
 
   if (!now) {
     return null;
@@ -119,6 +125,16 @@ export function FocusStats() {
           {formatMinutes(weekMinutes)} this week
         </p>
       </div>
+
+      {next && (
+        <p className="flex items-center gap-2 text-[11px] text-muted-foreground/80">
+          <span aria-hidden="true">🌱</span>
+          <span>
+            Next for the room: {unlockTitle(next, catName).replace(/^A /, "a ")} ·{" "}
+            {formatHours(next.minutes - lifetime)} to go
+          </span>
+        </p>
+      )}
     </section>
   );
 }

@@ -4,8 +4,10 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 import { todayKey } from "@/lib/day-key";
+import { crossed, unlockTitle } from "@/lib/unlocks";
 
 import { say } from "./dialogue-store";
+import { catName } from "./room-store";
 
 /**
  * What you're working on, and how much you've focused. Everything stays
@@ -29,6 +31,8 @@ type FocusStore = {
   currentId: string | null;
   days: FocusDay[];
   log: FocusEntry[];
+  /** Focus minutes ever, which `days` (only the last months) can't tell. */
+  totalMinutes: number;
   /** Minutes of focus to aim for each day. */
   dailyGoal: number;
   setDailyGoal: (minutes: number) => void;
@@ -55,6 +59,7 @@ export const useFocusStore = create<FocusStore>()(
       currentId: null,
       days: [],
       log: [],
+      totalMinutes: 0,
       dailyGoal: 120,
       setDailyGoal: (minutes) => set({ dailyGoal: Math.min(600, Math.max(15, Math.round(minutes / 15) * 15)) }),
 
@@ -117,9 +122,21 @@ export const useFocusStore = create<FocusStore>()(
           // Crossing today's goal deserves a little cheer.
           if (before < state.dailyGoal && before + minutes >= state.dailyGoal) {
             window.setTimeout(() => {
-              say({ tone: "alert", text: "You reached today's focus goal! Mochi is very proud of you~ 🎉" });
+              say({ tone: "alert", text: `You reached today's focus goal! ${catName()} is very proud of you~ 🎉` });
             }, 2500);
           }
+          // The room grows: something new for crossing a milestone.
+          const lifetimeBefore = lifetimeMinutes(state);
+          const earned = crossed(lifetimeBefore, lifetimeBefore + minutes);
+
+          if (earned.length > 0) {
+            window.setTimeout(() => {
+              const name = catName();
+              const things = earned.map((unlock) => unlockTitle(unlock, name).replace(/^A /, "a ")).join(" and ");
+              say({ tone: "alert", text: `Something new in the room: ${things}! Thank you for focusing~ ✨` });
+            }, 6000);
+          }
+
           const days = existing
             ? state.days.map((day) =>
                 day.date === date ? { ...day, minutes: day.minutes + minutes, sessions: day.sessions + 1 } : day
@@ -131,6 +148,7 @@ export const useFocusStore = create<FocusStore>()(
           return {
             days,
             log: [...state.log, { at: Date.now(), minutes, task: current?.text }].slice(-KEEP_ENTRIES),
+            totalMinutes: lifetimeBefore + minutes,
             tasks: state.tasks.map((task) =>
               task.id === state.currentId ? { ...task, pomodoros: task.pomodoros + 1 } : task
             ),
@@ -155,6 +173,12 @@ export const useFocusStore = create<FocusStore>()(
     }
   )
 );
+
+/** All the focus you've ever done here, in minutes. */
+export function lifetimeMinutes(state: { totalMinutes?: number; days: FocusDay[] }) {
+  const kept = state.days.reduce((sum, day) => sum + day.minutes, 0);
+  return Math.max(state.totalMinutes ?? 0, kept);
+}
 
 /** The last `count` days, oldest first, including empty ones. */
 export function recentDays(days: FocusDay[], count = 7, now = new Date()): FocusDay[] {

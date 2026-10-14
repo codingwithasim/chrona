@@ -1,7 +1,7 @@
 "use client";
 
 import { type ReactNode, useState } from "react";
-import { Bell, Clock3, HardDrive, Keyboard, LayoutPanelLeft, Music2, Play, Sofa } from "lucide-react";
+import { Bell, Cat, Clock3, HardDrive, Keyboard, LayoutPanelLeft, Music2, Play, Sofa, Sprout } from "lucide-react";
 
 import { PanelStylePicker } from "@/components/shell/panel-style";
 import { RoomControls } from "@/components/shell/room-controls";
@@ -15,6 +15,7 @@ import { previewSound } from "@/lib/sounds";
 import { useSceneStore } from "@/stores/scene-store";
 
 import { YourData } from "./your-data";
+import { RoomGrowth, YourCat } from "./your-room";
 import {
   type SoundSlot,
   soundSlots,
@@ -144,6 +145,14 @@ export function SettingsPanel() {
 
         <Section icon={Sofa} title="The room" jp="へや">
           <RoomControls />
+        </Section>
+
+        <Section icon={Cat} title="Your cat" jp="ねこ">
+          <YourCat />
+        </Section>
+
+        <Section icon={Sprout} title="Your room grows" jp="そだつ">
+          <RoomGrowth />
         </Section>
 
         <Section icon={Bell} title="Notifications" jp="おしらせ">

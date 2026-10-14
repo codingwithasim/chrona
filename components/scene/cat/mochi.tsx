@@ -1,7 +1,8 @@
 "use client";
 
-import { type CSSProperties, useEffect, useRef, useState } from "react";
+import { type CSSProperties, useEffect, useMemo, useRef, useState } from "react";
 
+import { useRoomUnlocks } from "@/hooks/use-room";
 import { SESSION_EVENT, type SessionDetail } from "@/lib/session-events";
 import { playSfx } from "@/lib/sfx";
 import { useDialogueStore } from "@/stores/dialogue-store";
@@ -14,8 +15,10 @@ import {
   useParticles,
   useSpeak,
 } from "../scene-shared";
+import { useCoatStyle } from "../room-unlocks";
 import {
   CatDefs,
+  CatWear,
   type Eyes,
   type Look,
   LoafPose,
@@ -188,6 +191,8 @@ export function Mochi({ yarnX, onBat }: { yarnX: number; onBat: () => void }) {
   const speak = useSpeak();
   const [hearts, burst] = useParticles();
   const pets = useRef(0);
+  const coat = useCoatStyle();
+  const showsBell = useRoomUnlocks().shows("bell");
 
   const [view, setView] = useState<View>({
     inBed: true,
@@ -410,6 +415,7 @@ export function Mochi({ yarnX, onBat }: { yarnX: number; onBat: () => void }) {
   }
 
   const head = { eyes: view.eyes, look: view.look, yawning: view.yawning, earPoke: view.earPoke };
+  const wear = useMemo(() => ({ bell: showsBell }), [showsBell]);
 
   const legStyle = {
     "--leg-speed": view.legs === "run" ? "0.42s" : "0.9s",
@@ -417,7 +423,8 @@ export function Mochi({ yarnX, onBat }: { yarnX: number; onBat: () => void }) {
   } as CSSProperties;
 
   return (
-    <g>
+    <CatWear.Provider value={wear}>
+    <g style={coat}>
       <CatDefs />
       <CatBedBack />
 
@@ -482,5 +489,6 @@ export function Mochi({ yarnX, onBat }: { yarnX: number; onBat: () => void }) {
         </g>
       ))}
     </g>
+    </CatWear.Provider>
   );
 }

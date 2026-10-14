@@ -2,6 +2,8 @@
 
 import { create } from "zustand";
 
+import { catName } from "./room-store";
+
 export type DialogueTone = "info" | "alert";
 
 export type DialogueMessage = {
@@ -40,7 +42,7 @@ export const useDialogueStore = create<DialogueStore>(
 
     say: ({
       text,
-      speaker = "Mochi",
+      speaker = catName(),
       tone = "info",
       sticky = false,
       actionLabel,
