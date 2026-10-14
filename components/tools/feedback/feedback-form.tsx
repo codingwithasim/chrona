@@ -1,76 +1,68 @@
 "use client";
 
+import { type FormEvent, useState } from "react";
 import {
-  FormEvent,
-  useState,
-} from "react";
-
-import {
+  Bug,
   ExternalLink,
+  Lightbulb,
   Loader2,
   Mail,
+  MessageSquare,
+  Send,
+  Sparkles,
 } from "lucide-react";
-
-import {
-  LucideBug,
-  LucideCheck,
-  LucideLightbulb,
-  LucideMessageSquare,
-  LucideSend,
-} from "lucide-react";
-
-import { Button } from "@/components/ui/button";
-
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-
-import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
-import { Textarea } from "@/components/ui/textarea";
-import { Toggle } from "@/components/ui/toggle";
-import { FaLinkedinIn, FaXTwitter } from "react-icons/fa6";
 import { BsGithub } from "react-icons/bs";
+import { FaLinkedinIn, FaXTwitter } from "react-icons/fa6";
 
-type FeedbackType =
-  | "bug"
-  | "improvement"
-  | "other";
+import { ToolFrame } from "@/components/shell/tool-frame";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
+import { say } from "@/stores/dialogue-store";
 
-type SubmissionState =
-  | "idle"
-  | "submitting"
-  | "success"
-  | "error";
+type FeedbackType = "bug" | "improvement" | "other";
+
+type SubmissionState = "idle" | "submitting" | "success" | "error";
 
 const feedbackTypes = [
   {
     value: "bug",
     label: "Bug",
-    description: "Something is not working",
-    icon: LucideBug,
+    jp: "バグ",
+    description: "Something broke",
+    icon: Bug,
+    color: "var(--sakura)",
   },
   {
     value: "improvement",
-    label: "Improvement",
-    description: "Suggest a better experience",
-    icon: LucideLightbulb,
+    label: "Idea",
+    jp: "アイデア",
+    description: "Make it better",
+    icon: Lightbulb,
+    color: "var(--honey)",
   },
   {
     value: "other",
     label: "Other",
-    description: "Share another thought",
-    icon: LucideMessageSquare,
+    jp: "そのほか",
+    description: "Just saying hi",
+    icon: MessageSquare,
+    color: "var(--mint)",
   },
 ] satisfies Array<{
   value: FeedbackType;
   label: string;
+  jp: string;
   description: string;
-  icon: typeof LucideBug;
+  icon: typeof Bug;
+  color: string;
 }>;
+
+const placeholders: Record<FeedbackType, string> = {
+  bug: "What happened? What did you expect, and what steps led there?",
+  improvement: "What would you like Chrona to do differently?",
+  other: "Share anything on your mind…",
+};
 
 const socialLinks = [
   {
@@ -99,107 +91,69 @@ const socialLinks = [
   },
 ];
 
-export function FeedbackForm() {
-  const [type, setType] =
-    useState<FeedbackType>("bug");
-
-  const [message, setMessage] =
-    useState("");
-
-  const [email, setEmail] =
-    useState("");
-
-  const [website, setWebsite] =
-    useState("");
-
-  const [
-    submissionState,
-    setSubmissionState,
-  ] = useState<SubmissionState>(
-    "idle"
+function Envelope() {
+  return (
+    <svg viewBox="0 0 160 110" className="w-40 float-soft" aria-hidden="true">
+      <rect x="6" y="14" width="148" height="90" rx="10" fill="var(--card)" stroke="var(--ink)" strokeWidth="3" />
+      <path d="M8 20 L80 66 L152 20" fill="none" stroke="var(--ink)" strokeWidth="3" strokeLinejoin="round" />
+      <path d="M8 100 L62 56 M152 100 L98 56" stroke="var(--ink)" strokeWidth="2.5" opacity="0.5" />
+      <circle cx="80" cy="66" r="13" fill="var(--sakura)" stroke="var(--ink)" strokeWidth="2.5" />
+      <path d="M80 72 C 72 66 74 60 78 61 C 79 61 80 62 80 63 C 80 62 81 61 82 61 C 86 60 88 66 80 72 Z" fill="#fff" />
+    </svg>
   );
+}
 
-  const [error, setError] =
-    useState<string | null>(null);
+export function FeedbackForm() {
+  const [type, setType] = useState<FeedbackType>("bug");
+  const [message, setMessage] = useState("");
+  const [email, setEmail] = useState("");
+  const [website, setWebsite] = useState("");
+  const [submissionState, setSubmissionState] = useState<SubmissionState>("idle");
+  const [error, setError] = useState<string | null>(null);
 
-  async function handleSubmit(
-    event: FormEvent<HTMLFormElement>
-  ) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    const normalizedMessage =
-      message.trim();
+    const normalizedMessage = message.trim();
 
-    if (
-      normalizedMessage.length < 10
-    ) {
-      setError(
-        "Please provide at least 10 characters."
-      );
-
+    if (normalizedMessage.length < 10) {
+      setError("Please write at least 10 characters.");
       return;
     }
 
-    setSubmissionState(
-      "submitting"
-    );
-
+    setSubmissionState("submitting");
     setError(null);
 
     try {
-      const response = await fetch(
-        "/api/feedback",
-        {
-          method: "POST",
+      const response = await fetch("/api/feedback", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          type,
+          message: normalizedMessage,
+          email: email.trim(),
+          website,
+          page: window.location.pathname,
+          userAgent: window.navigator.userAgent,
+        }),
+      });
 
-          headers: {
-            "Content-Type":
-              "application/json",
-          },
-
-          body: JSON.stringify({
-            type,
-            message:
-              normalizedMessage,
-
-            email: email.trim(),
-            website,
-
-            page:
-              window.location
-                .pathname,
-
-            userAgent:
-              window.navigator
-                .userAgent,
-          }),
-        }
-      );
-
-      const result =
-        (await response.json()) as {
-          error?: string;
-        };
+      const result = (await response.json()) as { error?: string };
 
       if (!response.ok) {
-        throw new Error(
-          result.error ||
-            "Feedback could not be sent."
-        );
+        throw new Error(result.error || "Feedback could not be sent.");
       }
 
-      setSubmissionState(
-        "success"
-      );
-
+      setSubmissionState("success");
       setMessage("");
       setEmail("");
       setWebsite("");
-    } catch (caughtError) {
-      setSubmissionState(
-        "error"
-      );
 
+      say({ text: "Delivered! Thank you for the letter~ We read every one." });
+    } catch (caughtError) {
+      setSubmissionState("error");
       setError(
         caughtError instanceof Error
           ? caughtError.message
@@ -208,388 +162,228 @@ export function FeedbackForm() {
     }
   }
 
-  if (
-    submissionState === "success"
-  ) {
+  if (submissionState === "success") {
     return (
-      <div className="mx-auto flex min-h-[calc(100dvh-8rem)] w-full max-w-2xl items-center justify-center py-6">
-        <Card className="w-full rounded-xl bg-background ring-0 shadow-none">
-          <CardContent className="flex min-h-80 flex-col items-center justify-center p-6 text-center sm:p-10">
-            <div className="flex size-12 items-center justify-center rounded-full bg-muted">
-              <LucideCheck className="size-5" />
-            </div>
+      <ToolFrame href="/feedback">
+        <div className="flex flex-col items-center py-10 text-center">
+          <Envelope />
 
-            <h1 className="mt-5 text-lg font-medium">
-              Feedback sent
-            </h1>
+          <h2 className="mt-6 font-display text-2xl">Letter sent!</h2>
+          <p className="mt-1 text-xs font-bold tracking-[0.3em] text-muted-foreground">
+            おてがみ ありがとう
+          </p>
 
-            <p className="mt-2 max-w-sm text-sm leading-6 text-muted-foreground">
-              Thank you for helping
-              improve Chrona. Your
-              feedback has been
-              received.
-            </p>
+          <p className="mt-4 max-w-sm text-sm leading-6 text-muted-foreground">
+            Thank you for helping make Chrona cozier. Your letter
+            has been received.
+          </p>
 
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="mt-6"
-              onClick={() =>
-                setSubmissionState(
-                  "idle"
-                )
-              }
-            >
-              Send more feedback
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
+          <Button
+            variant="outline"
+            className="mt-6"
+            onClick={() => setSubmissionState("idle")}
+          >
+            Write another letter
+          </Button>
+        </div>
+      </ToolFrame>
     );
   }
 
   return (
-    <div className="mx-auto w-full max-w-5xl py-2 sm:py-6">
-      {/* Page heading */}
-      <div className="mb-6 px-6">
-        <h1 className="text-xl font-medium tracking-tight">
-          Feedback
-        </h1>
+    <ToolFrame href="/feedback" className="max-w-5xl">
+      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_17rem]">
+        <form className="space-y-6" onSubmit={handleSubmit}>
+          <fieldset className="space-y-3">
+            <legend className="text-sm font-bold">
+              What&apos;s your letter about?
+            </legend>
 
-        <p className="mt-1 text-sm text-muted-foreground">
-          Found a problem or have an
-          idea? Share it here.
-        </p>
-      </div>
+            <div className="grid grid-cols-3 gap-2 sm:gap-3">
+              {feedbackTypes.map(({ value, label, jp, description, icon: Icon, color }) => {
+                const active = type === value;
 
-      <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_18rem]">
-        {/* Feedback form */}
-        <Card className="rounded-xl p-0 bg-background ring-0 shadow-none">
-          <CardContent className="p-4 sm:p-6">
-            <form
-              className="space-y-6"
-              onSubmit={handleSubmit}
-            >
-              {/* Feedback type */}
-              <fieldset className="space-y-3">
-                <legend className="text-sm font-medium">
-                  What kind of feedback
-                  do you have?
-                </legend>
-
-                <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-                  {feedbackTypes.map(
-                    ({
-                      value,
-                      label,
-                      description,
-                      icon: Icon,
-                    }) => (
-                      <Toggle
-                        key={value}
-                        type="button"
-                        pressed={
-                          type === value
-                        }
-                        onPressedChange={(
-                          pressed
-                        ) => {
-                          if (pressed) {
-                            setType(
-                              value
-                            );
-                          }
-                        }}
-                        aria-label={
-                          label
-                        }
-                        className="
-                          flex
-                          
-                          gap-3
-                          rounded-lg
-                          border
-                          text-left
-                          data-[state=on]:border-foreground/20
-                          data-[state=on]:bg-muted
-                        "
-                      >
-                          <Icon className="size-4" />
-
-                          <span className="block text-sm font-medium">
-                            {label}
-                          </span>
-                      </Toggle>
-                    )
-                  )}
-                </div>
-              </fieldset>
-
-              <Separator />
-
-              {/* Message */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between gap-3">
-                  <label
-                    htmlFor="feedback-message"
-                    className="text-sm font-medium"
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    aria-pressed={active}
+                    onClick={() => setType(value)}
+                    className={cn(
+                      "relative flex flex-col items-center gap-1 rounded-xl border-2 border-dashed p-3 text-center transition-all",
+                      active
+                        ? "-rotate-1 border-ink text-[#1b1530] shadow-cel"
+                        : "border-border hover:-translate-y-0.5 hover:bg-muted"
+                    )}
+                    style={active ? { backgroundColor: color } : undefined}
                   >
-                    Message
-                  </label>
+                    <Icon className="size-5" />
+                    <span className="text-sm font-bold">{label}</span>
+                    <span className="hidden text-[11px] opacity-75 sm:block">
+                      {description}
+                    </span>
+                    <span className="absolute top-1.5 right-2 text-[9px] font-bold opacity-60">
+                      {jp}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </fieldset>
 
-                  <span className="text-xs tabular-nums text-muted-foreground">
-                    {message.length}
-                    /2000
-                  </span>
-                </div>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between gap-3">
+              <label htmlFor="feedback-message" className="text-sm font-bold">
+                Your letter
+              </label>
+              <span className="text-xs text-muted-foreground tabular-nums">
+                {message.length}/2000
+              </span>
+            </div>
 
-                <Textarea
-                  id="feedback-message"
-                  value={message}
-                  maxLength={2000}
-                  rows={8}
-                  required
-                  placeholder={
-                    type === "bug"
-                      ? "What happened? Include what you expected and the steps that caused the problem."
-                      : type ===
-                          "improvement"
-                        ? "What would you like Chrona to do differently?"
-                        : "Share your feedback..."
+            <div className="rounded-2xl border-2 border-(--panel-line) bg-[#fffaf0] p-4 text-[#3b2e4a] shadow-cel-sm">
+              <p className="font-display text-sm text-[#7f6e93]">Dear Chrona,</p>
+              <textarea
+                id="feedback-message"
+                value={message}
+                maxLength={2000}
+                rows={8}
+                required
+                placeholder={placeholders[type]}
+                onChange={(event) => {
+                  setMessage(event.target.value);
+
+                  if (error) {
+                    setError(null);
                   }
-                  onChange={(
-                    event
-                  ) => {
-                    setMessage(
-                      event.target
-                        .value
-                    );
+                }}
+                className="paper-lines mt-1 w-full resize-none bg-transparent text-[15px] outline-none placeholder:text-[#a497b4]"
+              />
+            </div>
 
-                    if (error) {
-                      setError(null);
-                    }
-                  }}
-                  className="resize-none"
-                />
+            <p className="text-xs leading-5 text-muted-foreground">
+              For bugs, mention the tool you were using and whether
+              you were on mobile or desktop.
+            </p>
+          </div>
 
-                <p className="text-xs leading-5 text-muted-foreground">
-                  For bug reports,
-                  include the tool you
-                  were using and the
-                  steps needed to
-                  reproduce the issue.
-                </p>
-              </div>
+          <div className="space-y-2">
+            <label htmlFor="feedback-email" className="text-sm font-bold">
+              Signed,
+              <span className="ml-1 font-normal text-muted-foreground">
+                your email (optional)
+              </span>
+            </label>
 
-              {/* Email */}
-              <div className="space-y-2">
-                <label
-                  htmlFor="feedback-email"
-                  className="text-sm font-medium"
-                >
-                  Email
-                  <span className="ml-1 font-normal text-muted-foreground">
-                    Optional
-                  </span>
-                </label>
+            <Input
+              id="feedback-email"
+              type="email"
+              value={email}
+              maxLength={254}
+              autoComplete="email"
+              placeholder="you@example.com"
+              onChange={(event) => setEmail(event.target.value)}
+            />
 
-                <Input
-                  id="feedback-email"
-                  type="email"
-                  value={email}
-                  maxLength={254}
-                  autoComplete="email"
-                  placeholder="you@example.com"
-                  onChange={(
-                    event
-                  ) =>
-                    setEmail(
-                      event.target
-                        .value
-                    )
-                  }
-                />
+            <p className="text-xs leading-5 text-muted-foreground">
+              Only if you&apos;d like a reply. It&apos;s never used for marketing.
+            </p>
+          </div>
 
-                <p className="text-xs leading-5 text-muted-foreground">
-                  Add your email only
-                  when you would like a
-                  response. It will not
-                  be used for marketing.
-                </p>
-              </div>
+          {/* Spam honeypot */}
+          <div aria-hidden="true" className="absolute -left-[9999px]">
+            <label htmlFor="website">Website</label>
+            <input
+              id="website"
+              name="website"
+              tabIndex={-1}
+              autoComplete="off"
+              value={website}
+              onChange={(event) => setWebsite(event.target.value)}
+            />
+          </div>
 
-              {/* Spam honeypot */}
-              <div
-                aria-hidden="true"
-                className="absolute -left-[9999px]"
-              >
-                <label htmlFor="website">
-                  Website
-                </label>
+          {error && (
+            <div
+              role="alert"
+              className="rounded-xl border-2 border-destructive/40 bg-destructive/10 px-3 py-2.5 text-sm font-bold text-destructive"
+            >
+              {error}
+            </div>
+          )}
 
-                <Input
-                  id="website"
-                  name="website"
-                  tabIndex={-1}
-                  autoComplete="off"
-                  value={website}
-                  onChange={(
-                    event
-                  ) =>
-                    setWebsite(
-                      event.target
-                        .value
-                    )
-                  }
-                />
-              </div>
+          <Button
+            type="submit"
+            size="lg"
+            className="w-full sm:w-auto"
+            disabled={submissionState === "submitting"}
+          >
+            {submissionState === "submitting" ? (
+              <>
+                <Loader2 className="animate-spin" />
+                Sending…
+              </>
+            ) : (
+              <>
+                <Send />
+                Send letter
+              </>
+            )}
+          </Button>
+        </form>
 
-              {error && (
-                <div
-                  role="alert"
-                  className="rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2.5 text-sm text-destructive"
-                >
-                  {error}
-                </div>
-              )}
+        <aside className="space-y-4">
+          <div className="rounded-2xl border-2 border-border bg-card/50 p-4">
+            <h2 className="font-display text-sm">Say hello</h2>
+            <p className="mt-1 text-xs leading-5 text-muted-foreground">
+              Follow Chrona updates or reach the developer directly.
+            </p>
 
-              <Button
-                type="submit"
-                className="w-full sm:w-auto"
-                disabled={
-                  submissionState ===
-                  "submitting"
-                }
-              >
-                {submissionState ===
-                "submitting" ? (
-                  <>
-                    <Loader2 className="animate-spin" />
-                    Sending...
-                  </>
-                ) : (
-                  <>
-                    <LucideSend />
-                    Send Feedback
-                  </>
-                )}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
+            <div className="mt-3 space-y-1">
+              {socialLinks.map(({ label, description, href, icon: Icon }) => {
+                const isExternal = href.startsWith("http");
 
-        {/* Side content */}
-        <aside className="space-y-5">
-          <Card className="rounded-xl bg-background">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium">
-                Connect
-              </CardTitle>
+                return (
+                  <a
+                    key={label}
+                    href={href}
+                    target={isExternal ? "_blank" : undefined}
+                    rel={isExternal ? "noreferrer" : undefined}
+                    className="group flex items-center gap-3 rounded-xl px-2 py-2 transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                  >
+                    <span className="grid size-9 shrink-0 place-items-center rounded-lg border-2 border-ink/70 bg-card dark:border-border">
+                      <Icon className="size-4" />
+                    </span>
 
-              <p className="text-xs leading-5 text-muted-foreground">
-                Follow Chrona updates or
-                contact the developer
-                directly.
-              </p>
-            </CardHeader>
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-sm font-bold">{label}</span>
+                      <span className="block truncate text-xs text-muted-foreground">
+                        {description}
+                      </span>
+                    </span>
 
-            <CardContent className="space-y-1 px-3 pb-3">
-              {socialLinks.map(
-                ({
-                  label,
-                  description,
-                  href,
-                  icon: Icon,
-                }) => {
-                  const isExternal =
-                    href.startsWith(
-                      "http"
-                    );
+                    {isExternal && (
+                      <ExternalLink className="size-3.5 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                    )}
+                  </a>
+                );
+              })}
+            </div>
+          </div>
 
-                  return (
-                    <a
-                      key={label}
-                      href={href}
-                      target={
-                        isExternal
-                          ? "_blank"
-                          : undefined
-                      }
-                      rel={
-                        isExternal
-                          ? "noreferrer"
-                          : undefined
-                      }
-                      className="
-                        group
-                        flex
-                        items-center
-                        gap-3
-                        rounded-lg
-                        px-2
-                        py-2.5
-                        transition-colors
-                        hover:bg-muted
-                        focus-visible:outline-none
-                        focus-visible:ring-2
-                        focus-visible:ring-ring
-                      "
-                    >
-                      <div className="flex size-9 shrink-0 items-center justify-center rounded-lg border bg-background">
-                        <Icon className="size-4" />
-                      </div>
-
-                      <div className="min-w-0 flex-1">
-                        <p className="text-sm font-medium">
-                          {label}
-                        </p>
-
-                        <p className="truncate text-xs text-muted-foreground">
-                          {description}
-                        </p>
-                      </div>
-
-                      {isExternal && (
-                        <ExternalLink className="size-3.5 shrink-0 text-muted-foreground transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
-                      )}
-                    </a>
-                  );
-                }
-              )}
-            </CardContent>
-          </Card>
-
-          <Card className="rounded-xl bg-background">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium">
-                Helpful feedback
-              </CardTitle>
-            </CardHeader>
-
-            <CardContent>
-              <ul className="space-y-2 text-xs leading-5 text-muted-foreground">
-                <li>
-                  Describe what you
-                  expected to happen.
-                </li>
-
-                <li>
-                  Include the Chrona tool
-                  where the issue
-                  occurred.
-                </li>
-
-                <li>
-                  Mention whether you
-                  were using mobile or
-                  desktop.
-                </li>
-              </ul>
-            </CardContent>
-          </Card>
+          <div className="rounded-2xl border-2 border-dashed border-border p-4">
+            <h2 className="flex items-center gap-2 font-display text-sm">
+              <Sparkles className="size-4 text-honey" />
+              Helpful letters
+            </h2>
+            <ul className="mt-2 list-inside list-disc space-y-1 text-xs leading-5 text-muted-foreground">
+              <li>Describe what you expected to happen.</li>
+              <li>Name the tool where it happened.</li>
+              <li>Mention mobile or desktop.</li>
+            </ul>
+          </div>
         </aside>
       </div>
-    </div>
+    </ToolFrame>
   );
 }
